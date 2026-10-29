@@ -1,0 +1,114 @@
+import type { Page } from '@playwright/test';
+import { test, expect } from './support/fixtures';
+import { tid } from '../src/testids';
+
+/* MOBILE FOUNDATION and REVIEW RUN, the rows only a real browser at phone
+   width can answer (390 x 844, an iPhone 14): the CSS each rule depends on is
+   checked through what the browser computes, not through class names. */
+const PHONE = { width: 390, height: 844 };
+test.beforeEach(async ({ page }) => { await page.setViewportSize(PHONE); });
+
+/* every style rule the page has, @media and @layer blocks opened */
+const rulesMatching = (page: Page, selector: string, needle: string) => page.evaluate(([sel, text]) => {
+  const el = document.querySelector(sel);
+  const out: string[] = [];
+  const walk = (rules: CSSRuleList) => {
+    for (const r of Array.from(rules)) {
+      if (r instanceof CSSStyleRule && r.style.cssText.includes(text) && el?.matches(r.selectorText)) out.push(r.cssText);
+      if ('cssRules' in r && (r as CSSGroupingRule).cssRules) walk((r as CSSGroupingRule).cssRules);
+    }
+  };
+  for (const s of Array.from(document.styleSheets)) { try { walk(s.cssRules); } catch { /* a sheet from elsewhere */ } }
+  return out;
+}, [selector, needle] as const);
+
+test('MOB a viewport is declared, the tab strip gives way to the bottom bar, the area switcher scrolls, and the bar keeps clear of the home indicator', async ({ page, signInAs }) => {
+  await signInAs('employee');
+  await page.goto('/work/home');
+  await page.getByTestId(tid.home.payslips).waitFor();
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', /width=device-width/);
+  await expect(page.locator('meta[name="viewport"]')).toHaveAttribute('content', /viewport-fit=cover/);
+  await expect(page.getByRole('navigation', { name: 'Pages', exact: true })).toBeHidden();
+  await expect(page.getByRole('navigation', { name: 'Quick pages' })).toBeVisible();
+  const areas = page.getByRole('navigation', { name: 'Areas' });
+  await expect(areas).toHaveCSS('overflow-x', 'auto');
+  await expect(areas).toHaveCSS('flex-wrap', 'nowrap');
+  expect(await rulesMatching(page, 'nav[aria-label="Quick pages"]', 'safe-area-inset-bottom')).not.toEqual([]);
+});
+
+test('MOB a dialog becomes a bottom sheet, full width, resting on the foot of the screen', async ({ page, signInAs }) => {
+  await signInAs('admin'); // no persona's bottom bar overflows into a More sheet, so the sheet is the new pay code dialog
+  await page.goto('/setup/mpay');
+  await page.getByTestId(tid.mpay.add).click();
+  const sheet = page.getByRole('dialog');
+  await expect(sheet).toBeVisible();
+  await page.waitForTimeout(400); // the sheet's entrance
+  const box = await sheet.boundingBox();
+  expect(box?.x).toBe(0);
+  expect(box?.width).toBe(PHONE.width);
+  expect(Math.round((box?.y ?? 0) + (box?.height ?? 0))).toBe(PHONE.height);
+});
+
+test('MOB a switch keeps its shape and gains a 44px hit area; a grown button grows its padding too', async ({ page, signInAs }) => {
+  await signInAs('admin');
+  await page.goto('/setup/amods?m=TS');
+  const sw = page.getByTestId(tid.amods.flag('LATE_FINISH'));
+  await expect(sw).toBeVisible();
+  const box = await sw.boundingBox();
+  expect([box?.width, box?.height]).toEqual([40, 23]);
+  const hit = await sw.evaluate(el => { const s = getComputedStyle(el, '::before'); return [s.width, s.height, s.position]; });
+  expect(hit).toEqual(['44px', '44px', 'absolute']);
+  await page.goto('/setup/aperm');
+  const rename = page.getByTestId(tid.roleNames.open);
+  await expect(rename).toHaveCSS('min-height', '44px');
+  await expect(rename).toHaveCSS('padding-left', '14px');
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await expect(rename).toHaveCSS('padding-left', '11px');
+});
+
+test('MOB every input, select and text box is 16px on a phone, so iOS does not zoom on focus', async ({ page, signInAs }) => {
+  await signInAs('admin');
+  const sizes: Record<string, string[]> = {};
+  for (const [path, ready] of [['/setup/aemployees', tid.employees.table], ['/setup/aorg', tid.aorg.spine], ['/setup/amods?m=TS', tid.amods.features],
+    ['/setup/monb', tid.monb.card('steps')]] as const) {
+    await page.goto(path);
+    await page.getByTestId(ready).waitFor();
+    sizes[path] = await page.locator('input:not([type=checkbox]):not([type=radio]):not([type=hidden]):not([type=file]), select, textarea, [data-slot="select-trigger"]')
+      .evaluateAll(els => els.filter(e => (e as HTMLElement).offsetParent !== null).map(e => `${e.getAttribute('data-testid') ?? e.tagName}:${getComputedStyle(e).fontSize}`));
+  }
+  for (const [path, list] of Object.entries(sizes)) {
+    expect(list.length, path).toBeGreaterThan(0);
+    expect(list.filter(s => !s.endsWith(':16px')), path).toEqual([]);
+  }
+});
+
+test('MOB a table pins its first column, a matrix keeps scrolling, and a record list keeps its headers for screen readers', async ({ page, signInAs }) => {
+  await signInAs('admin');
+  await page.goto('/setup/aperm');
+  const matrix = page.getByTestId(tid.access.table);
+  await matrix.waitFor();
+  await expect(matrix.locator('tbody td').first()).toHaveCSS('position', 'sticky');
+  const scrolls = await matrix.evaluate(t => { const w = t.parentElement; return w ? w.scrollWidth > w.clientWidth : false; });
+  expect(scrolls).toBe(true);
+  await expect(matrix.locator('thead')).toBeVisible();
+
+  const employees = page.getByTestId(tid.access.usersTable);
+  await expect(employees.locator('thead')).toHaveCSS('position', 'absolute');
+  await expect(employees.locator('thead')).toHaveCSS('width', '1px');
+  await expect(employees.getByRole('columnheader', { name: 'Employee ID' })).toBeAttached();
+  await expect(employees.locator('tbody td[data-l="Employee ID"]').first()).toBeVisible();
+
+  /* the plain tables live in dialogs now: the chain editor on Approvals holds one */
+  await page.goto('/setup/aappr');
+  await page.getByTestId(tid.aappr.chainTable).waitFor();
+  await page.getByTestId(tid.aappr.edit('Timesheet')).click();
+  const plain = page.locator('[data-slot="table"][data-variant="plain"]').first();
+  await plain.waitFor();
+  await expect(plain.locator('tbody td').first()).toHaveCSS('position', 'sticky');
+  await expect(plain.locator('thead th').first()).toHaveCSS('position', 'sticky');
+  const even = await plain.locator('tbody tr:nth-child(2)').evaluate(tr => {
+    const first = tr.querySelector('td');
+    return [getComputedStyle(tr).backgroundColor, first ? getComputedStyle(first).backgroundColor : ''];
+  });
+  expect(even[1]).toBe(even[0]);
+});

@@ -1,0 +1,3897 @@
+{
+ "version": "extracted",
+ "tenant": "qnipay",
+ "data": {
+  "employees": {
+   "emp_EMP001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP001",
+    "code": "EMP001",
+    "name": "Pukar Sthapit",
+    "email": "pukar.sthapit@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "PM",
+    "employeeType": "salaried",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "PUKAR",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP002": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP002",
+    "code": "EMP002",
+    "name": "Priya Raman",
+    "email": "priya.raman@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP006",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "",
+    "cis": false,
+    "state": "candidate",
+    "start": "2026-09-28",
+    "end": ""
+   },
+   "emp_EMP003": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP003",
+    "code": "EMP003",
+    "name": "Tom Achterberg",
+    "email": "tom.achterberg@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP006",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "",
+    "cis": false,
+    "state": "preboard",
+    "start": "2026-09-14",
+    "end": ""
+   },
+   "emp_EMP004": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP004",
+    "code": "EMP004",
+    "name": "Bigyan Poudel",
+    "email": "bigyan.poudel@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "BIGYAN",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP005": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP005",
+    "code": "EMP005",
+    "name": "Bijay Shrestha",
+    "email": "bijay.shrestha@qniverse.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "BIJAY",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP006": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP006",
+    "code": "EMP006",
+    "name": "Eddie Harford",
+    "email": "eddie.harford@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "PM",
+    "employeeType": "salaried",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "EDDIE",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP007": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP007",
+    "code": "EMP007",
+    "name": "Jamir Maharjan",
+    "email": "jamir.maharjan@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "JAMIR",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP008": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP008",
+    "code": "EMP008",
+    "name": "Ankit Krishna Shrestha",
+    "email": "jwalan.chand@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "JWALAN",
+    "cis": false,
+    "state": "archived",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP009": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP009",
+    "code": "EMP009",
+    "name": "KATHERINE HULL",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "KATHERINE",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP010": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP010",
+    "code": "EMP010",
+    "name": "Lina Townsend",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "LINA",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP011": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP011",
+    "code": "EMP011",
+    "name": "Marty Horst",
+    "email": "sanjeev.thakuri@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "MARTY",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP012": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP012",
+    "code": "EMP012",
+    "name": "Nikita Shrestha",
+    "email": "nikita.shrestha@qniverse.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "NIKITA",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP013": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP013",
+    "code": "EMP013",
+    "name": "Prastav Pokhrel",
+    "email": "prastav.pokhrel@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "PRASTAV",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP014": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP014",
+    "code": "EMP014",
+    "name": "Manish Nepal",
+    "email": "manish.nepal@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "salaried",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP006",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "R0001",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP015": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP015",
+    "code": "EMP015",
+    "name": "Prashesh",
+    "email": "manish.nepal@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "R0003",
+    "cis": false,
+    "state": "archived",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP016": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP016",
+    "code": "EMP016",
+    "name": "Ruman Thapa",
+    "email": "ruman.thapa@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "RUMAN",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP017": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP017",
+    "code": "EMP017",
+    "name": "Sajin",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 40,
+    "maxHours": 48,
+    "night": false,
+    "resource": "SAJIN",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP018": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP018",
+    "code": "EMP018",
+    "name": "Sulav Raj Thapaliya",
+    "email": "sulav.thapaliya@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "SULAV",
+    "cis": false,
+    "state": "archived",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP019": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP019",
+    "code": "EMP019",
+    "name": "Terry Dodds",
+    "email": "",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "TERRY",
+    "cis": false,
+    "state": "active",
+    "start": "",
+    "end": ""
+   },
+   "emp_EMP020": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_EMP020",
+    "code": "EMP020",
+    "name": "Yuran Shrestha",
+    "email": "yuran.shrestha@dogmagroup.co.uk",
+    "phone": "",
+    "address": "",
+    "emergencyName": "",
+    "emergencyPhone": "",
+    "bankAccount": "",
+    "bankSortCode": "",
+    "jobProfile": "CONS",
+    "employeeType": "hourly",
+    "category": "Contracted",
+    "location": "MCR",
+    "department": "DEL",
+    "manager": "EMP014",
+    "contractedHours": 37.5,
+    "maxHours": 48,
+    "night": false,
+    "resource": "YURAN",
+    "cis": false,
+    "state": "archived",
+    "start": "",
+    "end": ""
+   }
+  },
+  "accounts": {
+   "acc_pukar.sthapit@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_pukar.sthapit@dogmagroup.co.uk",
+    "email": "pukar.sthapit@dogmagroup.co.uk",
+    "employeeCode": "EMP001",
+    "userType": "manager",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_priya.raman@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_priya.raman@dogmagroup.co.uk",
+    "email": "priya.raman@dogmagroup.co.uk",
+    "employeeCode": "EMP002",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_tom.achterberg@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_tom.achterberg@dogmagroup.co.uk",
+    "email": "tom.achterberg@dogmagroup.co.uk",
+    "employeeCode": "EMP003",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_bigyan.poudel@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_bigyan.poudel@dogmagroup.co.uk",
+    "email": "bigyan.poudel@dogmagroup.co.uk",
+    "employeeCode": "EMP004",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_bijay.shrestha@qniverse.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_bijay.shrestha@qniverse.co.uk",
+    "email": "bijay.shrestha@qniverse.co.uk",
+    "employeeCode": "EMP005",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_eddie.harford@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_eddie.harford@dogmagroup.co.uk",
+    "email": "eddie.harford@dogmagroup.co.uk",
+    "employeeCode": "EMP006",
+    "userType": "admin",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_jamir.maharjan@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_jamir.maharjan@dogmagroup.co.uk",
+    "email": "jamir.maharjan@dogmagroup.co.uk",
+    "employeeCode": "EMP007",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_jwalan.chand@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_jwalan.chand@dogmagroup.co.uk",
+    "email": "jwalan.chand@dogmagroup.co.uk",
+    "employeeCode": "EMP008",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_sanjeev.thakuri@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_sanjeev.thakuri@dogmagroup.co.uk",
+    "email": "sanjeev.thakuri@dogmagroup.co.uk",
+    "employeeCode": "EMP011",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_nikita.shrestha@qniverse.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_nikita.shrestha@qniverse.co.uk",
+    "email": "nikita.shrestha@qniverse.co.uk",
+    "employeeCode": "EMP012",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_prastav.pokhrel@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_prastav.pokhrel@dogmagroup.co.uk",
+    "email": "prastav.pokhrel@dogmagroup.co.uk",
+    "employeeCode": "EMP013",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_manish.nepal@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_manish.nepal@dogmagroup.co.uk",
+    "email": "manish.nepal@dogmagroup.co.uk",
+    "employeeCode": "EMP014",
+    "userType": "admin",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_ruman.thapa@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_ruman.thapa@dogmagroup.co.uk",
+    "email": "ruman.thapa@dogmagroup.co.uk",
+    "employeeCode": "EMP016",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_sulav.thapaliya@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_sulav.thapaliya@dogmagroup.co.uk",
+    "email": "sulav.thapaliya@dogmagroup.co.uk",
+    "employeeCode": "EMP018",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   },
+   "acc_yuran.shrestha@dogmagroup.co.uk": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "acc_yuran.shrestha@dogmagroup.co.uk",
+    "email": "yuran.shrestha@dogmagroup.co.uk",
+    "employeeCode": "EMP020",
+    "userType": "employee",
+    "grants": [],
+    "revocations": []
+   }
+  },
+  "userTypes": {
+   "employee": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "employee",
+    "name": "Employee",
+    "description": "Their own work: timesheet",
+    "capabilities": [
+     "own_home",
+     "own_ts",
+     "own_onb"
+    ]
+   },
+   "manager": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "manager",
+    "name": "Manager",
+    "description": "Everything an employee can do, plus their team",
+    "capabilities": [
+     "own_home",
+     "own_ts",
+     "team_ts",
+     "profile_appr",
+     "team_employees",
+     "proxy",
+     "own_onb",
+     "onb_track",
+     "onb_verify",
+     "emp_crud"
+    ]
+   },
+   "admin": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "admin",
+    "name": "Admin",
+    "description": "Configure how this workforce operates",
+    "capabilities": [
+     "own_onb",
+     "onb_track",
+     "onb_verify",
+     "onb_cfg",
+     "emp_crud",
+     "master_data",
+     "type_cfg",
+     "mod_cfg",
+     "framework",
+     "perm_cfg",
+     "bank_verify",
+     "pay_appr"
+    ]
+   }
+  },
+  "capabilities": {
+   "own_home": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "own_home",
+    "group": "own",
+    "label": "Own home, profile and documents",
+    "gate": "My work → Home, Profile, Documents",
+    "lockedFor": []
+   },
+   "own_ts": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "own_ts",
+    "group": "own",
+    "label": "Own timesheet",
+    "gate": "My work → Timesheet",
+    "lockedFor": []
+   },
+   "team_ts": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "team_ts",
+    "group": "team",
+    "label": "Team timesheets and approvals",
+    "gate": "My team → Team timesheets",
+    "lockedFor": []
+   },
+   "profile_appr": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "profile_appr",
+    "group": "team",
+    "label": "Approve profile changes",
+    "gate": "The profile change queue on My team → Employees",
+    "lockedFor": []
+   },
+   "team_employees": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "team_employees",
+    "group": "team",
+    "label": "Team employees list",
+    "gate": "My team → Employees",
+    "lockedFor": []
+   },
+   "proxy": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "proxy",
+    "group": "team",
+    "label": "Enter time on behalf of someone",
+    "gate": "The proxy-entry button on an employee",
+    "lockedFor": []
+   },
+   "own_onb": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "own_onb",
+    "group": "own",
+    "label": "Complete my own onboarding",
+    "gate": "The onboarding portal a candidate sees before their first day",
+    "lockedFor": []
+   },
+   "onb_track": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "onb_track",
+    "group": "team",
+    "label": "Track onboarding",
+    "gate": "My team → Onboarding: who is onboarding and what is outstanding",
+    "lockedFor": []
+   },
+   "onb_verify": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "onb_verify",
+    "group": "team",
+    "label": "Verify onboarding documents",
+    "gate": "The verification queue, and the decision on each document",
+    "lockedFor": []
+   },
+   "onb_cfg": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "onb_cfg",
+    "group": "cfg",
+    "label": "Configure onboarding",
+    "gate": "Setup → Onboarding: steps, documents, policies and who verifies",
+    "lockedFor": []
+   },
+   "emp_crud": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "emp_crud",
+    "group": "team",
+    "label": "Add and edit employees",
+    "gate": "Add someone, and Edit on an employee record",
+    "lockedFor": []
+   },
+   "master_data": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "master_data",
+    "group": "cfg",
+    "label": "Master data",
+    "gate": "Organisation, Employees, Job profiles, Locations, Departments, Cost centres, Contracts, Calendar",
+    "lockedFor": []
+   },
+   "type_cfg": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "type_cfg",
+    "group": "cfg",
+    "label": "Employee types and configuration",
+    "gate": "Setup → Employee types",
+    "lockedFor": []
+   },
+   "mod_cfg": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "mod_cfg",
+    "group": "cfg",
+    "label": "Module configuration",
+    "gate": "The whole Modules section",
+    "lockedFor": []
+   },
+   "framework": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "framework",
+    "group": "cfg",
+    "label": "Notification and approval framework",
+    "gate": "Setup → Notifications, Approvals",
+    "lockedFor": []
+   },
+   "perm_cfg": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "perm_cfg",
+    "group": "cfg",
+    "label": "Permissions and role configuration",
+    "gate": "Setup → Permissions (this page)",
+    "lockedFor": [
+     "admin"
+    ]
+   },
+   "bank_verify": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "bank_verify",
+    "group": "team",
+    "label": "Verify bank detail changes",
+    "gate": "The bank detail queue on Setup → Employees",
+    "lockedFor": []
+   },
+   "pay_appr": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pay_appr",
+    "group": "team",
+    "label": "Approve timesheets for payroll",
+    "gate": "My team → Approvals, for the payroll layer of the Timesheet approval chain",
+    "lockedFor": []
+   }
+  },
+  "capabilityGroups": {
+   "own": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "own",
+    "label": "Their own work",
+    "description": "Every persona is an employee record first, so these apply to everyone.",
+    "order": 0
+   },
+   "team": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "team",
+    "label": "Their team",
+    "description": "Scoped by department and location. Never organisation-wide unless master data is granted.",
+    "order": 1
+   },
+   "cfg": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "cfg",
+    "label": "Configuration",
+    "description": "How this workforce operates. Normally admin only.",
+    "order": 2
+   }
+  },
+  "tenant": {
+   "tenant": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tenant",
+    "name": "Dogma Group",
+    "template": "qcic",
+    "modules": {
+     "CORE": true,
+     "A": true,
+     "B": false,
+     "C": true,
+     "TS": true,
+     "ON": true
+    },
+    "flags": {
+     "ONB_RTW": true,
+     "ONB_CONV": true,
+     "ONB_WTD": true,
+     "ONB_QUAL": true,
+     "ONB_POL": true,
+     "ONB_SIGN": true,
+     "ONB_VERIFY": true,
+     "ONB_PORTAL": true,
+     "AUTO_OT": false,
+     "LATE_FINISH": false,
+     "UNSOCIAL": false,
+     "EMAIL_APPROVAL": true,
+     "SHOW_PAY": false,
+     "VEHICLE": false,
+     "PROJECT": true,
+     "BREAKS": true,
+     "DOCS": true,
+     "SELF_EDIT": true,
+     "DAILY": true,
+     "WEEKLY": true,
+     "MULTIWEEK": true,
+     "GPS": false,
+     "GEOFENCE": false
+    },
+    "company": {
+     "registration": "",
+     "address": "",
+     "country": "United Kingdom",
+     "nmwCheck": true,
+     "bankHolidayRegion": "England & Wales",
+     "payFrequency": "Monthly",
+     "weekEnding": "Sunday",
+     "firstPayDate": "2026-08-21"
+    },
+    "financialYear": {
+     "start": "2026-04-01",
+     "end": "2027-03-31",
+     "label": "2026/27"
+    },
+    "timezone": "Europe/London",
+    "dateFormat": "dd/mm/yyyy",
+    "clock": "24h",
+    "weekStart": "Monday",
+    "bankHolidays": [
+     {
+      "date": "2026-08-31",
+      "name": "Summer bank holiday"
+     },
+     {
+      "date": "2026-12-25",
+      "name": "Christmas Day"
+     },
+     {
+      "date": "2026-12-28",
+      "name": "Boxing Day"
+     }
+    ],
+    "extras": {
+     "breaksMax": 5,
+     "vehiclesMax": 4
+    },
+    "restore": {},
+    "fullTimeWeeklyHours": 37.5
+   }
+  },
+  "locations": {
+   "loc_MCR": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "MCR",
+    "name": "Manchester",
+    "area": "North West",
+    "department": "DEL",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "address": "",
+    "active": true,
+    "id": "loc_MCR"
+   },
+   "loc_REM": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "REM",
+    "name": "Remote",
+    "area": "",
+    "department": "DEL",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "address": "",
+    "active": true,
+    "id": "loc_REM"
+   }
+  },
+  "departments": {
+   "dep_DEL": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "DEL",
+    "name": "Delivery",
+    "manager": "Manish Nepal",
+    "id": "dep_DEL"
+   },
+   "dep_ADM": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "ADM",
+    "name": "Administration",
+    "manager": "Manish Nepal",
+    "id": "dep_ADM"
+   }
+  },
+  "costCentres": {
+   "cc_CC-100": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "CC-100",
+    "name": "Delivery: Billable",
+    "id": "cc_CC-100"
+   },
+   "cc_CC-900": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "CC-900",
+    "name": "Internal: Overhead",
+    "id": "cc_CC-900"
+   }
+  },
+  "jobProfiles": {
+   "job_CONS": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "CONS",
+    "name": "Consultant",
+    "night": false,
+    "id": "job_CONS"
+   },
+   "job_SCONS": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "SCONS",
+    "name": "Senior Consultant",
+    "night": false,
+    "id": "job_SCONS"
+   },
+   "job_PM": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "PM",
+    "name": "Project Manager",
+    "night": false,
+    "id": "job_PM"
+   },
+   "job_ADM": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "ADM",
+    "name": "Administrator",
+    "night": false,
+    "id": "job_ADM"
+   }
+  },
+  "projects": {
+   "prj_J00010": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "J00010",
+    "name": "Go fibre BC implementation Project",
+    "client": "Go Fibre",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": true,
+    "location": "MCR",
+    "id": "prj_J00010"
+   },
+   "prj_J00020": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "J00020",
+    "name": "Contoso D365 Implementation",
+    "client": "Contoso",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": true,
+    "location": "MCR",
+    "id": "prj_J00020"
+   },
+   "prj_J00030": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "J00030",
+    "name": "Internal Project-Adhoc WorkLog",
+    "client": "Internal",
+    "costCentre": "CC-900",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": false,
+    "location": "MCR",
+    "id": "prj_J00030"
+   },
+   "prj_J00040": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "J00040",
+    "name": "HCPC CR automated apply unapply and Reverse",
+    "client": "Go Fibre",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": true,
+    "location": "MCR",
+    "id": "prj_J00040"
+   },
+   "prj_JOB00010": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "JOB00010",
+    "name": "Ultima Dsiplays-Sales & Marketing",
+    "client": "Ultima Displays",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": true,
+    "location": "MCR",
+    "id": "prj_JOB00010"
+   },
+   "prj_JOB00020": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "JOB00020",
+    "name": "QMS CRM Implementation",
+    "client": "Go Fibre",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": true,
+    "location": "MCR",
+    "id": "prj_JOB00020"
+   },
+   "prj_JOB00030": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "JOB00030",
+    "name": "Golden Charter BC Implementation and Integration Project",
+    "client": "Contoso",
+    "costCentre": "CC-100",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": true,
+    "location": "MCR",
+    "id": "prj_JOB00030"
+   },
+   "prj_LEAVE": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "code": "LEAVE",
+    "name": "Attendance",
+    "client": "Internal",
+    "costCentre": "CC-900",
+    "manager": "Manish Nepal",
+    "status": "Open",
+    "start": "2026-01-01",
+    "end": "",
+    "budgetHours": "",
+    "billable": false,
+    "location": "MCR",
+    "id": "prj_LEAVE"
+   }
+  },
+  "employeeTypes": {
+   "typ_salaried": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "typ_salaried",
+    "code": "salaried",
+    "name": "Project Manager",
+    "category": "Salaried",
+    "mode": "form",
+    "uom": "day",
+    "capabilities": [
+     "project"
+    ]
+   },
+   "typ_hourly": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "typ_hourly",
+    "code": "hourly",
+    "name": "Consultant",
+    "category": "Contracted",
+    "mode": "grid",
+    "uom": "hour",
+    "capabilities": [
+     "project"
+    ]
+   }
+  },
+  "profileChanges": {},
+  "employeeHistory": {},
+  "audit": {},
+  "notifications": {
+   "ntf_seed_0001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0001",
+    "employeeId": "EMP014",
+    "area": "Workforce",
+    "title": "Template applied",
+    "body": "Social Care & Charity · 3 employee types activated",
+    "at": "2026-08-06T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0005": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0005",
+    "employeeId": "EMP006",
+    "area": "Workforce",
+    "title": "Template applied",
+    "body": "Social Care & Charity · 3 employee types activated",
+    "at": "2026-08-06T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0009": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0009",
+    "employeeId": "EMP001",
+    "area": "Workforce",
+    "title": "Approval delegated to you",
+    "body": "Covering Rachel Hussain, 24–31 August",
+    "at": "2026-08-10T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0012": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0012",
+    "employeeId": "EMP001",
+    "area": "Timesheet",
+    "title": "3 timesheets awaiting your approval",
+    "body": "Oldest submitted Monday · SLA 24 hours",
+    "at": "2026-08-13T10:30:00.000Z",
+    "read": false
+   },
+   "ntf_seed_0017": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0017",
+    "employeeId": "EMP020",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0021": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0021",
+    "employeeId": "EMP018",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0025": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0025",
+    "employeeId": "EMP016",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0029": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0029",
+    "employeeId": "EMP013",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0033": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0033",
+    "employeeId": "EMP012",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0037": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0037",
+    "employeeId": "EMP011",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0041": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0041",
+    "employeeId": "EMP008",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0045": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0045",
+    "employeeId": "EMP007",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0049": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0049",
+    "employeeId": "EMP005",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0053": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0053",
+    "employeeId": "EMP004",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0057": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0057",
+    "employeeId": "EMP003",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   },
+   "ntf_seed_0061": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "ntf_seed_0061",
+    "employeeId": "EMP002",
+    "area": "Timesheet",
+    "title": "Timesheet approved",
+    "body": "10/08/2026 · approved by Rachel Hussain",
+    "at": "2026-08-11T14:30:00.000Z",
+    "read": true
+   }
+  },
+  "timesheetConfig": {
+   "timesheetConfig": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "timesheetConfig",
+    "rules": {
+     "maxDaily": 16,
+     "warnDaily": 10,
+     "minNet": 0.25,
+     "blockFuture": true,
+     "enforceLock": true,
+     "otDaily": 8,
+     "nightFrom": "20:00",
+     "nightTo": "06:00"
+    },
+    "cutoff": "Monday 12:00",
+    "timeFormat": "HH:MM",
+    "returnReasonRequired": true,
+    "weekGrid": "times",
+    "weekLayout": "classic",
+    "fieldDefaults": {
+     "start": {
+      "vis": true,
+      "mand": false,
+      "label": "Start date & time"
+     },
+     "finish": {
+      "vis": true,
+      "mand": false,
+      "label": "Finish date & time"
+     },
+     "travel": {
+      "vis": true,
+      "mand": false,
+      "label": "Travel time"
+     },
+     "work_type": {
+      "vis": true,
+      "mand": false,
+      "label": "Rate type"
+     },
+     "project": {
+      "vis": true,
+      "mand": false,
+      "label": "Project"
+     },
+     "job_task": {
+      "vis": true,
+      "mand": false,
+      "label": "Project task"
+     },
+     "cost_c": {
+      "vis": true,
+      "mand": false,
+      "label": "Cost centre"
+     },
+     "billable": {
+      "vis": true,
+      "mand": false,
+      "label": "Billable"
+     },
+     "site": {
+      "vis": true,
+      "mand": false,
+      "label": "Office"
+     },
+     "vehicle": {
+      "vis": true,
+      "mand": false,
+      "label": "1st vehicle registration"
+     },
+     "movement": {
+      "vis": true,
+      "mand": false,
+      "label": "1st movement details"
+     },
+     "vehicle2": {
+      "vis": true,
+      "mand": false,
+      "label": "2nd vehicle registration"
+     },
+     "movement2": {
+      "vis": true,
+      "mand": false,
+      "label": "2nd movement details"
+     },
+     "vehicle3": {
+      "vis": true,
+      "mand": false,
+      "label": "3rd vehicle registration"
+     },
+     "movement3": {
+      "vis": true,
+      "mand": false,
+      "label": "3rd movement details"
+     },
+     "vehicle4": {
+      "vis": true,
+      "mand": false,
+      "label": "4th vehicle registration"
+     },
+     "movement4": {
+      "vis": true,
+      "mand": false,
+      "label": "4th movement details"
+     },
+     "drive": {
+      "vis": true,
+      "mand": false,
+      "label": "Drive time"
+     },
+     "poa": {
+      "vis": true,
+      "mand": false,
+      "label": "Period of availability"
+     },
+     "passenger": {
+      "vis": true,
+      "mand": false,
+      "label": "Passenger only?"
+     },
+     "codriver": {
+      "vis": true,
+      "mand": false,
+      "label": "Co-driver name"
+     },
+     "break_s": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 1 start"
+     },
+     "break_e": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 1 end"
+     },
+     "break_s2": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 2 start"
+     },
+     "break_e2": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 2 end"
+     },
+     "break_s3": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 3 start"
+     },
+     "break_e3": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 3 end"
+     },
+     "break_s4": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 4 start"
+     },
+     "break_e4": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 4 end"
+     },
+     "break_s5": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 5 start"
+     },
+     "break_e5": {
+      "vis": true,
+      "mand": false,
+      "label": "Break 5 end"
+     },
+     "overtime": {
+      "vis": true,
+      "mand": false,
+      "label": "Overtime worked beyond the shift"
+     },
+     "late_fin": {
+      "vis": true,
+      "mand": false,
+      "label": "Late finish (finish after 20:00)"
+     },
+     "unsocial": {
+      "vis": true,
+      "mand": false,
+      "label": "Unsocial hours (work 00:00–05:00)"
+     },
+     "call_out": {
+      "vis": true,
+      "mand": false,
+      "label": "Called out from standby"
+     },
+     "site_allow": {
+      "vis": true,
+      "mand": false,
+      "label": "Site allowance"
+     },
+     "sleep_in": {
+      "vis": true,
+      "mand": false,
+      "label": "Sleep-in shift"
+     },
+     "waking_night": {
+      "vis": true,
+      "mand": false,
+      "label": "Waking night shift"
+     },
+     "on_call": {
+      "vis": true,
+      "mand": false,
+      "label": "On-call standby"
+     },
+     "night_out": {
+      "vis": true,
+      "mand": false,
+      "label": "Stayed out overnight?"
+     },
+     "rapid": {
+      "vis": true,
+      "mand": false,
+      "label": "Rapid response"
+     },
+     "t75": {
+      "vis": true,
+      "mand": false,
+      "label": "7.5T allowance"
+     },
+     "notes": {
+      "vis": true,
+      "mand": false,
+      "label": "Notes"
+     },
+     "dept": {
+      "vis": true,
+      "mand": false,
+      "label": "Department"
+     },
+     "work_order": {
+      "vis": true,
+      "mand": false,
+      "label": "Work order / job no."
+     },
+     "mileage": {
+      "vis": true,
+      "mand": false,
+      "label": "Business mileage (miles)"
+     },
+     "training_hours": {
+      "vis": true,
+      "mand": false,
+      "label": "Training hours"
+     },
+     "plant": {
+      "vis": true,
+      "mand": false,
+      "label": "Plant / equipment used"
+     },
+     "ppe": {
+      "vis": true,
+      "mand": false,
+      "label": "Safety briefing / PPE check done"
+     },
+     "lone_work": {
+      "vis": true,
+      "mand": false,
+      "label": "Lone-working check-in completed"
+     },
+     "visits": {
+      "vis": true,
+      "mand": false,
+      "label": "Visits / sessions completed"
+     },
+     "handover": {
+      "vis": true,
+      "mand": false,
+      "label": "Handover notes"
+     },
+     "client_sign": {
+      "vis": true,
+      "mand": false,
+      "label": "Client signature captured"
+     }
+    },
+    "allowances": {
+     "LATE_FINISH": {
+      "code": "LATE_FINISH",
+      "label": "Late finish",
+      "payCode": "LATE_FINISH",
+      "tier": "core",
+      "element": "PE-LATE",
+      "basis": "flat"
+     },
+     "UNSOCIAL": {
+      "code": "UNSOCIAL",
+      "label": "Unsocial hours",
+      "payCode": "UNSOCIAL",
+      "tier": "core",
+      "element": "PE-UNSOCIAL",
+      "basis": "flat"
+     },
+     "CALL_OUT": {
+      "code": "CALL_OUT",
+      "label": "Call-out",
+      "payCode": "CALL_OUT",
+      "tier": "core",
+      "element": "PE-CALL",
+      "basis": "flat"
+     },
+     "SITE_ALLOW": {
+      "code": "SITE_ALLOW",
+      "label": "Site allowance",
+      "payCode": "SITE_ALLOW",
+      "tier": "site",
+      "element": "PE-SITE",
+      "basis": "flat"
+     },
+     "SLEEP_IN": {
+      "code": "SLEEP_IN",
+      "label": "Sleep-in",
+      "payCode": "SLEEP_IN",
+      "tier": "shift",
+      "element": "PE-SLEEP",
+      "basis": "flat"
+     },
+     "WAKING_NIGHT": {
+      "code": "WAKING_NIGHT",
+      "label": "Waking night",
+      "payCode": "WAKING_NIGHT",
+      "tier": "shift",
+      "element": "PE-WAKING",
+      "basis": "flat"
+     },
+     "ON_CALL": {
+      "code": "ON_CALL",
+      "label": "On-call standby",
+      "payCode": "ON_CALL",
+      "tier": "core",
+      "element": "PE-ON",
+      "basis": "flat"
+     },
+     "NIGHT_OUT": {
+      "code": "NIGHT_OUT",
+      "label": "Night out",
+      "payCode": "NIGHT_OUT",
+      "tier": "logistics",
+      "element": "PE-NIGHT",
+      "basis": "flat"
+     },
+     "RAPID": {
+      "code": "RAPID",
+      "label": "Rapid response",
+      "payCode": "RAPID",
+      "tier": "logistics",
+      "element": "PE-RAPID",
+      "basis": "flat"
+     },
+     "T75_ALLOW": {
+      "code": "T75_ALLOW",
+      "label": "7.5T allowance",
+      "payCode": "T75_ALLOW",
+      "tier": "logistics",
+      "element": "PE-T75",
+      "basis": "flat"
+     }
+    },
+    "types": {
+     "salaried": {
+      "fields": {
+       "start": {
+        "vis": true,
+        "mand": true
+       },
+       "finish": {
+        "vis": true,
+        "mand": false
+       },
+       "notes": {
+        "vis": true,
+        "mand": false
+       },
+       "dept": {
+        "vis": true,
+        "mand": false
+       },
+       "training_hours": {
+        "vis": true,
+        "mand": false
+       },
+       "project": {
+        "vis": true,
+        "mand": false
+       },
+       "job_task": {
+        "vis": true,
+        "mand": false
+       },
+       "cost_c": {
+        "vis": true,
+        "mand": false
+       },
+       "billable": {
+        "vis": true,
+        "mand": false
+       },
+       "work_type": {
+        "vis": true,
+        "mand": false
+       }
+      },
+      "allowances": [
+       "OT15"
+      ],
+      "rules": [
+       {
+        "trigger": "Everything else",
+        "when": "else",
+        "code": "STD",
+        "value": "1×",
+        "how": "Auto (BC)"
+       }
+      ]
+     },
+     "hourly": {
+      "fields": {
+       "start": {
+        "vis": true,
+        "mand": true
+       },
+       "finish": {
+        "vis": true,
+        "mand": true
+       },
+       "notes": {
+        "vis": true,
+        "mand": false
+       },
+       "dept": {
+        "vis": true,
+        "mand": false
+       },
+       "break_s": {
+        "vis": true,
+        "mand": false
+       },
+       "break_e": {
+        "vis": true,
+        "mand": false
+       },
+       "break_s2": {
+        "vis": true,
+        "mand": false
+       },
+       "break_e2": {
+        "vis": true,
+        "mand": false
+       },
+       "break_s3": {
+        "vis": true,
+        "mand": false
+       },
+       "break_e3": {
+        "vis": true,
+        "mand": false
+       },
+       "break_s4": {
+        "vis": true,
+        "mand": false
+       },
+       "break_e4": {
+        "vis": true,
+        "mand": false
+       },
+       "break_s5": {
+        "vis": true,
+        "mand": false
+       },
+       "break_e5": {
+        "vis": true,
+        "mand": false
+       },
+       "mileage": {
+        "vis": true,
+        "mand": false
+       },
+       "project": {
+        "vis": true,
+        "mand": false
+       },
+       "job_task": {
+        "vis": true,
+        "mand": false
+       },
+       "cost_c": {
+        "vis": true,
+        "mand": false
+       },
+       "billable": {
+        "vis": true,
+        "mand": false
+       },
+       "work_type": {
+        "vis": true,
+        "mand": false
+       }
+      },
+      "allowances": [
+       "OT15",
+       "LATE_FINISH",
+       "UNSOCIAL",
+       "CALL_OUT"
+      ],
+      "rules": [
+       {
+        "trigger": "Everything else",
+        "when": "else",
+        "code": "STD",
+        "value": "1×",
+        "how": "Auto (BC)"
+       }
+      ]
+     }
+    }
+   }
+  },
+  "payCodes": {
+   "pc_STD": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_STD",
+    "code": "STD",
+    "basis": "multiplier",
+    "value": "1",
+    "element": "PE-STD",
+    "label": "Standard time",
+    "workType": true
+   },
+   "pc_OT15": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_OT15",
+    "code": "OT15",
+    "basis": "multiplier",
+    "value": "1.5",
+    "element": "PE-OT15",
+    "label": "Overtime 1.5×",
+    "workType": true
+   },
+   "pc_OT20": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_OT20",
+    "code": "OT20",
+    "basis": "multiplier",
+    "value": "2",
+    "element": "PE-OT20",
+    "label": "Overtime 2×",
+    "workType": true
+   },
+   "pc_OT-WD": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_OT-WD",
+    "code": "OT-WD",
+    "basis": "multiplier",
+    "value": "1.5",
+    "element": "PE-OTWD",
+    "label": "Overtime: Mon–Fri",
+    "workType": true
+   },
+   "pc_OT-SAT": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_OT-SAT",
+    "code": "OT-SAT",
+    "basis": "multiplier",
+    "value": "1.5",
+    "element": "PE-OTSAT",
+    "label": "Overtime: Saturday",
+    "workType": true
+   },
+   "pc_OT-SUN": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_OT-SUN",
+    "code": "OT-SUN",
+    "basis": "multiplier",
+    "value": "2",
+    "element": "PE-OTSUN",
+    "label": "Overtime: Sunday",
+    "workType": true
+   },
+   "pc_NIGHT": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_NIGHT",
+    "code": "NIGHT",
+    "basis": "multiplier",
+    "value": "1.5",
+    "element": "PE-NIGHT",
+    "label": "Night work",
+    "workType": true
+   },
+   "pc_TRAVEL": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_TRAVEL",
+    "code": "TRAVEL",
+    "basis": "multiplier",
+    "value": "1",
+    "element": "PE-TRAVEL",
+    "label": "Travel time",
+    "workType": true
+   },
+   "pc_DAY_RATE": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_DAY_RATE",
+    "code": "DAY_RATE",
+    "basis": "days",
+    "value": "1",
+    "element": "PE-DAY",
+    "label": "Day rate",
+    "workType": false
+   },
+   "pc_UNSOC": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_UNSOC",
+    "code": "UNSOC",
+    "basis": "flat",
+    "value": "",
+    "element": "PE-UNSOC",
+    "label": "Unsocial hours",
+    "workType": false
+   },
+   "pc_ABS": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_ABS",
+    "code": "ABS",
+    "basis": "units",
+    "value": "",
+    "element": "PE-ABS",
+    "label": "Absence",
+    "workType": false
+   },
+   "pc_LVE": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_LVE",
+    "code": "LVE",
+    "basis": "units",
+    "value": "",
+    "element": "PE-LVE",
+    "label": "Leave",
+    "workType": false
+   },
+   "pc_SSP": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pc_SSP",
+    "code": "SSP",
+    "basis": "units",
+    "value": "",
+    "element": "PE-SSP",
+    "label": "Statutory sick pay",
+    "workType": false
+   }
+  },
+  "timesheetDays": {
+   "tsd_EMP004_2026-08-12": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-08-12",
+    "employeeCode": "EMP004",
+    "date": "2026-08-12",
+    "state": "pend",
+    "entries": [
+     {
+      "start": "07:00",
+      "finish": "15:00",
+      "breaks": [
+       {
+        "start": "11:00",
+        "end": "11:30"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "workType": "STD",
+    "allowances": [],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "2026-08-12T14:20:00.000Z",
+    "returnReason": "",
+    "warnings": [],
+    "history": [
+     {
+      "from": "draft",
+      "to": "pend",
+      "by": {
+       "employeeCode": "EMP004",
+       "name": "Bigyan Poudel"
+      },
+      "at": "2026-08-12T14:20:00.000Z",
+      "reason": ""
+     }
+    ]
+   },
+   "tsd_EMP005_2026-08-11": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP005_2026-08-11",
+    "employeeCode": "EMP005",
+    "date": "2026-08-11",
+    "state": "pend",
+    "entries": [
+     {
+      "start": "22:00",
+      "finish": "07:00",
+      "breaks": [],
+      "fields": {}
+     }
+    ],
+    "workType": "STD",
+    "allowances": [
+     "WAKING_NIGHT"
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP005",
+    "submittedAt": "2026-08-12T07:04:00.000Z",
+    "returnReason": "",
+    "warnings": [],
+    "history": [
+     {
+      "from": "draft",
+      "to": "pend",
+      "by": {
+       "employeeCode": "EMP005",
+       "name": "Bijay Shrestha"
+      },
+      "at": "2026-08-12T07:04:00.000Z",
+      "reason": ""
+     }
+    ]
+   },
+   "tsd_EMP007_2026-08-10": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP007_2026-08-10",
+    "employeeCode": "EMP007",
+    "date": "2026-08-10",
+    "state": "pend",
+    "entries": [
+     {
+      "start": "22:00",
+      "finish": "07:30",
+      "breaks": [],
+      "fields": {}
+     }
+    ],
+    "workType": "STD",
+    "allowances": [
+     "UNSOC"
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP007",
+    "submittedAt": "2026-08-11T06:55:00.000Z",
+    "returnReason": "",
+    "warnings": [],
+    "history": [
+     {
+      "from": "draft",
+      "to": "pend",
+      "by": {
+       "employeeCode": "EMP007",
+       "name": "Jamir Maharjan"
+      },
+      "at": "2026-08-11T06:55:00.000Z",
+      "reason": ""
+     }
+    ]
+   },
+   "tsd_EMP009_2026-08-10": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP009_2026-08-10",
+    "employeeCode": "EMP009",
+    "date": "2026-08-10",
+    "state": "ok",
+    "entries": [
+     {
+      "start": "07:00",
+      "finish": "15:00",
+      "breaks": [
+       {
+        "start": "11:00",
+        "end": "11:30"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "workType": "STD",
+    "allowances": [],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP009",
+    "submittedAt": "2026-08-10T14:10:00.000Z",
+    "returnReason": "",
+    "warnings": [],
+    "history": [
+     {
+      "from": "draft",
+      "to": "pend",
+      "by": {
+       "employeeCode": "EMP009",
+       "name": "KATHERINE HULL"
+      },
+      "at": "2026-08-10T14:10:00.000Z",
+      "reason": ""
+     },
+     {
+      "from": "pend",
+      "to": "ok",
+      "by": {
+       "employeeCode": "EMP014",
+       "name": "Manish Nepal"
+      },
+      "at": "2026-08-11T14:10:00.000Z",
+      "reason": ""
+     }
+    ]
+   },
+   "tsd_EMP010_2026-08-12": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP010_2026-08-12",
+    "employeeCode": "EMP010",
+    "date": "2026-08-12",
+    "state": "ok",
+    "entries": [
+     {
+      "start": "14:30",
+      "finish": "22:00",
+      "breaks": [],
+      "fields": {}
+     }
+    ],
+    "workType": "STD",
+    "allowances": [],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP010",
+    "submittedAt": "2026-08-12T21:12:00.000Z",
+    "returnReason": "",
+    "warnings": [],
+    "history": [
+     {
+      "from": "draft",
+      "to": "pend",
+      "by": {
+       "employeeCode": "EMP010",
+       "name": "Lina Townsend"
+      },
+      "at": "2026-08-12T21:12:00.000Z",
+      "reason": ""
+     },
+     {
+      "from": "pend",
+      "to": "ok",
+      "by": {
+       "employeeCode": "EMP014",
+       "name": "Manish Nepal"
+      },
+      "at": "2026-08-13T08:00:00.000Z",
+      "reason": ""
+     }
+    ]
+   },
+   "tsd_EMP011_2026-08-10": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP011_2026-08-10",
+    "employeeCode": "EMP011",
+    "date": "2026-08-10",
+    "state": "back",
+    "entries": [
+     {
+      "start": "14:30",
+      "finish": "22:00",
+      "breaks": [],
+      "fields": {}
+     }
+    ],
+    "workType": "STD",
+    "allowances": [],
+    "nonWorkingReason": "",
+    "captureSource": "proxy",
+    "enteredBy": "EMP014",
+    "submittedAt": "2026-08-11T08:30:00.000Z",
+    "returnReason": "Break times missing. Please add and resubmit.",
+    "warnings": [],
+    "history": [
+     {
+      "from": "draft",
+      "to": "pend",
+      "by": {
+       "employeeCode": "EMP014",
+       "name": "Manish Nepal"
+      },
+      "at": "2026-08-11T08:30:00.000Z",
+      "reason": "Submitted on their behalf"
+     },
+     {
+      "from": "pend",
+      "to": "back",
+      "by": {
+       "employeeCode": "EMP014",
+       "name": "Manish Nepal"
+      },
+      "at": "2026-08-12T08:30:00.000Z",
+      "reason": "Break times missing. Please add and resubmit."
+     }
+    ]
+   },
+   "tsd_EMP004_2026-08-03": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-08-03",
+    "employeeCode": "EMP004",
+    "date": "2026-08-03",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-08-04": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-08-04",
+    "employeeCode": "EMP004",
+    "date": "2026-08-04",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-08-05": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-08-05",
+    "employeeCode": "EMP004",
+    "date": "2026-08-05",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-08-06": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-08-06",
+    "employeeCode": "EMP004",
+    "date": "2026-08-06",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-08-07": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-08-07",
+    "employeeCode": "EMP004",
+    "date": "2026-08-07",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-07-27": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-07-27",
+    "employeeCode": "EMP004",
+    "date": "2026-07-27",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-07-28": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-07-28",
+    "employeeCode": "EMP004",
+    "date": "2026-07-28",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-07-29": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-07-29",
+    "employeeCode": "EMP004",
+    "date": "2026-07-29",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   },
+   "tsd_EMP004_2026-07-30": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsd_EMP004_2026-07-30",
+    "employeeCode": "EMP004",
+    "date": "2026-07-30",
+    "state": "draft",
+    "workType": "STD",
+    "allowances": [],
+    "entries": [
+     {
+      "start": "09:00",
+      "finish": "17:00",
+      "breaks": [
+       {
+        "start": "12:30",
+        "end": "13:00"
+       }
+      ],
+      "fields": {}
+     }
+    ],
+    "nonWorkingReason": "",
+    "captureSource": "self",
+    "enteredBy": "EMP004",
+    "submittedAt": "",
+    "returnReason": "",
+    "warnings": [],
+    "history": []
+   }
+  },
+  "projectTasks": {
+   "tsk_J00010_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00010_001",
+    "projectCode": "J00010",
+    "name": "PT-02-02-04 · AS-IS process flow diagrams",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_001",
+    "projectCode": "J00020",
+    "name": "PT-01-03-08 · Workshop Preparation",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_002": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_002",
+    "projectCode": "J00020",
+    "name": "PT-01-03-27 · Workshop Preparation and Session",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_003": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_003",
+    "projectCode": "J00020",
+    "name": "PT-100 · Workshop 4 - BC - TO BE - Finance & Accounts",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_004": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_004",
+    "projectCode": "J00020",
+    "name": "PT-103 · Prepare Payroll BC Financial Core Data Template for Configuration/Development",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_005": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_005",
+    "projectCode": "J00020",
+    "name": "PT-114 · Workshop 7 - BC - TO BE - Cashflow Forecast",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_006": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_006",
+    "projectCode": "J00020",
+    "name": "PT-127 · Workshop 2 - BC - AS IS - Purchase & Payables",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_007": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_007",
+    "projectCode": "J00020",
+    "name": "PT-135 · HR/BC/Payroll Playback- Integration",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_008": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_008",
+    "projectCode": "J00020",
+    "name": "PT-140 · Workshop 1 - Payroll - Full Payroll Scoping",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_009": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_009",
+    "projectCode": "J00020",
+    "name": "PT-142 · Set up and Configure",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_010": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_010",
+    "projectCode": "J00020",
+    "name": "PT-151 · Configuration UK",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_011": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_011",
+    "projectCode": "J00020",
+    "name": "PT-183 · Prepare Payroll Blueprint Documentation",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_012": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_012",
+    "projectCode": "J00020",
+    "name": "PT-187 · D365 BC Core Configuration",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_013": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_013",
+    "projectCode": "J00020",
+    "name": "PT-188 · D365 BC Financial Modules Config",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_014": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_014",
+    "projectCode": "J00020",
+    "name": "PT-189 · D365 BC Project Management Config",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_015": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_015",
+    "projectCode": "J00020",
+    "name": "PT-202 · Sirius MDM Octopus Configuration",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_016": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_016",
+    "projectCode": "J00020",
+    "name": "PT-204 · Workflow Configuration",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_017": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_017",
+    "projectCode": "J00020",
+    "name": "PT-205 · Data Migration Planning",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_018": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_018",
+    "projectCode": "J00020",
+    "name": "PT-206 · Data Migration Execution",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_019": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_019",
+    "projectCode": "J00020",
+    "name": "PT-224 · End User Training - PM",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_020": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_020",
+    "projectCode": "J00020",
+    "name": "PT-237 · Configuration of Dependency Data - No Impact Testing",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_021": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_021",
+    "projectCode": "J00020",
+    "name": "PT-242 · Integration Mapping Document - System Wide",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_022": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_022",
+    "projectCode": "J00020",
+    "name": "PT-254 · Bug Fixing",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_023": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_023",
+    "projectCode": "J00020",
+    "name": "PT-268 · Workshop 3 - BC - AS IS - Sales & Receivables",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_024": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_024",
+    "projectCode": "J00020",
+    "name": "PT-279 · Configuration US",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_025": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_025",
+    "projectCode": "J00020",
+    "name": "PT-282 · BC UAT – With Integration and Customisation",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_026": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_026",
+    "projectCode": "J00020",
+    "name": "PT-318 · Reporting UAT- Power BI report",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_027": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_027",
+    "projectCode": "J00020",
+    "name": "PT-325 · Workshop 5 - BC - TO BE - Purchase & Payables",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_028": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_028",
+    "projectCode": "J00020",
+    "name": "PT-327 · Configuration Issue fixes",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_029": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_029",
+    "projectCode": "J00020",
+    "name": "PT-335 · Prepare Payroll BC Data for Production",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_030": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_030",
+    "projectCode": "J00020",
+    "name": "PT-344 · Playback Session - India Entity",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_031": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_031",
+    "projectCode": "J00020",
+    "name": "PT-352 · Workshop 4 - Project Management - TO BE - Workflows & System Integration",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_032": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_032",
+    "projectCode": "J00020",
+    "name": "PT-355 · Follow up Meeting to Discussion / Clarity on Data Templates",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_033": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_033",
+    "projectCode": "J00020",
+    "name": "PT-377 · Deployment to UAT Environment",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_034": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_034",
+    "projectCode": "J00020",
+    "name": "PT-91 · Workshop 6 - BC - TO BE - Sales & Receivables",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00020_035": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00020_035",
+    "projectCode": "J00020",
+    "name": "PT-94 · Workshop 1 - BC - AS IS - Finance & Accounts",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_J00030_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_001",
+    "projectCode": "J00030",
+    "name": "PT-01-120 · HCPC: Deferred Income",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_002": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_002",
+    "projectCode": "J00030",
+    "name": "PT-01-131 · Invoiced status not updating back to Dynamics CRM",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_003": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_003",
+    "projectCode": "J00030",
+    "name": "PT-05-105-010 · Document Review for scoping session",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_004": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_004",
+    "projectCode": "J00030",
+    "name": "PT-05-105-08 · Deferral income automatic posting discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_005": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_005",
+    "projectCode": "J00030",
+    "name": "PT-05-105-12 · Additional requirement discussion with client",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_006": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_006",
+    "projectCode": "J00030",
+    "name": "PT-05-105-13 · Version upgrade Review",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_007": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_007",
+    "projectCode": "J00030",
+    "name": "PT-05-105-14 · Additional requirement discussion with client continue",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_008": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_008",
+    "projectCode": "J00030",
+    "name": "PT-05-105-15 · Continuing the discussion with client",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_009": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_009",
+    "projectCode": "J00030",
+    "name": "PT-05-105-25 · Deferral Discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_010": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_010",
+    "projectCode": "J00030",
+    "name": "PT-05-105-26 · Data validation sent by client",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_011": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_011",
+    "projectCode": "J00030",
+    "name": "PT-05-105-28 · Data validation review with client",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_012": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_012",
+    "projectCode": "J00030",
+    "name": "PT-05-105-31 · Further discussion of credit memo issue",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_013": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_013",
+    "projectCode": "J00030",
+    "name": "PT-05-105-38 · Duplicate invoice discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_014": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_014",
+    "projectCode": "J00030",
+    "name": "PT-05-106-010 · Report changes Discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_015": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_015",
+    "projectCode": "J00030",
+    "name": "PT-05-106-04 · new report customization CR discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_016": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_016",
+    "projectCode": "J00030",
+    "name": "PT-05-117-03 · Dimension issue Discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_017": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_017",
+    "projectCode": "J00030",
+    "name": "PT-05-117-07 · Additional currency setup",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_018": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_018",
+    "projectCode": "J00030",
+    "name": "PT-05-120-010 · CAS-16418-Q1Y6M4: Error from Year End Closing Journal",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_019": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_019",
+    "projectCode": "J00030",
+    "name": "PT-05-120-02 · Closing year end",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_020": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_020",
+    "projectCode": "J00030",
+    "name": "PT-05-120-04 · Company setup requirement gathering",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_021": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_021",
+    "projectCode": "J00030",
+    "name": "PT-05-120-05 · Support case discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_022": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_022",
+    "projectCode": "J00030",
+    "name": "PT-05-120-07 · CR document review",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_023": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_023",
+    "projectCode": "J00030",
+    "name": "PT-05-62-02 · version 25.2 upgrade validation in UAT and Dev environment",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_024": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_024",
+    "projectCode": "J00030",
+    "name": "PT-05-62-06 · Payment not landing",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_025": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_025",
+    "projectCode": "J00030",
+    "name": "PT-05-63-01 · VAT return file investigation and discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_026": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_026",
+    "projectCode": "J00030",
+    "name": "PT-05-63-02 · Continuing the VAT Discussion",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_027": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_027",
+    "projectCode": "J00030",
+    "name": "PT-05-64-03 · VAT Return",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_028": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_028",
+    "projectCode": "J00030",
+    "name": "PT-05-64-04 · New company setup",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_029": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_029",
+    "projectCode": "J00030",
+    "name": "PT-05-74-02 · Investigation of Consolidation Inconsistency",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_030": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_030",
+    "projectCode": "J00030",
+    "name": "PT-05-74-03 · Consolidation issue",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_031": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_031",
+    "projectCode": "J00030",
+    "name": "PT-05-74-04 · Training on year end process",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_032": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_032",
+    "projectCode": "J00030",
+    "name": "PT-05-77-01 · Allocating Journal to PO's",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_033": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_033",
+    "projectCode": "J00030",
+    "name": "PT-05-77-03 · VAT date on closed period",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_034": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_034",
+    "projectCode": "J00030",
+    "name": "PT-05-91-01 · Wireframes, iterations and prototype",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00030_035": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00030_035",
+    "projectCode": "J00030",
+    "name": "PT-05-92-03 · Assistance required in VAT submission",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_J00040_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_J00040_001",
+    "projectCode": "J00040",
+    "name": "PT-14 · Preparation for UAT",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00010_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00010_001",
+    "projectCode": "JOB00010",
+    "name": "PT-01-05-010 · Review & Align Pricing Structure – Client Requirements",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00010_002": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00010_002",
+    "projectCode": "JOB00010",
+    "name": "PT-01-05-14 · PIM Techincal Discussion and sales query discussion",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00020_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00020_001",
+    "projectCode": "JOB00020",
+    "name": "PT-01-16-01 · Year end closing discussion",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00030_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00030_001",
+    "projectCode": "JOB00030",
+    "name": "PT-01-010-22 · Receivables Fit Gap + Solution Design Documentation",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00030_002": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00030_002",
+    "projectCode": "JOB00030",
+    "name": "PT-01-010-23 · payable user stories review and update",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00030_003": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00030_003",
+    "projectCode": "JOB00030",
+    "name": "PT-01-010-27 · GC overall documentation review & update",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00030_004": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00030_004",
+    "projectCode": "JOB00030",
+    "name": "PT-01-010-31 · Preparation for To Be Session",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00030_005": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00030_005",
+    "projectCode": "JOB00030",
+    "name": "PT-01-010-32 · Bank Reconciliation To Be Session",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00030_006": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00030_006",
+    "projectCode": "JOB00030",
+    "name": "PT-01-010-35 · Fit Gap Finalization",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_JOB00030_007": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_JOB00030_007",
+    "projectCode": "JOB00030",
+    "name": "PT-01-12-07 · Process Flow Diagrams",
+    "group": "Delivery",
+    "billable": true
+   },
+   "tsk_LEAVE_001": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_LEAVE_001",
+    "projectCode": "LEAVE",
+    "name": "ANNUAL LEAVE · Annual Leave",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_LEAVE_002": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_LEAVE_002",
+    "projectCode": "LEAVE",
+    "name": "BANK HOLIDAY · Bank Holiday",
+    "group": "Internal",
+    "billable": false
+   },
+   "tsk_LEAVE_003": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "tsk_LEAVE_003",
+    "projectCode": "LEAVE",
+    "name": "SICK LEAVE · Sick Leave",
+    "group": "Internal",
+    "billable": false
+   }
+  },
+  "delegations": {},
+  "documents": {
+   "doc_EMP002_1": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "doc_EMP002_1",
+    "employeeCode": "EMP002",
+    "name": "Contract of employment",
+    "category": "Employment",
+    "date": "2022-02-14",
+    "owner": "HR",
+    "source": "HRIS"
+   },
+   "doc_EMP002_2": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "doc_EMP002_2",
+    "employeeCode": "EMP002",
+    "name": "Job description · Support Worker",
+    "category": "Employment",
+    "date": "2022-02-14",
+    "owner": "HR",
+    "source": "HRIS"
+   },
+   "doc_EMP002_3": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "doc_EMP002_3",
+    "employeeCode": "EMP002",
+    "name": "DBS certificate",
+    "category": "Compliance",
+    "date": "2024-03-31",
+    "owner": "HR",
+    "source": "HRIS"
+   },
+   "doc_EMP002_4": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "doc_EMP002_4",
+    "employeeCode": "EMP002",
+    "name": "Safeguarding L2 certificate",
+    "category": "Compliance",
+    "date": "2026-01-09",
+    "owner": "Learning",
+    "source": "LMS"
+   },
+   "doc_EMP002_5": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "doc_EMP002_5",
+    "employeeCode": "EMP002",
+    "name": "Medication competency",
+    "category": "Compliance",
+    "date": "2026-05-22",
+    "owner": "Learning",
+    "source": "LMS"
+   },
+   "doc_EMP002_6": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "doc_EMP002_6",
+    "employeeCode": "EMP002",
+    "name": "Working time opt-out",
+    "category": "Employment",
+    "date": "2022-02-14",
+    "owner": "HR",
+    "source": "HRIS"
+   },
+   "doc_EMP002_7": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "doc_EMP002_7",
+    "employeeCode": "EMP002",
+    "name": "Annual leave statement 2026/27",
+    "category": "Leave",
+    "date": "2026-04-01",
+    "owner": "Workforce",
+    "source": "Workforce"
+   }
+  },
+  "onboardingConfig": {
+   "onboardingConfig": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "onboardingConfig",
+    "steps": [
+     {
+      "id": "personal",
+      "label": "Personal details",
+      "on": true,
+      "fixed": true,
+      "desc": "Name, date of birth, nationality, national insurance number."
+     },
+     {
+      "id": "contact",
+      "label": "Contact information",
+      "on": true,
+      "fixed": true,
+      "desc": "Address, phone, alternative number."
+     },
+     {
+      "id": "emergency",
+      "label": "Emergency contacts",
+      "on": true,
+      "fixed": false,
+      "desc": "Who to call, and their relationship."
+     },
+     {
+      "id": "additional",
+      "label": "Additional information",
+      "on": true,
+      "fixed": false,
+      "desc": "Convictions, working time opt-out, qualifications. Each is switched on separately under Modules."
+     },
+     {
+      "id": "documents",
+      "label": "Documents",
+      "on": true,
+      "fixed": false,
+      "desc": "Right to work, proof of address, photograph."
+     },
+     {
+      "id": "policies",
+      "label": "Policies and sign-off",
+      "on": true,
+      "fixed": false,
+      "desc": "Read, acknowledge and sign."
+     },
+     {
+      "id": "review",
+      "label": "Review and submit",
+      "on": true,
+      "fixed": true,
+      "desc": "Check everything, then send it to HR."
+     }
+    ],
+    "documents": [
+     {
+      "id": "rtw",
+      "label": "Right to work",
+      "req": true,
+      "verify": "hr",
+      "blocks": true,
+      "expiry": true,
+      "hint": "Passport, birth certificate, or a visa or biometric residence permit.",
+      "on": true,
+      "custom": false
+     },
+     {
+      "id": "addr",
+      "label": "Proof of address",
+      "req": true,
+      "verify": "hr",
+      "blocks": false,
+      "expiry": false,
+      "hint": "A utility bill or bank statement issued in the last three months.",
+      "on": true,
+      "custom": false
+     },
+     {
+      "id": "photo",
+      "label": "Photograph",
+      "req": true,
+      "verify": "either",
+      "blocks": false,
+      "expiry": false,
+      "hint": "A recent photograph against a plain background.",
+      "on": true,
+      "custom": false
+     },
+     {
+      "id": "licence",
+      "label": "Driving licence",
+      "req": false,
+      "verify": "mgr",
+      "blocks": false,
+      "expiry": true,
+      "hint": "Only if the role involves driving.",
+      "on": true,
+      "custom": false
+     },
+     {
+      "id": "cert",
+      "label": "Certificates",
+      "req": false,
+      "verify": "mgr",
+      "blocks": false,
+      "expiry": true,
+      "hint": "Qualifications relevant to the role.",
+      "on": true,
+      "custom": false
+     }
+    ],
+    "policies": [
+     "pol_conduct",
+     "pol_privacy",
+     "pol_handbook",
+     "pol_itsec"
+    ]
+   }
+  },
+  "onboardingPolicies": {
+   "pol_conduct": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pol_conduct",
+    "label": "Code of conduct",
+    "ver": "v4.1",
+    "sum": "Workplace behaviour, conflicts of interest and the standards expected of everyone.",
+    "body": [
+     "We expect everyone to treat colleagues, clients and members of the public with respect. Harassment, discrimination and bullying are treated as gross misconduct.",
+     "Tell your manager about anything that could be a conflict of interest, for example a second job, a family connection to a supplier, a financial interest in a client. Declaring it is not a problem. Not declaring it is.",
+     "Gifts and hospitality over £50 must be declared. Cash is never accepted.",
+     "If you see something that worries you, raise it. You will not be penalised for raising a concern in good faith, even if it turns out to be unfounded."
+    ],
+    "order": 0
+   },
+   "pol_privacy": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pol_privacy",
+    "label": "Privacy notice",
+    "ver": "v2.0",
+    "sum": "What personal data is held about you, why, and how long it is kept.",
+    "body": [
+     "We hold your contact details, bank details, right-to-work evidence, emergency contacts and records of the hours you work. We hold them because we have to pay you correctly, meet our legal obligations as an employer, and reach somebody if you are hurt at work.",
+     "Your bank details are used for payment only. They are visible to payroll and to nobody else.",
+     "Right-to-work evidence is kept for the duration of your employment and for two years afterwards, which is the statutory minimum.",
+     "You can ask to see everything we hold about you, and ask for anything inaccurate to be corrected. Contact the person named at the end of this notice."
+    ],
+    "order": 1
+   },
+   "pol_handbook": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pol_handbook",
+    "label": "Employee handbook",
+    "ver": "v7.3",
+    "sum": "Leave, working hours, benefits and day-to-day procedures.",
+    "body": [
+     "Your holiday year runs from 1 April. Entitlement is pro-rated if you join part way through.",
+     "Tell your manager about leave in advance, so that cover can be arranged.",
+     "If you are unwell, tell your manager before your shift starts. A self-certificate covers up to seven days; beyond that we need a fit note.",
+     "Overtime is by agreement in advance. Unagreed hours are still recorded, but may be queried before they are paid."
+    ],
+    "order": 2
+   },
+   "pol_itsec": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "pol_itsec",
+    "label": "IT and data security",
+    "ver": "v3.2",
+    "sum": "Acceptable use, passwords, and what to do if something is lost or exposed.",
+    "body": [
+     "Use a different password here from the one you use anywhere else, and turn on the second factor when you are asked to.",
+     "Do not send client information to a personal email address, and do not put it on a personal device that is not encrypted.",
+     "If you lose a phone or a laptop with work information on it, tell us the same day. Nobody is in trouble for reporting a loss quickly.",
+     "If you receive a message asking you to change bank details or transfer money urgently, treat it as suspicious and verify it by phone using a number you already had."
+    ],
+    "order": 3
+   }
+  },
+  "onboardingCases": {
+   "onb_EMP002": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "onb_EMP002",
+    "employeeCode": "EMP002",
+    "steps": {},
+    "docs": {},
+    "files": {},
+    "rejections": {},
+    "acks": {},
+    "read": {},
+    "data": {
+     "personal": {
+      "dob": "",
+      "gender": "",
+      "nat": "",
+      "ni": ""
+     },
+     "contact": {
+      "mob": "",
+      "alt": "",
+      "a1": "",
+      "a2": "",
+      "city": "",
+      "post": ""
+     },
+     "emergency": [
+      {
+       "nm": "",
+       "rel": "",
+       "ph": ""
+      }
+     ],
+     "additional": {
+      "conv": "",
+      "convDetail": "",
+      "wtd": "",
+      "quals": []
+     },
+     "documents": {
+      "rtwType": ""
+     }
+    },
+    "signature": "",
+    "consent": false,
+    "submittedAt": "",
+    "ref": "",
+    "invitedAt": "",
+    "startedAt": ""
+   },
+   "onb_EMP003": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "onb_EMP003",
+    "employeeCode": "EMP003",
+    "steps": {},
+    "docs": {},
+    "files": {},
+    "rejections": {},
+    "acks": {},
+    "read": {},
+    "data": {
+     "personal": {
+      "dob": "",
+      "gender": "",
+      "nat": "",
+      "ni": ""
+     },
+     "contact": {
+      "mob": "",
+      "alt": "",
+      "a1": "",
+      "a2": "",
+      "city": "",
+      "post": ""
+     },
+     "emergency": [
+      {
+       "nm": "",
+       "rel": "",
+       "ph": ""
+      }
+     ],
+     "additional": {
+      "conv": "",
+      "convDetail": "",
+      "wtd": "",
+      "quals": []
+     },
+     "documents": {
+      "rtwType": ""
+     }
+    },
+    "signature": "",
+    "consent": false,
+    "submittedAt": "",
+    "ref": "",
+    "invitedAt": "",
+    "startedAt": ""
+   }
+  },
+  "onboardingTemplates": {
+   "onbt-senior-consultants": {
+    "version": 1,
+    "updatedAt": "2026-08-13T14:30:00.000Z",
+    "id": "onbt-senior-consultants",
+    "name": "Senior consultants",
+    "jobProfiles": [
+     "SCONS"
+    ],
+    "steps": [
+     {
+      "id": "personal",
+      "on": true
+     },
+     {
+      "id": "contact",
+      "on": true
+     },
+     {
+      "id": "emergency",
+      "on": true
+     },
+     {
+      "id": "additional",
+      "on": false
+     },
+     {
+      "id": "documents",
+      "on": true
+     },
+     {
+      "id": "policies",
+      "on": true
+     },
+     {
+      "id": "review",
+      "on": true
+     }
+    ],
+    "documents": [
+     {
+      "id": "rtw",
+      "on": true,
+      "req": true,
+      "blocks": true
+     },
+     {
+      "id": "addr",
+      "on": true,
+      "req": true,
+      "blocks": false
+     },
+     {
+      "id": "photo",
+      "on": true,
+      "req": true,
+      "blocks": false
+     },
+     {
+      "id": "licence",
+      "on": true,
+      "req": false,
+      "blocks": false
+     },
+     {
+      "id": "cert",
+      "on": true,
+      "req": false,
+      "blocks": false
+     }
+    ],
+    "policies": [
+     "pol_conduct",
+     "pol_privacy",
+     "pol_itsec"
+    ]
+   }
+  }
+ }
+}

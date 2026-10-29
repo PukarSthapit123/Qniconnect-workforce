@@ -1,0 +1,99 @@
+/* 1c group 7: My home's month and My documents (brief D7, D12, D13). Every
+   rule is src/domain/home.ts's; this reads the store into it. A day's
+   timesheet state is the stored day's, and its bank
+   holiday is the tenant's. Both reads are the employee signed in, or the one
+   being viewed as. Nothing here writes. */
+import { store } from './store';
+import { refuse } from './http';
+import { serve } from './serve';
+import { effectiveCode, nameOf, employeeByCode, recordAt, type StoredEmployee } from './world';
+import { tenantRec, view } from './tenant';
+import { daysOf, hm, isLocked, waitingOnOf } from './timesheets';
+import { getDocument, getHome, listMyDocuments, type DocumentRow, type HomeDay } from '@/contract/home';
+import type { TimesheetDay } from '@/contract/timesheets';
+import {
+  dayGlyph, firstName, greeting, inBounds, leadingBlanks, monthBounds, monthDates, monthKey, monthLabel, monthOf, monthSummary, monthTotals,
+  outOfBoundsProblem, whoLine, type KeyDay,
+} from '@/domain/home';
+import { flagOn } from '@/domain/modules';
+import { clockFromIso, periodStart, weekDates } from '@/domain/time';
+import { dayMinutes } from '@/domain/timesheet';
+
+type StoredDay = Omit<TimesheetDay, 'minutes' | 'enteredByName' | 'waitingOn'>;
+
+const NO_EMPLOYEE = () => refuse(404, { code: 'not-found', message: 'There is no employee record behind this account.', next: 'Ask an administrator to link your account to your record.' });
+const employeeOf = (code: string): StoredEmployee => employeeByCode(code) ?? NO_EMPLOYEE();
+
+/* review M3: the role an mgrok day waits on, so its pill names it */
+const waiting = (d: StoredDay) => { const w = waitingOnOf(d); return w ? { waitingOn: w } : {}; };
+/* One employee's days, read once per request: the stored timesheet days by date. */
+function reader(p: StoredEmployee, today: string) {
+  const stored = new Map(daysOf(p.code).map(d => [d.date, d as StoredDay]));
+  const holidays = new Map(view(tenantRec()).bankHolidays.map(b => [b.date, b.name]));
+  return (date: string): HomeDay => {
+    const d = stored.get(date), minutes = d ? dayMinutes(d.entries, date) : 0;
+    /* a draft with nothing on it is not a record yet */
+    const ts = d && (d.state !== 'draft' || minutes > 0 || d.nonWorkingReason) ? { state: d.state, minutes, text: minutes ? hm(minutes) : '', ...waiting(d) } : null;
+    const future = date > today, isToday = date === today;
+    return {
+      date, ts,
+      glyph: dayGlyph({ ts: ts?.state ?? null }),
+      bankHoliday: holidays.get(date) ?? '', today: isToday, future,
+      locked: ts?.state === 'ok' || isLocked(date),
+    };
+  };
+}
+const keyDay = (d: HomeDay): KeyDay => ({
+  glyph: d.glyph, minutes: d.ts?.minutes ?? 0,
+});
+
+const documentsOn = () => { const t = tenantRec(); return flagOn(t.modules, t.flags, 'DOCS'); };
+function requireDocuments() {
+  if (!documentsOn()) refuse(403, { code: 'feature-off', message: 'Documents is switched off for this tenant.', next: 'Turn it on in Setup → Modules and features.' });
+}
+const docColl = () => store.coll<DocumentRow>('documents');
+const NO_DOCUMENT = () => refuse(404, { code: 'not-found', message: 'That document is not one of yours, or it no longer exists.', next: 'Open Documents to see the ones you have.' });
+
+export const homeHandlers = [
+  serve(getHome, ({ session, query }) => {
+    const p = employeeOf(effectiveCode(session)), t = view(tenantRec());
+    const clock = clockFromIso(store.now()), today = clock.date, bounds = monthBounds(today);
+    const month = query.month ?? monthOf(today);
+    if (!inBounds(month, bounds)) {
+      const problem = outOfBoundsProblem(bounds);
+      return refuse(422, { code: 'invalid', field: problem.field, message: problem.message, next: 'Choose a month in that range.' });
+    }
+    const dayOf = reader(p, today), days = monthDates(month).map(dayOf), keyDays = days.map(keyDay), totals = monthTotals(keyDays);
+    const week = weekDates(periodStart(today)).map(dayOf);
+    const own = daysOf(p.code) as StoredDay[];
+    const back = own.filter(d => d.state === 'back').sort((a, b) => b.date.localeCompare(a.date))[0];
+    const weekMinutes = week.reduce((n, d) => n + (d.ts?.minutes ?? 0), 0);
+    const ts = t.modules.A || t.modules.B;
+    return {
+      month, label: monthLabel(month), thisMonth: monthOf(today), bounds, today,
+      employee: { code: p.code, name: p.name, location: nameOf('locations', p.location) },
+      greeting: `${greeting(clock.time)}, ${firstName(p.name)}`,
+      who: whoLine({ job: p.jobProfile ? nameOf('jobProfiles', p.jobProfile) : '', type: p.employeeType ? nameOf('employeeTypes', p.employeeType) : '', location: nameOf('locations', p.location) }),
+      leadingBlanks: leadingBlanks(month), days, totals, summary: monthSummary(totals), key: monthKey(keyDays),
+      todayDay: dayOf(today),
+      week: { minutes: weekMinutes, text: hm(weekMinutes), contracted: p.contractedHours },
+      sentBack: back ? { date: back.date, reason: back.returnReason || 'Correct it and resubmit.' } : null,
+      can: { recordHours: Boolean(ts) && session.caps.includes('own_ts') },
+    };
+  }),
+
+  serve(listMyDocuments, ({ session }) => {
+    requireDocuments();
+    const p = employeeOf(effectiveCode(session));
+    return {
+      employee: { code: p.code, name: p.name },
+      items: Object.values(docColl()).filter(d => d.employeeCode === p.code),
+    };
+  }),
+
+  serve(getDocument, ({ session, params }) => {
+    requireDocuments();
+    const d = recordAt(docColl(), params.id);
+    return d && d.employeeCode === effectiveCode(session) ? d : NO_DOCUMENT();
+  }),
+];

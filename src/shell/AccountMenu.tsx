@@ -1,0 +1,77 @@
+import { useState } from 'react';
+import { Check, ChevronDown } from 'lucide-react';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/ui/shadcn/dropdown-menu';
+import { useViewAsEmployees } from '@/api/session';
+import { tid } from '@/testids';
+
+export interface MenuAccount { name: string; email: string; employeeCode: string; roleName: string; roleDescription: string; locationName: string }
+
+/* The prototype's initials(): the first letter of each word, two at most. */
+const initials = (name: string) => name.split(' ').map(w => w.charAt(0)).join('').slice(0, 2).toUpperCase();
+
+/* Ported from the prototype's drawMenu (qnipay-workforce-v15.html:10765-10790):
+   who you are signed in as (name, email, role, location and ID), a "Your
+   account" line, then, for a holder of perm_cfg, one employee per role to look
+   at the app as. While viewing as someone the menu names them and offers the
+   way back instead, since starting another view is refused until then.
+
+   Its look is the prototype's .menu (v15:321-337, 1553): 308px, radius 12, a
+   light border, shadow-lg, 8px in; a header block over a rule; section labels
+   at 12px/700 with .08em tracking; the role you hold filled with the brand's
+   subtle tint and a brand tick. The trigger is the avatar: a 30px accent disc
+   with your initials, then a chevron (.avbtn, .av; v15:316-320), inside a
+   44px target. It sits on the top bar, so its keyboard ring is the inverse
+   one, and a press scales the avatar pill to 0.97. The menu is held to the
+   space the viewport has left (Radix's available height), so a phone in
+   landscape scrolls the menu rather than losing its end. */
+export function AccountMenu({ account, viewingAs, canViewAs, onSignOut, onViewAs, onEndViewAs }: {
+  account: MenuAccount; viewingAs: string | null; canViewAs: boolean;
+  onSignOut(): void; onViewAs(employeeCode: string): void; onEndViewAs(): void;
+}) {
+  const [open, setOpen] = useState(false);
+  const offerViewAs = canViewAs && !viewingAs;
+  const employees = useViewAsEmployees(open && offerViewAs);
+  const sub = 'block text-xs font-normal text-text-muted';
+  const label = 'px-[11px] pt-[9px] pb-xs';
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen}>
+      <DropdownMenuTrigger data-testid={tid.shell.account} aria-label={`Account: ${account.name}`} data-surface="inverse"
+        className="group inline-flex min-h-touch shrink-0 items-center rounded-pill select-none focus-visible:shadow-none">
+        <span className="flex items-center gap-[5px] rounded-pill py-[3px] pr-sm pl-[3px] text-text-on-inverse transition-[scale] duration-(--dur-press) ease-(--ease-out) group-hover:bg-shell-hover group-focus-visible:shadow-focus group-active:scale-[0.97] group-data-[state=open]:bg-shell-hover">
+          <span aria-hidden="true" className="grid size-[30px] shrink-0 place-items-center rounded-pill bg-brand-accent text-xs font-bold text-text-on-accent">{initials(account.name)}</span>
+          <ChevronDown aria-hidden="true" className="size-[14px]" />
+        </span>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" sideOffset={0} className="w-[308px] max-h-[min(78dvh,var(--radix-dropdown-menu-content-available-height))] max-md:w-[min(340px,calc(100vw-24px))]">
+        <div data-testid={tid.shell.menuAccount} className="mb-[6px] border-b p-md">
+          <div className="text-sm font-semibold">{account.name}</div>
+          <div className="text-xs text-text-muted">{account.email}</div>
+          <div className="mt-[2px] text-xs text-text-muted">{[account.roleName, account.locationName, account.employeeCode].filter(Boolean).join(' · ')}</div>
+        </div>
+        <DropdownMenuLabel className={label}>Your account</DropdownMenuLabel>
+        <div data-testid={tid.shell.menuRole} className="flex items-center gap-[10px] rounded-sm bg-brand-subtle px-[11px] py-[9px] text-sm font-semibold">
+          <span>{account.roleName}<span className={sub}>{account.roleDescription}</span></span>
+          <Check aria-hidden="true" className="ml-auto size-4 shrink-0 stroke-[2.5] text-brand dark:text-brand-accent" />
+        </div>
+        {viewingAs && <>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className={label}>Looking at the app as {viewingAs}</DropdownMenuLabel>
+          <DropdownMenuItem data-testid={tid.shell.menuViewAsEnd} onSelect={onEndViewAs} className="min-h-touch">
+            <span>Return to my account<span className={sub}>{account.name}</span></span>
+          </DropdownMenuItem>
+        </>}
+        {offerViewAs && <>
+          <DropdownMenuSeparator />
+          <DropdownMenuLabel className={label}>Look at the app as somebody else</DropdownMenuLabel>
+          {employees.isPending && <p data-testid={tid.shell.menuViewAsLoading} className="px-[11px] py-[9px] text-xs text-text-muted">Loading employees&hellip;</p>}
+          {employees.isError && <p data-testid={tid.shell.menuViewAsError} className="px-[11px] py-[9px] text-xs text-err">The list could not be loaded. Close the menu and open it again to retry.</p>}
+          {employees.data?.map(p => (
+            <DropdownMenuItem key={p.employeeCode} data-testid={tid.shell.viewAs(p.employeeCode)} onSelect={() => onViewAs(p.employeeCode)} className="min-h-touch">
+              <span>{p.name}<span className={sub}>{[p.roleName, p.locationName, p.onboarding ? 'onboarding' : ''].filter(Boolean).join(' · ')}</span></span>
+            </DropdownMenuItem>))}
+        </>}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem data-testid={tid.shell.signOut} onSelect={onSignOut} className="min-h-touch">Sign out</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>);
+}

@@ -1,0 +1,63 @@
+import '@testing-library/jest-dom/vitest';
+import { cleanup } from '@testing-library/react';
+import { toast } from 'sonner';
+import { server } from '@/mocks/node';
+import { faults } from '@/mocks/faults';
+import { store } from '@/mocks/store';
+import { bcStore } from '@/mocks/bc/seed';
+import { queryClient } from '@/api/query';
+import { setAuth } from '@/auth';
+import { testAuth } from './api-helpers';
+import { DEFAULT_LOCALE, setActiveLocale } from '@/domain/time';
+
+/* src/ test files share workers (isolate: false in vitest.config.ts), so a
+   module loaded by one file is the same instance in the next. This file runs
+   again before every test file, so each starts from what a fresh worker gave
+   it: no handlers a previous file added with server.use(), no armed faults,
+   no signed-in account, stored session or data, the social seed on the wall clock, an empty
+   query cache. Inside a file, state carries from test to test exactly as it
+   did when every file had a worker of its own. */
+server.resetHandlers();
+faults.length = 0;
+try { localStorage.clear(); sessionStorage.clear(); } catch { /* no storage: nothing to clear */ }
+/* the auth stub, signed out (sessionStorage was cleared above) */
+setAuth(testAuth);
+store.setClock(null);
+store.reset('social');
+bcStore.reset();
+/* The locale every date and week rule reads is module state: serve() sets it
+   from the tenant on each request, and a tenant read sets it in the app. A
+   file that moved the week start to Sunday, or the date format or clock,
+   would otherwise leave it so for the next file in the worker until that
+   file's first request, and a domain test makes none (src/mocks/rota.test.ts
+   then src/domain/rota.test.ts failed three tests this way). */
+setActiveLocale(DEFAULT_LOCALE);
+queryClient.clear();
+/* and the address a fresh worker starts at: a file that renders the whole
+   App (a BrowserRouter) and follows a link would otherwise leave the next
+   file's App on that page, which may not be on the next account's nav */
+if (typeof window !== 'undefined') window.history.replaceState(null, '', '/');
+
+/* Testing Library registers its own afterEach cleanup when it is first
+   imported, which in a shared worker is once, for the first file only. */
+afterEach(() => { cleanup(); });
+/* sonner keeps its queue outside React and replays every toast still active to
+   a Toaster that mounts. A toast raised after the last test's afterEach (a
+   request still settling) would otherwise surface in the next test, or the
+   next file sharing this worker. */
+beforeEach(() => { toast.dismiss(); });
+
+/* jsdom has no pointer-capture or scrollIntoView implementation. Radix's Select
+   (and other Radix pieces built on the same primitive) call these when opening,
+   so without a shim every test that opens one throws outside jsdom's support. */
+/* A file that opts into the node environment has no Element at all. */
+if (typeof Element !== 'undefined') {
+  if (!Element.prototype.hasPointerCapture) Element.prototype.hasPointerCapture = () => false;
+  if (!Element.prototype.setPointerCapture) Element.prototype.setPointerCapture = () => {};
+  if (!Element.prototype.releasePointerCapture) Element.prototype.releasePointerCapture = () => {};
+  if (!Element.prototype.scrollIntoView) Element.prototype.scrollIntoView = () => {};
+  /* Radix Tooltip and Popper measure their content with ResizeObserver, which jsdom lacks. */
+  if (!('ResizeObserver' in globalThis)) {
+    globalThis.ResizeObserver = class { observe() {} unobserve() {} disconnect() {} };
+  }
+}

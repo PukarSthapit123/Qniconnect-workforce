@@ -38,6 +38,17 @@ test('proposing a change sends it for approval and leaves the record as it was, 
   expect(me().phone).toBe(was);
   expect(await screen.findByTestId(tid.profile.pending('phone'))).toHaveTextContent('07700 900461 awaiting approval');
 });
+test('the emergency contact reads as one name, is proposed as first and last name, and shows the whole new name awaiting approval', async () => {
+  const first = String(me().emergencyFirstName), last = String(me().emergencyLastName);
+  renderPage(<ProfilePage />);
+  expect(await screen.findByTestId(tid.profile.value('emergencyContact'))).toHaveTextContent([first, last].filter(Boolean).join(' ') || '—');
+  expect(screen.queryByTestId(tid.profile.value('emergencyFirstName'))).toBeNull();
+  await userEvent.click(screen.getByTestId(tid.profile.propose));
+  await screen.findByTestId(tid.profile.send);
+  set('emergencyLastName', 'Okonjo');
+  await userEvent.click(screen.getByTestId(tid.profile.send));
+  expect(await screen.findByTestId(tid.profile.pending('emergencyContact'))).toHaveTextContent(`${[first, 'Okonjo'].filter(Boolean).join(' ')} awaiting approval`);
+});
 test('a field already awaiting approval cannot be proposed again, and bank details say payroll checks them', async () => {
   await caller(await tokenFor('employee'))('POST', '/api/v1/profile-changes', { changes: [{ field: 'phone', to: '07700 900461' }], note: '' });
   await openPropose();

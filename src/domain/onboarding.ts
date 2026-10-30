@@ -97,7 +97,8 @@ export const isTaskState = (s: unknown): s is TaskState => typeof s === 'string'
 export const taskState = (s: unknown) => TASK_STATE[isTaskState(s) ? s : 'todo'];
 
 /* --------------------------------------------------------------- case */
-export type EmergencyContact = { nm: string; rel: string; ph: string };
+/* A contact's name is two fields, as payroll's Employee Relative holds it (First Name, Last Name, Text[30] each): nothing is split from a full name. */
+export type EmergencyContact = { fn: string; ln: string; rel: string; ph: string };
 export type Qualification = { nm: string; by: string; exp: string };
 export interface OnbData {
   personal: { dob: string; gender: string; nat: string; ni: string };
@@ -131,7 +132,8 @@ export interface OnboardingCase {
   asked?: OnbAsked;
 }
 export interface OnbAsked { steps: OnbStepId[]; documents: { id: string; req: boolean; blocks: boolean }[] }
-export const emptyContact = (): EmergencyContact => ({ nm: '', rel: '', ph: '' });
+export const emptyContact = (): EmergencyContact => ({ fn: '', ln: '', rel: '', ph: '' });
+export const contactName = (c: Pick<EmergencyContact, 'fn' | 'ln'>) => [c.fn, c.ln].map(s => s.trim()).filter(Boolean).join(' ');
 export const emptyData = (): OnbData => ({
   personal: { dob: '', gender: '', nat: '', ni: '' },
   contact: { mob: '', alt: '', a1: '', a2: '', city: '', post: '' },
@@ -191,8 +193,10 @@ export const CONTACT_FIELDS: readonly OnbField[] = [
   { key: 'post', label: 'Postcode', type: 'text', req: true, uppercase: true, maxlength: POSTCODE_MAX, autocomplete: 'postal-code' },
 ];
 /* Only the first contact is required. */
+export const CONTACT_NAME_MAX = 30;
 export const EMERGENCY_FIELDS: readonly OnbField[] = [
-  { key: 'nm', label: 'Name', type: 'text' },
+  { key: 'fn', label: 'First name', type: 'text', maxlength: CONTACT_NAME_MAX },
+  { key: 'ln', label: 'Last name', type: 'text', maxlength: CONTACT_NAME_MAX },
   { key: 'rel', label: 'Relationship', type: 'select', options: RELATIONSHIPS, blank: true },
   { key: 'ph', label: 'Phone', type: 'tel' },
 ];
@@ -238,6 +242,7 @@ export const STEP_MESSAGES = {
   city: 'A town or city is required.',
   post: 'A postcode is required.',
   emergencyName: 'At least one emergency contact is required.',
+  emergencyLastName: 'The emergency contact needs a last name.',
   emergencyPhone: 'The emergency contact needs a phone number.',
   conv: 'Answer the convictions question.',
   convDetail: 'Give details of the conviction.',
@@ -325,7 +330,8 @@ export function stepProblem(id: OnbStepId, c: OnboardingCase, ctx: StepContext):
         ?? need(d.contact.city, 'city', STEP_MESSAGES.city) ?? need(d.contact.post, 'post', STEP_MESSAGES.post);
     case 'emergency': {
       const first = d.emergency[0] ?? emptyContact();
-      return need(first.nm, 'emergency.0.nm', STEP_MESSAGES.emergencyName) ?? need(first.ph, 'emergency.0.ph', STEP_MESSAGES.emergencyPhone);
+      return need(first.fn, 'emergency.0.fn', STEP_MESSAGES.emergencyName) ?? need(first.ln, 'emergency.0.ln', STEP_MESSAGES.emergencyLastName)
+        ?? need(first.ph, 'emergency.0.ph', STEP_MESSAGES.emergencyPhone);
     }
     case 'additional': {
       const a = d.additional;

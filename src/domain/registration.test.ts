@@ -1,19 +1,20 @@
 /* Registration's rules (docs/superpowers/inventory/public.md, REG), as pure
-   functions: the form's start, each step's gate, the plan prices and totals,
+   functions: the form's start, each step's gate, the prices and totals,
    the exact payload REG.C1 sends, and the message a refusal shows. */
-import { INITIAL_REGISTRATION, isStepValid, planLine, pricing, registrationErrorMessage, registrationPayload, stepTotal, planName,
+import { INITIAL_REGISTRATION, isStepValid, planLine, registrationErrorMessage, registrationPayload, stepTotal,
   REGISTRATION_DEFAULT_ERROR, type RegistrationForm } from './registration';
+import { ADD_ONS, BASE_PRICE, addOnPrice, gbp, monthlyPrice } from './pricing';
 
 const filled = (over: Partial<RegistrationForm> = {}): RegistrationForm => ({
   ...INITIAL_REGISTRATION, companyName: 'Acme Ltd', companyEmail: 'info@acme.test', companyWebsite: 'https://acme.test', companyPhone: '+44 20 1',
   industry: 'Retail', tenantId: 't-1', domainName: 'acme.onmicrosoft.com', bcEnvironment: 'Production', bcCompanyName: 'CRONUS UK Ltd.',
   numberOfEmployees: '25', contactName: 'Jo Smith', contactEmail: 'jo@acme.test', contactPhone: '+44 7', agreeTerms: true, agreeDataProcessing: true, ...over });
 
-test('REG.R1: the form starts empty, unticked, on Essential billed annually', () => {
+test('REG.R1: the form starts empty, unticked, billed annually', () => {
   expect(INITIAL_REGISTRATION).toEqual({
     companyName: '', companyEmail: '', companyWebsite: '', companyPhone: '', industry: '',
     tenantId: '', domainName: '', bcEnvironment: '', bcCompanyName: '', numberOfEmployees: '',
-    selectedPlan: 'essential', paymentFrequency: 'annual',
+    paymentFrequency: 'annual',
     contactName: '', contactEmail: '', contactPhone: '', agreeTerms: false, agreeDataProcessing: false,
   });
 });
@@ -42,41 +43,26 @@ test('REG.R7: no trimming and no format check: spaces, "0" and "-5" pass, and a 
   expect(isStepValid(2, { ...filled(), numberOfEmployees: '-5' })).toBe(true);
 });
 
-test('REG.R11: annual is 20% off, as two-decimal text; monthly is the plain price', () => {
-  expect(pricing('basic', 'annual')).toEqual({ monthlyPrice: '0.40', annualPrice: '4.80' });
-  expect(pricing('essential', 'annual')).toEqual({ monthlyPrice: '4.00', annualPrice: '48.00' });
-  expect(pricing('premium', 'annual')).toEqual({ monthlyPrice: '5.60', annualPrice: '67.20' });
-  expect(pricing('basic', 'monthly')).toEqual({ monthlyPrice: 0.5, annualPrice: '6.00' });
-  expect(pricing('essential', 'monthly')).toEqual({ monthlyPrice: 5, annualPrice: '60.00' });
-  expect(pricing('premium', 'monthly')).toEqual({ monthlyPrice: 7, annualPrice: '84.00' });
+test('REG.R11 (Ruling Q23): one base price, £0.50 per employee a month, 20% off billed annually; add-ons are priced separately and not set yet', () => {
+  expect(BASE_PRICE).toBe(0.5);
+  expect(gbp(monthlyPrice('monthly'))).toBe('£0.50');
+  expect(gbp(monthlyPrice('annual'))).toBe('£0.40');
+  expect(ADD_ONS.map(o => [o.code, o.name, addOnPrice(o)])).toEqual([['TS', 'Timesheet', 'Price to be confirmed'], ['ON', 'Onboarding', 'Price to be confirmed']]);
+  expect(addOnPrice({ code: 'TS', name: 'Timesheet', summary: '', price: 1.25 })).toBe('£1.25 per employee/month');
 });
 
-test('REG.R12: the step 3 total is the yearly price times employees when annual, the monthly price times employees when monthly', () => {
-  const ten = (selectedPlan: RegistrationForm['selectedPlan'], paymentFrequency: RegistrationForm['paymentFrequency']) =>
-    stepTotal({ ...INITIAL_REGISTRATION, selectedPlan, paymentFrequency, numberOfEmployees: '10' });
-  expect(ten('essential', 'annual')).toBe('480.00');
-  expect(ten('basic', 'annual')).toBe('48.00');
-  expect(ten('premium', 'annual')).toBe('672.00');
-  expect(ten('essential', 'monthly')).toBe('50.00');
-  expect(ten('basic', 'monthly')).toBe('5.00');
-  expect(ten('premium', 'monthly')).toBe('70.00');
+test('REG.R12: the step 3 total is the base for a year times employees when annual, for a month when monthly', () => {
+  const ten = (paymentFrequency: RegistrationForm['paymentFrequency']) =>
+    stepTotal({ ...INITIAL_REGISTRATION, paymentFrequency, numberOfEmployees: '10' });
+  expect(ten('annual')).toBe('£48.00');
+  expect(ten('monthly')).toBe('£5.00');
   /* no employees yet counts as none */
-  expect(stepTotal(INITIAL_REGISTRATION)).toBe('0.00');
+  expect(stepTotal(INITIAL_REGISTRATION)).toBe('£0.00');
 });
 
-test('REG.R13: the step 4 plan line uses the monthly price as it is', () => {
-  const line = (selectedPlan: RegistrationForm['selectedPlan'], paymentFrequency: RegistrationForm['paymentFrequency']) =>
-    planLine({ ...INITIAL_REGISTRATION, selectedPlan, paymentFrequency });
-  expect(line('essential', 'annual')).toBe('Essential · £4.00/user/mo');
-  expect(line('basic', 'annual')).toBe('Basic · £0.40/user/mo');
-  expect(line('premium', 'annual')).toBe('Premium · £5.60/user/mo');
-  expect(line('basic', 'monthly')).toBe('Basic · £0.5/user/mo');
-  expect(line('essential', 'monthly')).toBe('Essential · £5/user/mo');
-  expect(line('premium', 'monthly')).toBe('Premium · £7/user/mo');
-});
-
-test('REG.R14: a plan is named by its key with the first letter upper-cased', () => {
-  expect(['basic', 'essential', 'premium'].map(p => planName(p as RegistrationForm['selectedPlan']))).toEqual(['Basic', 'Essential', 'Premium']);
+test('REG.R13: the step 4 plan line is the base price for the billing chosen, in pence to two places (Ruling Q22)', () => {
+  expect(planLine({ ...INITIAL_REGISTRATION, paymentFrequency: 'annual' })).toBe('QniConnect · £0.40/user/mo');
+  expect(planLine({ ...INITIAL_REGISTRATION, paymentFrequency: 'monthly' })).toBe('QniConnect · £0.50/user/mo');
 });
 
 test('REG.R17: the payload has exactly these keys and values', () => {
@@ -102,9 +88,9 @@ test('REG.R17: no contact email falls back to the company email; employees parse
   expect(registrationPayload(filled({ industry: '' })).industry).toBe('');
 });
 
-test('REG.R18: website, phones, domain, plan, billing and the two agreements are never sent', () => {
+test('REG.R18: website, phones, domain, billing and the two agreements are never sent', () => {
   const sent = JSON.stringify(registrationPayload(filled({ companyWebsite: 'https://w.example', companyPhone: 'P1', contactPhone: 'P2', domainName: 'dn.example' })));
-  for (const v of ['w.example', 'P1', 'P2', 'dn.example', 'essential', 'annual', 'agree', 'selectedPlan', 'paymentFrequency', 'companyEmail', 'info@acme.test'])
+  for (const v of ['w.example', 'P1', 'P2', 'dn.example', 'annual', 'agree', 'paymentFrequency', 'companyEmail', 'info@acme.test'])
     expect(sent, v).not.toContain(v);
 });
 

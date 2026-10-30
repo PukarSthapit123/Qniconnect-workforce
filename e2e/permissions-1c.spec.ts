@@ -27,10 +27,10 @@ test('a manager is refused every 1c setup write, each naming the capability it n
     ['mod_cfg', 'PATCH', '/api/v1/tenant/flags/DOCS', { on: false }, v],
     ['master_data', 'PATCH', '/api/v1/tenant/settings', { fullTimeWeeklyHours: 40 }, v],
     ['master_data', 'PATCH', '/api/v1/tenant/settings', { company: { country: 'Ireland' } }, v],
-    ['mod_cfg', 'POST', '/api/v1/templates', { name: 'Mine', description: '', scope: 'config' }, null],
-    ['mod_cfg', 'POST', '/api/v1/templates/mne/apply', undefined, v],
-    ['mod_cfg', 'POST', '/api/v1/templates/import', { text: '{}' }, null],
-    ['mod_cfg', 'DELETE', '/api/v1/templates/mne', undefined, 0],
+    ['mod_cfg', 'POST', '/api/v1/setup-presets', { name: 'Mine', description: '', scope: 'config' }, null],
+    ['mod_cfg', 'POST', '/api/v1/setup-presets/mne/apply', undefined, v],
+    ['mod_cfg', 'POST', '/api/v1/setup-presets/import', { text: '{}' }, null],
+    ['mod_cfg', 'DELETE', '/api/v1/setup-presets/mne', undefined, 0],
     ['framework', 'PATCH', '/api/v1/notifications/matrix', { events: { ts_approved: { employee: 'Off' } } }, 0],
     ['framework', 'PUT', '/api/v1/approvals/chains/Profile', { steps: [] }, 0],
     ['framework', 'POST', '/api/v1/approvals/delegations', { who: 'CP-1001', to: 'CP-1002', from: '2026-09-01', until: '2026-09-07', modules: ['Timesheet'] }, null],
@@ -54,12 +54,12 @@ test('a template with structure needs Master data as well as module configuratio
   const label = await labels(page);
 
   await signInEmail(page, RACHEL);
-  const structure = await api.send('POST', '/api/v1/templates', { name: 'With structure', description: '', scope: 'structure' });
+  const structure = await api.send('POST', '/api/v1/setup-presets', { name: 'With structure', description: '', scope: 'structure' });
   expect(said(structure)).toEqual([403, 'capability', needs(label.master_data ?? 'master_data')]);
-  expect(await auditRows(page, 'template')).toEqual([]);
-  const config = await api.send('POST', '/api/v1/templates', { name: 'Configuration only', description: '', scope: 'config' });
+  expect(await auditRows(page, 'setupPreset')).toEqual([]);
+  const config = await api.send('POST', '/api/v1/setup-presets', { name: 'Configuration only', description: '', scope: 'config' });
   expect(config.status).toBe(200);
-  expect((await auditRows(page, 'template')).map(a => [a.act, a.entityId])).toEqual([['Template saved', 'tpl_configuration_only']]);
+  expect((await auditRows(page, 'setupPreset')).map(a => [a.act, a.entityId])).toEqual([['Setup preset saved', 'tpl_configuration_only']]);
 });
 
 test('a stale version is refused on a module switch, a chain save and a role rename, and nothing is written', async ({ page, api }) => {

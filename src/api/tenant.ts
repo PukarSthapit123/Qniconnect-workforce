@@ -29,8 +29,8 @@ export const useTenant = () => useQuery({ queryKey: tenantKeys.all, queryFn: asy
 /* All three writes change the same record, so they share one pending key. */
 const TENANT_KEY = () => 'tenant';
 /* A module switch can hide or bring back any module's data: Sites off
-   changes employee types and Timesheet reads refuse while off. Everything those screens read is read again. */
-const MODULE_READS = [tenantKeys.all, timesheetKeys.all, timesheetKeys.config, onboardingKeys.all, ['employee-types'], notificationKeys.all] as const;
+   changes work patterns and Timesheet reads refuse while off. Everything those screens read is read again. */
+const MODULE_READS = [tenantKeys.all, timesheetKeys.all, timesheetKeys.config, onboardingKeys.all, ['work-patterns'], notificationKeys.all] as const;
 
 export function useSetModule() {
   return useRecordMutation<{ code: string; on: boolean; ifMatch: number }, ModuleSwitched>({

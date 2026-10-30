@@ -33,7 +33,7 @@ export function ProfilePage() {
   const data = profile.data, p = data?.employee;
   return (
     <Page testId={tid.page('profile')}>
-      <PageHead title="My profile" crumb="My work · Profile" actions={<GuideButton view="profile" />} />
+      <PageHead title="Profile" actions={<GuideButton view="profile" />} />
       {profile.isPending && <p role="status" className="text-text-secondary">Loading your profile&hellip;</p>}
       {profile.isError && <p data-testid={tid.profile.error} role="alert" className="text-err">Your profile could not be loaded. Reload the page to try again.</p>}
       {data && p && <Card>
@@ -46,6 +46,18 @@ export function ProfilePage() {
           Self-service changes are switched off for your organisation. Ask HR to change these details.</p>}
         {data.fields.map(f => {
           const c = data.pending.find(x => x.field === f.key);
+          /* The emergency contact's name is two fields, as payroll holds it (and as Propose a change asks for it), but one row to read */
+          if (f.key === 'emergencyLastName') return null;
+          if (f.key === 'emergencyFirstName') {
+            const first = data.pending.find(x => x.field === 'emergencyFirstName'), last = data.pending.find(x => x.field === 'emergencyLastName');
+            const name = (a: string, b: string) => [a, b].filter(Boolean).join(' ');
+            return (
+              <Fact key="emergencyContact" label="Emergency contact" testId={tid.profile.value('emergencyContact')}>
+                <span className="block">{name(p.emergencyFirstName, p.emergencyLastName) || '—'}</span>
+                {(first || last) && <span data-testid={tid.profile.pending('emergencyContact')} className="block text-xs font-normal text-warn">
+                  {name(first?.to ?? p.emergencyFirstName, last?.to ?? p.emergencyLastName)} awaiting approval</span>}
+              </Fact>);
+          }
           return (
             <Fact key={f.key} label={f.label} testId={tid.profile.value(f.key)}>
               <span className="block">{p[f.key] || '—'}</span>
@@ -61,21 +73,21 @@ export function ProfilePage() {
         <SectionHead title="Workforce record" />
         <div className="grid grid-cols-2 gap-x-md max-md:grid-cols-1">
           <Card>
-            <CardHead title={<span className="flex items-center gap-md"><Avatar name={p.name} large />
-              <span><span className="block">{p.name}</span><Small className="font-normal">{names.job(p.jobProfile)} · {names.location(p.location)}</Small></span></span>}
+            <CardHead level={3} title={<span className="flex items-center gap-md"><Avatar name={p.name} large />
+              <span><span className="block">{p.name}</span><Small className="font-normal">{names.job(p.position)} · {names.location(p.location)}</Small></span></span>}
               actions={<><NotConnected testId={tid.profile.notConnected('record')} /><StatePill testId={tid.profile.state} state={p.state} /></>} />
             <Fact label="Employee ID" testId={tid.profile.fact('code')}><span className="tabular-nums">{p.code}</span></Fact>
             <Fact label="Email" testId={tid.profile.fact('email')}><span className="text-xs font-normal text-text-secondary">{p.email || '—'}</span></Fact>
-            <Fact label="Employee type" testId={tid.profile.fact('employeeType')}>{names.type(p.employeeType)}</Fact>
-            <Fact label="Job profile" testId={tid.profile.fact('jobProfile')}>{names.job(p.jobProfile)}</Fact>
+            <Fact label="Work pattern" testId={tid.profile.fact('workPattern')}>{names.type(p.workPattern)}</Fact>
+            <Fact label="Position" testId={tid.profile.fact('position')}>{names.job(p.position)}</Fact>
             <Fact label="Department" testId={tid.profile.fact('department')}>{names.department(p.department)}</Fact>
-            <Fact label="Location" testId={tid.profile.fact('location')}>{names.location(p.location)}</Fact>
+            <Fact label="Site" testId={tid.profile.fact('location')}>{names.location(p.location)}</Fact>
             <Fact label="Reporting manager" testId={tid.profile.fact('manager')}>{p.manager || '—'}</Fact>
           </Card>
           <Card>
-            <CardHead title={<>Employment and contract<Tip testId={tid.profile.managedTip} text="Set by HR. You cannot change these here. Ask your administrator." /></>} />
-            <Fact label="Worker category" testId={tid.profile.fact('category')}>{p.category}</Fact>
-            <Fact label="Contracted hours" testId={tid.profile.fact('contractedHours')}>{perWeek(p.contractedHours, `${p.category} · no contracted hours`)}</Fact>
+            <CardHead level={3} title={<>Employment and contract<Tip testId={tid.profile.managedTip} text="Set by HR. You cannot change these here. Ask your administrator." /></>} />
+            <Fact label="Employment type" testId={tid.profile.fact('employmentType')}>{p.employmentType}</Fact>
+            <Fact label="Contracted hours" testId={tid.profile.fact('contractedHours')}>{perWeek(p.contractedHours, `${p.employmentType} · no contracted hours`)}</Fact>
             <Fact label="Maximum hours" testId={tid.profile.fact('maxHours')}>{perWeek(p.maxHours, 'No maximum set')}</Fact>
             <Fact label="Employment start" testId={tid.profile.fact('start')}>{formatDate(p.start)}</Fact>
             {p.end && <Fact label="Employment end" testId={tid.profile.fact('end')}>{formatDate(p.end)}</Fact>}
@@ -166,7 +178,7 @@ const EMPTY: ProfileView = {
 function Section({ k, icon, title, children }: { k: string; icon: ReactNode; title: string; children: ReactNode }) {
   return (
     <Card testId={tid.profile.bcSection(k)}>
-      <CardHead title={<h3 className="flex items-center gap-sm text-sm font-semibold"><span aria-hidden="true" className="text-brand dark:text-brand-accent [&>svg]:size-4">{icon}</span>{title}</h3>} />
+      <CardHead level={3} title={<span className="flex items-center gap-sm"><span aria-hidden="true" className="text-brand dark:text-brand-accent [&>svg]:size-4">{icon}</span>{title}</span>} />
       {children}
     </Card>);
 }

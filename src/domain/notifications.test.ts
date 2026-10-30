@@ -84,7 +84,7 @@ describe('delivery (Review Focus 4)', () => {
 
 describe('deep links (NOTIF_TARGETS, notifReachable)', () => {
   const nav = (...caps: string[]) => buildNav({ caps: new Set(caps), modules: ALL, flags: FLAGS, onboarding: false, portalAdmin: false });
-  test('each area opens its page for each user type; an unknown area opens the Workforce one', () => {
+  test('each area opens its page for each access role; an unknown area opens the Workforce one', () => {
     expect(['Timesheet', 'DBS', 'Workforce'].map(a => targetView(a, 'manager'))).toEqual(['tteam', 'temployees', 'temployees']);
     expect(['Timesheet', 'DBS', 'Workforce'].map(a => targetView(a, 'employee'))).toEqual(['ts', 'profile', 'home']);
     expect(['Timesheet', 'DBS', 'Workforce'].map(a => targetView(a, 'admin'))).toEqual(['tteam', 'aemployees', 'asetup']);

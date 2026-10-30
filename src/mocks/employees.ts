@@ -8,7 +8,7 @@ import {
   listEmployees, getNextCode, getEmployee, createEmployee, updateEmployee, listHistory, type HistoryEntry,
 } from '@/contract/employees';
 import { nextEmployeeCode, normaliseCode, type Problem } from '@/domain/codes';
-import { newEmployeeProblem, employeeEditProblem } from '@/domain/employees';
+import { displayName, newEmployeeProblem, employeeEditProblem } from '@/domain/employees';
 import { diffFields } from '@/domain/history';
 import { isHere } from '@/domain/lifecycle';
 import { resolveCapabilities } from '@/domain/capabilities';
@@ -17,8 +17,9 @@ import {
   writeHistory, type Signed, type StoredAccount, type StoredEmployee,
 } from './world';
 
-export const EDITABLE = ['name', 'email', 'phone', 'jobProfile', 'employeeType', 'category', 'location', 'department',
-  'manager', 'contractedHours', 'maxHours', 'night', 'resource', 'cis', 'start'] as const;
+export const EDITABLE = ['firstName', 'middleName', 'lastName', 'knownAs', 'email', 'phone', 'position', 'workPattern', 'employmentType',
+  'location', 'department', 'grade', 'level', 'manager', 'contractedHours', 'maxHours', 'night', 'resource', 'cis', 'start'] as const;
+const NAME_FIELDS = ['firstName', 'middleName', 'lastName', 'knownAs'] as const;
 export const invalid = (p: Problem): never =>
   refuse(422, { code: 'invalid', field: p.field, message: p.message, next: 'Correct the highlighted field and try again.' });
 
@@ -44,12 +45,12 @@ function addAccount(email: string, employeeCode: string, userType: StoredAccount
    user type, and no change may leave the tenant without a perm_cfg holder. */
 function userTypeChangeProblem(s: Signed, acc: StoredAccount, to: StoredAccount['userType']) {
   if (acc.email.toLowerCase() === s.account.email.toLowerCase())
-    refuse(409, { code: 'locked', message: 'You cannot change your own user type.', next: 'Ask another administrator to make this change.' });
+    refuse(409, { code: 'locked', message: 'You cannot change your own access role.', next: 'Ask another administrator to make this change.' });
   const types = store.coll<{ capabilities: string[] }>('userTypes');
   const holds = (a: StoredAccount) => resolveCapabilities(types[a.userType]?.capabilities ?? [], a.grants, a.revocations).includes('perm_cfg');
   const after = Object.values(accounts()).map(a => (a.id === acc.id ? { ...a, userType: to } : a));
   if (!after.some(holds))
-    refuse(409, { code: 'locked', message: 'That change would leave nobody able to configure permissions.', next: 'Give another account the administrator user type first.' });
+    refuse(409, { code: 'locked', message: 'That change would leave nobody able to configure permissions.', next: 'Give another account the administrator access role first.' });
 }
 
 export const employeesHandlers = [
@@ -62,8 +63,8 @@ export const employeesHandlers = [
     return Object.values(employees())
       .filter(p => sc.all || p.location === sc.location)
       .filter(p => state === 'all' || (state === 'here' ? isHere(p.state) : p.state === state))
-      /* name, employee ID or job profile, as the prototype's admEmployees search (v15:6066) */
-      .filter(p => !q || [p.name, p.code, p.jobProfile ? nameOf('jobProfiles', p.jobProfile) : ''].some(s => s.toLowerCase().includes(q)))
+      /* name, employee ID or position, as the prototype's admEmployees search (v15:6066) */
+      .filter(p => !q || [p.name, p.code, p.position ? nameOf('positions', p.position) : ''].some(s => s.toLowerCase().includes(q)))
       .sort((a, b) => a.name.localeCompare(b.name))
       .map(employeeView);
   }),
@@ -79,13 +80,15 @@ export const employeesHandlers = [
       .sort((a, b) => b.at.localeCompare(a.at) || b.id.localeCompare(a.id));
   }),
   serve(createEmployee, ({ session, body }) => {
-    const d = { ...body, code: normaliseCode(body.code), email: body.email.trim().toLowerCase(), resource: body.resource.trim().toUpperCase(), name: body.name.trim() };
+    const named = { firstName: body.firstName.trim(), middleName: body.middleName.trim(), lastName: body.lastName.trim(), knownAs: body.knownAs.trim() };
+    const d = { ...body, ...named, name: displayName(named), code: normaliseCode(body.code), email: body.email.trim().toLowerCase(),
+      resource: body.resource.trim().toUpperCase() };
     const problem = newEmployeeProblem(d, employeeContext());
     if (problem) return invalid(problem);
     if (d.userType !== 'employee') requireUserTypeRight(session);
     requireScope(session, d.location);
     const { userType, ...fields } = d;
-    const rec: StoredEmployee = { ...fields, id: `emp_${d.code}`, version: 1, updatedAt: store.now(), address: '', emergencyName: '',
+    const rec: StoredEmployee = { ...fields, id: `emp_${d.code}`, version: 1, updatedAt: store.now(), address: '', emergencyFirstName: '', emergencyLastName: '',
       emergencyPhone: '', bankAccount: '', bankSortCode: '', end: '' };
     employees()[rec.id] = rec;
     if (d.email) addAccount(d.email, d.code, userType);
@@ -94,7 +97,7 @@ export const employeesHandlers = [
     const who = actor(session);
     writeHistory(d.code, who, 'created', [{ field: 'state', from: '', to: d.state }], 'Record created');
     const auditId = writeAudit({ who, act: 'Employee created', entity: 'employee', entityId: d.code, before: null,
-      after: { code: d.code, name: d.name, employeeType: d.employeeType, location: d.location, contractedHours: d.contractedHours,
+      after: { code: d.code, name: d.name, workPattern: d.workPattern, location: d.location, contractedHours: d.contractedHours,
         state: d.state, account: d.email || null, userType: d.email ? userType : null, ...(onboardingCase ? { onboardingCase } : {}) } });
     return { record: employeeView(rec), auditId };
   }),
@@ -106,7 +109,7 @@ export const employeesHandlers = [
     const { userType, ...patch } = body;
     if (patch.email !== undefined) patch.email = patch.email.trim().toLowerCase();
     if (patch.resource !== undefined) patch.resource = patch.resource.trim().toUpperCase();
-    if (patch.name !== undefined) patch.name = patch.name.trim();
+    for (const k of NAME_FIELDS) { const v = patch[k]; if (v !== undefined) patch[k] = v.trim(); }
     const problem = employeeEditProblem(p, patch, employeeContext());
     if (problem) return invalid(problem);
     if (patch.location !== undefined) requireScope(session, patch.location);
@@ -127,7 +130,8 @@ export const employeesHandlers = [
     const changes = diffFields(p, next, EDITABLE);
     if (typeChange && acc) changes.push({ field: 'userType', from: acc.userType, to: typeChange });
     if (!changes.length) return { record: employeeView(p), auditId: null, changed: [] };
-    const saved = bump(p, patch);
+    /* the name as shown follows its parts */
+    const saved = bump(p, NAME_FIELDS.some(k => patch[k] !== undefined) ? { ...patch, name: displayName(next) } : patch);
     employees()[p.id] = saved;
     /* D8: the account follows the work email; a session open under the old
        address follows it too (sessions are keyed by address), so it keeps

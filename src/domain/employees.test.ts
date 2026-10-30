@@ -1,4 +1,4 @@
-import { newEmployeeProblem, employeeEditProblem, type EmployeeContext, type EmployeeDraft } from './employees';
+import { displayName, newEmployeeProblem, employeeEditProblem, type EmployeeContext, type EmployeeDraft } from './employees';
 
 const ctx: EmployeeContext = {
   employees: [
@@ -6,16 +6,25 @@ const ctx: EmployeeContext = {
     { code: 'EMP014', name: 'Manish Nepal', email: 'manish.nepal@dogmagroup.co.uk' },
     { code: 'EMP015', name: 'Prashesh', email: 'manish.nepal@dogmagroup.co.uk' },
   ],
-  locations: ['WH', 'BC'], departments: ['CARE'], jobProfiles: ['SW'], employeeTypes: ['shift', 'casual'],
+  locations: ['WH', 'BC'], departments: ['CARE'], positions: ['SW'], workPatterns: ['shift', 'casual'],
+  grades: ['SW'], levels: ['P1'],
 };
 const draft = (over: Partial<EmployeeDraft> = {}): EmployeeDraft => ({
-  code: 'CP-9001', name: 'Test Employee', email: 'test.employee@brightpath.org', contractedHours: 30, maxHours: 45,
-  location: 'WH', employeeType: 'shift', department: 'CARE', jobProfile: 'SW', ...over });
+  code: 'CP-9001', firstName: 'Test', middleName: '', lastName: 'Employee', knownAs: '', email: 'test.employee@brightpath.org', contractedHours: 30, maxHours: 45,
+  location: 'WH', workPattern: 'shift', department: 'CARE', position: 'SW', grade: '', level: '', ...over });
 
 describe('newEmployeeProblem, in the prototype\'s order', () => {
   test('a valid draft passes', () => { expect(newEmployeeProblem(draft(), ctx)).toBeNull(); });
-  test('a name is required', () => {
-    expect(newEmployeeProblem(draft({ name: '  ' }), ctx)).toEqual({ field: 'name', message: 'A full name is required.' });
+  test('a first and a last name are required, each as payroll holds it', () => {
+    expect(newEmployeeProblem(draft({ firstName: '  ' }), ctx)).toEqual({ field: 'firstName', message: 'A first name is required.' });
+    expect(newEmployeeProblem(draft({ lastName: '' }), ctx)).toEqual({ field: 'lastName', message: 'A last name is required. Payroll reports it to HMRC.' });
+    expect(newEmployeeProblem(draft({ middleName: 'x'.repeat(31) }), ctx)?.field).toBe('middleName');
+    expect(newEmployeeProblem(draft({ knownAs: 'x'.repeat(30) }), ctx)).toBeNull();
+  });
+  test("a grade or level must be one of payroll's", () => {
+    expect(newEmployeeProblem(draft({ grade: 'SW', level: 'P1' }), ctx)).toBeNull();
+    expect(newEmployeeProblem(draft({ grade: 'ZZ' }), ctx)).toEqual({ field: 'grade', message: 'There is no pay grade with the code ZZ.' });
+    expect(newEmployeeProblem(draft({ level: 'ZZ' }), ctx)?.field).toBe('level');
   });
   test('CR The employee ID format is checked, with an example from this roster', () => {
     expect(newEmployeeProblem(draft({ code: 'no spaces' }), ctx)?.message).toMatch(/employee ID is letters.*like CP-1042/);
@@ -43,16 +52,16 @@ describe('newEmployeeProblem, in the prototype\'s order', () => {
   test('a zero maximum is "no maximum", as in the prototype', () => {
     expect(newEmployeeProblem(draft({ contractedHours: 30, maxHours: 0 }), ctx)).toBeNull();
   });
-  test('a location and an employee type are required and must exist', () => {
-    expect(newEmployeeProblem(draft({ location: '' }), ctx)).toEqual({ field: 'location', message: 'A location is required.' });
-    expect(newEmployeeProblem(draft({ location: 'ZZ' }), ctx)).toEqual({ field: 'location', message: 'There is no location with the code ZZ.' });
-    expect(newEmployeeProblem(draft({ employeeType: '' }), ctx)).toEqual({ field: 'employeeType', message: 'An employee type is required.' });
-    expect(newEmployeeProblem(draft({ employeeType: 'robot' }), ctx)?.field).toBe('employeeType');
+  test('a site and a work pattern are required and must exist', () => {
+    expect(newEmployeeProblem(draft({ location: '' }), ctx)).toEqual({ field: 'location', message: 'A site is required.' });
+    expect(newEmployeeProblem(draft({ location: 'ZZ' }), ctx)).toEqual({ field: 'location', message: 'There is no site with the code ZZ.' });
+    expect(newEmployeeProblem(draft({ workPattern: '' }), ctx)).toEqual({ field: 'workPattern', message: 'A work pattern is required.' });
+    expect(newEmployeeProblem(draft({ workPattern: 'robot' }), ctx)?.field).toBe('workPattern');
   });
-  test('an optional department or job profile must exist when given', () => {
+  test('an optional department or position must exist when given', () => {
     expect(newEmployeeProblem(draft({ department: '' }), ctx)).toBeNull();
     expect(newEmployeeProblem(draft({ department: 'OPS' }), ctx)).toEqual({ field: 'department', message: 'There is no department with the code OPS.' });
-    expect(newEmployeeProblem(draft({ jobProfile: 'XX' }), ctx)?.field).toBe('jobProfile');
+    expect(newEmployeeProblem(draft({ position: 'XX' }), ctx)?.field).toBe('position');
   });
 });
 
@@ -73,7 +82,10 @@ describe('the line manager', () => {
 });
 
 describe('employeeEditProblem', () => {
-  const emp015: EmployeeDraft = draft({ code: 'EMP015', name: 'Prashesh', email: 'manish.nepal@dogmagroup.co.uk', contractedHours: 40, maxHours: 48 });
+  test('a record from Business Central with no last name stays editable without one', () => {
+    expect(employeeEditProblem(draft({ lastName: '' }), { lastName: '', contractedHours: 20 }, ctx)).toBeNull();
+  });
+  const emp015: EmployeeDraft = draft({ code: 'EMP015', firstName: 'Prashesh', lastName: '', email: 'manish.nepal@dogmagroup.co.uk', contractedHours: 40, maxHours: 48 });
   test('editing hours on a record whose seed email is shared does not trip the email rule', () => {
     expect(employeeEditProblem(emp015, { contractedHours: 30 }, ctx)).toBeNull();
   });
@@ -91,9 +103,22 @@ describe('employeeEditProblem', () => {
   test('the hours rule reads the merged record', () => {
     expect(employeeEditProblem(draft({ contractedHours: 30, maxHours: 45 }), { maxHours: 20 }, ctx)?.message).toBe('Contracted hours cannot exceed the maximum.');
   });
-  test('a name cannot be blanked, and a location cannot be removed', () => {
-    expect(employeeEditProblem(draft(), { name: '' }, ctx)?.field).toBe('name');
+  test('a name cannot be blanked, and a site cannot be removed', () => {
+    expect(employeeEditProblem(draft(), { firstName: '' }, ctx)?.field).toBe('firstName');
+    expect(employeeEditProblem(draft(), { lastName: ' ' }, ctx)?.field).toBe('lastName');
     expect(employeeEditProblem(draft(), { location: '' }, ctx)?.field).toBe('location');
     expect(employeeEditProblem(draft(), { location: 'ZZ' }, ctx)?.field).toBe('location');
+  });
+});
+
+describe('displayName', () => {
+  const n = (firstName: string, middleName: string, lastName: string, knownAs = '') => displayName({ firstName, middleName, lastName, knownAs });
+  test('every part in order, so nothing is guessed or dropped', () => {
+    expect(n('Ankit', 'Krishna', 'Shrestha')).toBe('Ankit Krishna Shrestha');
+    expect(n('Ana', '', 'de la Cruz')).toBe('Ana de la Cruz');
+    expect(n('Prashesh', '', '')).toBe('Prashesh');
+  });
+  test('a known-as name stands in for the first and middle names', () => {
+    expect(n('Margaret', 'Anne', 'Hull', 'Peggy')).toBe('Peggy Hull');
   });
 });

@@ -1,42 +1,42 @@
-/* The employee type record: what somebody is. Which timesheet fields a type
+/* The work pattern record: what somebody is. Which timesheet fields a type
    captures belongs to Timesheet setup. */
 import { z } from 'zod';
 import { defineEndpoint } from './endpoints';
 import { RecordMeta, mutation } from './common';
 
-export const WorkerCategory = z.enum(['Contracted', 'Bank', 'Agency', 'Salaried']);
+export const EmploymentType = z.enum(['Contracted', 'Bank', 'Agency', 'Salaried']);
 export const EntryMode = z.enum(['form', 'grid', 'clock']);
 export const PayBasis = z.enum(['hour', 'day']);
-export const TypeCapability = z.enum(['vehicle', 'site', 'project', 'shift']);
-export const EmployeeType = RecordMeta.extend({ code: z.string(), name: z.string(), category: WorkerCategory, mode: EntryMode,
-  uom: PayBasis, capabilities: z.array(TypeCapability) });
-export type EmployeeType = z.infer<typeof EmployeeType>;
-export const EmployeeTypeRow = EmployeeType.extend({ inUse: z.number().int().nonnegative() });
-export type EmployeeTypeRow = z.infer<typeof EmployeeTypeRow>;
+export const PatternFieldGroup = z.enum(['vehicle', 'site', 'project', 'shift']);
+export const WorkPattern = RecordMeta.extend({ code: z.string(), name: z.string(), employmentType: EmploymentType, mode: EntryMode,
+  uom: PayBasis, fieldGroups: z.array(PatternFieldGroup) });
+export type WorkPattern = z.infer<typeof WorkPattern>;
+export const WorkPatternRow = WorkPattern.extend({ inUse: z.number().int().nonnegative() });
+export type WorkPatternRow = z.infer<typeof WorkPatternRow>;
 const META = { id: true, version: true, updatedAt: true } as const;
-export const CreateEmployeeType = EmployeeType.omit(META).extend({ startedFrom: z.string() });
-export type CreateEmployeeType = z.infer<typeof CreateEmployeeType>;
+export const CreateWorkPattern = WorkPattern.omit(META).extend({ startedFrom: z.string() });
+export type CreateWorkPattern = z.infer<typeof CreateWorkPattern>;
 /* The code is immutable, so an edit that carries one is refused naming it. */
-export const UpdateEmployeeType = EmployeeType.omit({ ...META, code: true }).partial().extend({
+export const UpdateWorkPattern = WorkPattern.omit({ ...META, code: true }).partial().extend({
   code: z.never({ error: 'A type code cannot change once it exists. Existing records reference it.' }).optional(),
 });
-export type UpdateEmployeeType = z.infer<typeof UpdateEmployeeType>;
-export const Archetype = z.object({ key: z.string(), name: z.string(), mode: EntryMode, uom: PayBasis, capabilities: z.array(TypeCapability) });
+export type UpdateWorkPattern = z.infer<typeof UpdateWorkPattern>;
+export const Archetype = z.object({ key: z.string(), name: z.string(), mode: EntryMode, uom: PayBasis, fieldGroups: z.array(PatternFieldGroup) });
 export type Archetype = z.infer<typeof Archetype>;
-export const TypeLibrary = z.object({ archetypes: z.array(Archetype),
-  capabilities: z.array(z.object({ code: TypeCapability, label: z.string(), desc: z.string() })) });
-export type TypeLibrary = z.infer<typeof TypeLibrary>;
+export const PatternLibrary = z.object({ archetypes: z.array(Archetype),
+  fieldGroups: z.array(z.object({ code: PatternFieldGroup, label: z.string(), desc: z.string() })) });
+export type PatternLibrary = z.infer<typeof PatternLibrary>;
 
 const cap = 'type_cfg';
 const TypeParams = z.object({ id: z.string().min(1) });
-export const listEmployeeTypes = defineEndpoint({ method: 'GET', path: '/api/v1/employee-types', response: z.array(EmployeeTypeRow),
-  summary: 'Employee types, each with how many employees hold it' });
-export const getTypeLibrary = defineEndpoint({ method: 'GET', path: '/api/v1/employee-types/library', response: TypeLibrary, capability: cap,
+export const listWorkPatterns = defineEndpoint({ method: 'GET', path: '/api/v1/work-patterns', response: z.array(WorkPatternRow),
+  summary: 'Work patterns, each with how many employees hold it' });
+export const getTypeLibrary = defineEndpoint({ method: 'GET', path: '/api/v1/work-patterns/library', response: PatternLibrary, capability: cap,
   summary: 'The archetypes a new type can start from, and the capabilities a type can have' });
-export const createEmployeeType = defineEndpoint({ method: 'POST', path: '/api/v1/employee-types', request: CreateEmployeeType,
-  response: mutation(EmployeeType), capability: cap, summary: 'Create an employee type. The code is unique.' });
-export const updateEmployeeType = defineEndpoint({ method: 'PATCH', path: '/api/v1/employee-types/:id', params: TypeParams, request: UpdateEmployeeType,
-  response: z.object({ record: EmployeeType, auditId: z.string().nullable(), changed: z.array(z.string()) }), capability: cap, versioned: true, errors: [404],
-  summary: 'Edit an employee type (If-Match). The code is immutable.' });
-export const removeEmployeeType = defineEndpoint({ method: 'DELETE', path: '/api/v1/employee-types/:id', params: TypeParams, response: z.object({ auditId: z.string() }),
-  capability: cap, versioned: true, errors: [404, 409], summary: 'Remove an employee type nobody holds (If-Match). 409 with usedBy otherwise.' });
+export const createWorkPattern = defineEndpoint({ method: 'POST', path: '/api/v1/work-patterns', request: CreateWorkPattern,
+  response: mutation(WorkPattern), capability: cap, summary: 'Create a work pattern. The code is unique.' });
+export const updateWorkPattern = defineEndpoint({ method: 'PATCH', path: '/api/v1/work-patterns/:id', params: TypeParams, request: UpdateWorkPattern,
+  response: z.object({ record: WorkPattern, auditId: z.string().nullable(), changed: z.array(z.string()) }), capability: cap, versioned: true, errors: [404],
+  summary: 'Edit a work pattern (If-Match). The code is immutable.' });
+export const removeWorkPattern = defineEndpoint({ method: 'DELETE', path: '/api/v1/work-patterns/:id', params: TypeParams, response: z.object({ auditId: z.string() }),
+  capability: cap, versioned: true, errors: [404, 409], summary: 'Remove a work pattern nobody holds (If-Match). 409 with usedBy otherwise.' });

@@ -32,7 +32,7 @@ for (const [name, raw] of Object.entries({ social, qnipay })) {
     test('the default template asks every policy, and only qnipay ships an onboarding template', () => {
       expect(cfg.policies).toEqual(['pol_conduct', 'pol_privacy', 'pol_handbook', 'pol_itsec']);
       const tpl = vals<Rec & OnbTemplate>(seed, 'onboardingTemplates');
-      expect(tpl.map(t => [t.id, t.name, t.jobProfiles])).toEqual(name === 'qnipay' ? [['onbt-senior-consultants', 'Senior consultants', ['SCONS']]] : []);
+      expect(tpl.map(t => [t.id, t.name, t.positions])).toEqual(name === 'qnipay' ? [['onbt-senior-consultants', 'Senior consultants', ['SCONS']]] : []);
     });
     test('the config is one versioned record with the prototype\'s seven steps and five documents, and no icons', () => {
       expect([cfg.id, cfg.version]).toEqual(['onboardingConfig', 1]);

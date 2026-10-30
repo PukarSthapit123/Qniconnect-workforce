@@ -29,4 +29,7 @@ export { GUIDES } from './guides';
 export { useNarrow } from './useNarrow';
 export { EssCols, EssCard, EssBig, EssRow, EssButton } from './Ess';
 export { Meter } from './Meter';
+export { Lead, LEAD_PRIMARY, LEAD_SECONDARY } from './Lead';
+export { usePayMask, PayMaskToggle, PayMaskEye, Masked, type PayMask } from './PayMask';
+export { Note } from './Note';
 export { Stepper } from './Stepper';

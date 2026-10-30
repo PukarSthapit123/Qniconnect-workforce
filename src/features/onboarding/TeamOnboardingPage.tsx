@@ -34,7 +34,7 @@ export function TeamOnboardingPage() {
   const add = (testId: string, link?: boolean) => <Button testId={testId} kind={link ? 'link' : 'primary'} small={!link} onClick={() => setAdding(true)}>Add a new starter</Button>;
   return (
     <Page testId={tid.page('tonb')}>
-      <PageHead title="Onboarding" crumb="My team · Onboarding" tipTestId={tid.tonb.tip}
+      <PageHead title="Onboarding" tipTestId={tid.tonb.tip}
         tip="New starters, what they have completed, and what is holding them up."
         actions={d && <>
           {crud && add(tid.tonb.add)}
@@ -122,8 +122,8 @@ function InProgress({ d, canTrack, addLink, refresh }: { d: TeamOnboarding; canT
       {n
         ? <Table data-testid={tid.tonb.table} variant="records" dense className={DENSE_TEXT}>
             <TableHeader><TableRow>
-              <TableHead>Employee</TableHead><TableHead>Starts</TableHead><TableHead>Employee type</TableHead><TableHead>Template</TableHead><TableHead>Progress</TableHead>
-              <TableHead>State</TableHead><TableHead>Blocking</TableHead><TableHead><span className="sr-only">Actions</span></TableHead>
+              <TableHead>Employee</TableHead><TableHead>Starts</TableHead><TableHead>Work pattern</TableHead><TableHead>Template</TableHead><TableHead>Progress</TableHead>
+              <TableHead>Status</TableHead><TableHead>Blocking</TableHead><TableHead><span className="sr-only">Actions</span></TableHead>
             </TableRow></TableHeader>
             <TableBody>
               {d.rows.map(r => {
@@ -133,7 +133,7 @@ function InProgress({ d, canTrack, addLink, refresh }: { d: TeamOnboarding; canT
                     <TableCell kind="title"><b className="font-bold">{r.employee.name}</b>
                       <span className="block text-xs font-normal text-text-muted">{r.employee.email || r.employee.id}</span></TableCell>
                     <TableCell label="Starts">{r.employee.start ? formatDmy(r.employee.start) : '—'}</TableCell>
-                    <TableCell label="Employee type">{r.employee.employeeTypeName}</TableCell>
+                    <TableCell label="Work pattern">{r.employee.workPatternName}</TableCell>
                     <TableCell label="Template"><span data-testid={tid.tonb.template(code)}>{r.template.name}</span></TableCell>
                     <TableCell label="Progress">
                       <span data-testid={tid.tonb.progress(code)} className="whitespace-nowrap tabular-nums">
@@ -141,7 +141,7 @@ function InProgress({ d, canTrack, addLink, refresh }: { d: TeamOnboarding; canT
                           <span className="block h-full bg-brand dark:bg-brand-accent" style={{ width: `${r.progress.pc}%` }} /></span>
                         {r.progress.done}/{r.progress.total}<span className="sr-only">, {r.progress.text}</span></span>
                     </TableCell>
-                    <TableCell label="State"><StatePill testId={tid.tonb.state(code)} state={r.employee.state} /></TableCell>
+                    <TableCell label="Status"><StatePill testId={tid.tonb.state(code)} state={r.employee.state} /></TableCell>
                     <TableCell label="Blocking" className="text-text-muted">
                       <span data-testid={tid.tonb.blocking(code)}>{bl.length
                         ? `${bl.slice(0, 2).map(x => x.why).join(' · ')}${bl.length > 2 ? ` +${bl.length - 2}` : ''}`
@@ -159,7 +159,7 @@ function InProgress({ d, canTrack, addLink, refresh }: { d: TeamOnboarding; canT
               })}
             </TableBody>
           </Table>
-        : <Empty testId={tid.tonb.empty}>{d.all ? 'Nobody is onboarding at any location.' : `Nobody is onboarding at ${d.locationName}.`}{addLink && <> {addLink}</>}</Empty>}
+        : <Empty testId={tid.tonb.empty}>{d.all ? 'Nobody is onboarding at any site.' : `Nobody is onboarding at ${d.locationName}.`}{addLink && <> {addLink}</>}</Empty>}
       {dialogRow && <NotReadyDialog key={dialogRow.employee.code} r={dialogRow} canChase={canTrack} onClose={closeNotReady} />}
       {offer && <PortalInviteOffer key={offer.case.id} offer={offer} onClose={() => setOffer(null)} />}
     </AdminCard>);

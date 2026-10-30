@@ -53,13 +53,13 @@ test('a fault on any 1c write shows the refusal, keeps the screen, and changes n
   await page.getByTestId(tid.aorg.template('mne')).waitFor();
   await page.getByTestId(tid.aorg.saveOpen).click();
   await box.getByTestId(tid.aorg.saveName).fill('Brightpath as it runs');
-  await fails('POST', '/api/v1/templates', () => box.getByTestId(tid.aorg.save).click());
+  await fails('POST', '/api/v1/setup-presets', () => box.getByTestId(tid.aorg.save).click());
   await expect(box.getByTestId(tid.aorg.saveName)).toHaveValue('Brightpath as it runs');
   await escape();
   await expect(page.getByTestId(tid.aorg.noSaved)).toBeVisible();
   await page.getByTestId(tid.aorg.template('mne')).click();
   await box.getByTestId(tid.aorg.plan('changes')).waitFor();
-  await fails('POST', '/api/v1/templates/mne/apply', () => box.getByTestId(tid.aorg.apply).click());
+  await fails('POST', '/api/v1/setup-presets/mne/apply', () => box.getByTestId(tid.aorg.apply).click());
   await expect(box.getByTestId(tid.aorg.plan('changes'))).toBeVisible();
   await escape();
   await expect(page.getByTestId(tid.aorg.template('social'))).toHaveAttribute('aria-pressed', 'true');

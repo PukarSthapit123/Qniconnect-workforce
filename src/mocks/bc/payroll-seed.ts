@@ -30,10 +30,10 @@ export interface FakePayslip {
 }
 
 interface SeedEmployee {
-  code: string; name: string; email?: string; phone?: string; address?: string; jobProfile?: string; manager?: string;
+  code: string; name: string; email?: string; phone?: string; address?: string; position?: string; manager?: string;
   contractedHours?: number; state: string; start?: string; bankAccount?: string; bankSortCode?: string;
 }
-interface SeedJobProfile { code: string; name: string }
+interface SeedPosition { code: string; name: string }
 
 /* "19 Barrow Road, London N6 7QA": the street, then the town and postcode. */
 const POSTCODE = /^(.*?)\s*([A-Z]{1,2}\d[A-Z\d]?\s\d[A-Z]{2})$/;
@@ -71,7 +71,7 @@ function profileOf(e: SeedEmployee, jobs: Map<string, string>, people: readonly 
   const [firstName = '', ...rest] = e.name.split(' ');
   return {
     id: `f1${digits(e.code)}-ec2e-f011-9a4a-${e.code.toLowerCase()}`, employeeNo: e.code, email: e.email ?? '',
-    firstName, middleName: '', lastName: rest.join(' '), jobTitle: jobs.get(e.jobProfile ?? '') ?? '',
+    firstName, middleName: '', lastName: rest.join(' '), jobTitle: jobs.get(e.position ?? '') ?? '',
     ...(e.start ? { employmentDate: e.start } : {}), ...(e.manager ? { manager: managerName(e.manager, e.code, people) } : {}),
     ...splitAddress(e.address),
     frequency: 'Monthly', hmrcTaxCode: '1257L', nationalInsuranceNumber: `QQ${digits(e.code)}C`,
@@ -129,7 +129,7 @@ export function buildPayrollSeed(): { profiles: FakeProfile[]; payslips: FakePay
   const profiles: FakeProfile[] = [], payslips: FakePayslip[] = [], notifications: FakeNotification[] = [];
   const seen = new Set<string>();
   for (const tenant of TENANTS) {
-    const jobs = new Map((Object.values(seededCollection(tenant, 'jobProfiles')) as unknown as SeedJobProfile[]).map(j => [j.code, j.name]));
+    const jobs = new Map((Object.values(seededCollection(tenant, 'positions')) as unknown as SeedPosition[]).map(j => [j.code, j.name]));
     const people = Object.values(seededCollection(tenant, 'employees')) as unknown as SeedEmployee[];
     for (const e of people) {
       if (seen.has(e.code) || NOT_STARTED.has(e.state)) continue;

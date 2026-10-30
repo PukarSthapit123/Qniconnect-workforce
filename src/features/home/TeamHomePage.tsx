@@ -12,7 +12,7 @@ import { useApprovalQueue } from '@/api/timesheets';
    nothing waiting says so rather than showing a bare zero. A page with no
    count reads "Open"; a page not built yet says so. The location picker is
    not here: every manager manages one location, the one on their record, and
-   the crumb names it where the prototype's lede did. */
+   the line under the title names it where the prototype's lede did. */
 export function TeamHomePage() {
   const data = useShellData();
   if (data.kind === 'loading') return <ShellLoading />;
@@ -20,7 +20,7 @@ export function TeamHomePage() {
   const tabs = data.nav.find(g => g.key === 'team')?.tabs.filter(t => t.view !== 'thome') ?? [];
   return (
     <Page testId={tid.page('thome')}>
-      <PageHead title="Team Home" crumb={`My Team · Team Home · ${data.session.account.locationName}`} tipTestId={tid.thome.tip}
+      <PageHead title="Team Home" context={data.session.account.locationName} tipTestId={tid.thome.tip}
         tip="Everything waiting on you. Each card opens the page that owns it, and its count is the one that page shows." />
       <div data-testid={tid.thome.grid} className="grid grid-cols-[repeat(auto-fill,minmax(210px,1fr))] gap-md">
         {tabs.map(t => <TeamCard key={t.view} tab={t} />)}

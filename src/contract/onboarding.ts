@@ -48,17 +48,17 @@ export const OnbPolicyRecord = RecordMeta.extend({
 });
 export type OnbPolicyRecord = z.infer<typeof OnbPolicyRecord>;
 
-/* An onboarding template: the switches a starter on one of its job profiles is asked by. Labels and checks stay on the shared config. */
-const TemplateJobProfiles = z.array(z.string().max(20)).max(1000);
+/* An onboarding template: the switches a starter on one of its positions is asked by. Labels and checks stay on the shared config. */
+const TemplatePositions = z.array(z.string().max(20)).max(1000);
 const TemplateSteps = z.array(z.object({ id: OnbStepId, on: z.boolean() })).max(10);
 const TemplateDocuments = z.array(z.object({ id: z.string().max(20), on: z.boolean(), req: z.boolean(), blocks: z.boolean() })).max(20);
 const TemplatePolicies = z.array(z.string().max(POLICY_ID_MAX)).max(POLICY_LIST_MAX);
 export const OnbTemplateRecord = RecordMeta.extend({
-  name: z.string().max(60), jobProfiles: TemplateJobProfiles, steps: TemplateSteps, documents: TemplateDocuments, policies: TemplatePolicies,
+  name: z.string().max(60), positions: TemplatePositions, steps: TemplateSteps, documents: TemplateDocuments, policies: TemplatePolicies,
 });
 export type OnbTemplateRecord = z.infer<typeof OnbTemplateRecord>;
 
-const Contact = z.object({ nm: z.string(), rel: z.string(), ph: z.string() });
+const Contact = z.object({ fn: z.string(), ln: z.string(), rel: z.string(), ph: z.string() });
 const Qual = z.object({ nm: z.string(), by: z.string(), exp: z.string() });
 export const OnbDataRecord = z.object({
   personal: z.object({ dob: z.string(), gender: z.string(), nat: z.string(), ni: z.string() }),
@@ -102,7 +102,7 @@ export const OnbProgress = z.object({ done: z.number().int(), total: z.number().
 export type OnbProgress = z.infer<typeof OnbProgress>;
 export const OnbEmployee = z.object({
   code: z.string(), id: z.string(), name: z.string(), first: z.string(), email: z.string(), start: DateOrBlank, state: EmployeeState, stateLabel: z.string(),
-  stateTone: Tone, stateGlyph: z.string(), location: z.string(), locationName: z.string(), employeeType: z.string(), employeeTypeName: z.string(), manager: z.string(),
+  stateTone: Tone, stateGlyph: z.string(), location: z.string(), locationName: z.string(), workPattern: z.string(), workPatternName: z.string(), manager: z.string(),
 });
 export type OnbEmployee = z.infer<typeof OnbEmployee>;
 /* One starter's onboarding, as the portal and the tracker read it. toSubmit is
@@ -139,7 +139,8 @@ export const SaveStep = z.strictObject({
   mode: z.enum(['check', 'quiet']),
   personal: z.object({ dob: Text(10), gender: Text(40), nat: Text(60), ni: Text(20) }).partial().optional(),
   contact: z.object({ mob: Text(30), alt: Text(30), a1: Text(), a2: Text(), city: Text(80), post: Text(12) }).partial().optional(),
-  emergency: z.array(z.object({ nm: Text(120), rel: Text(40), ph: Text(30) }).partial()).max(5).optional(),
+  /* fn and ln are Employee Relative's First Name and Last Name, Text[30] each */
+  emergency: z.array(z.object({ fn: Text(30), ln: Text(30), rel: Text(40), ph: Text(30) }).partial()).max(5).optional(),
   additional: z.object({ conv: Text(10), convDetail: Text(1000), wtd: Text(60), quals: z.array(z.object({ nm: Text(120), by: Text(120), exp: Text(10) }).partial()).max(10) })
     .partial().optional(),
   documents: z.object({ rtwType: Text(60) }).partial().optional(),
@@ -196,7 +197,7 @@ export type OnbPolicySetupView = z.infer<typeof OnbPolicySetupView>;
 export const OnbStepSetup = z.object({ id: OnbStepId, available: z.boolean(), needs: z.string() });
 /* starters: candidates and preboarders a template asks. */
 export const OnbTemplateSummary = z.object({
-  id: z.string(), name: z.string(), version: z.number().int().nonnegative(), jobProfiles: z.array(z.object({ code: z.string(), name: z.string() })), starters: z.number().int(),
+  id: z.string(), name: z.string(), version: z.number().int().nonnegative(), positions: z.array(z.object({ code: z.string(), name: z.string() })), starters: z.number().int(),
 });
 export type OnbTemplateSummary = z.infer<typeof OnbTemplateSummary>;
 export const OnboardingSetup = z.object({
@@ -205,7 +206,7 @@ export const OnboardingSetup = z.object({
   /* employees part-way through: candidates and preboarders with a case */
   inProgress: z.number().int(),
   /* by name */
-  templates: z.array(OnbTemplateSummary), jobProfiles: z.array(z.object({ code: z.string(), name: z.string() })),
+  templates: z.array(OnbTemplateSummary), positions: z.array(z.object({ code: z.string(), name: z.string() })),
 });
 export type OnboardingSetup = z.infer<typeof OnboardingSetup>;
 /* The whole config on Save (D2): the same steps and documents in the same order, only switches and settings changed. */
@@ -232,7 +233,7 @@ export type PolicyRemoved = z.infer<typeof PolicyRemoved>;
 export const CreateOnbTemplate = z.strictObject({ name: z.string().max(80), copyFrom: z.string().max(80).optional() });
 export type CreateOnbTemplate = z.infer<typeof CreateOnbTemplate>;
 export const UpdateOnbTemplate = z.strictObject({
-  name: z.string().max(80), jobProfiles: TemplateJobProfiles, steps: TemplateSteps, documents: TemplateDocuments, policies: TemplatePolicies,
+  name: z.string().max(80), positions: TemplatePositions, steps: TemplateSteps, documents: TemplateDocuments, policies: TemplatePolicies,
 });
 export type UpdateOnbTemplate = z.infer<typeof UpdateOnbTemplate>;
 export const OnbTemplateSaved = z.object({ record: OnbTemplateRecord, summary: z.string(), auditId: z.string().nullable() });
@@ -269,7 +270,7 @@ export const submitOnboarding = defineEndpoint({ method: 'POST', path: '/api/v1/
    Track onboarding or Verify onboarding documents, which the handler checks;
    each action still needs its own. */
 export const getTeamOnboarding = defineEndpoint({ method: 'GET', path: '/api/v1/onboarding/team', response: TeamOnboarding, errors: [403],
-  summary: 'New starters at my location (every location with Configure onboarding): progress, state, what blocks the start, and documents waiting on a check' });
+  summary: 'New starters at my site (every site with Configure onboarding): progress, state, what blocks the start, and documents waiting on a check' });
 export const getStarterOnboarding = defineEndpoint({ method: 'GET', path: '/api/v1/onboarding/team/:employeeCode', params: ByEmployee, response: StarterOnboarding,
   errors: [403, 404, 409], summary: 'One new starter\'s onboarding as the tracker reads it: progress, step and document states, the files to check and what blocks the start. None of their answers.' });
 export const verifyOnboardingDocument = defineEndpoint({ method: 'POST', path: '/api/v1/onboarding/team/:employeeCode/documents/:doc/verify', params: ByEmployeeDoc,
@@ -293,7 +294,7 @@ export const chaseStarter = defineEndpoint({ method: 'POST', path: '/api/v1/onbo
 const ByCase = z.object({ id: z.string().min(1) });
 export const inviteToPortal = defineEndpoint({ method: 'POST', path: '/api/v1/onboarding/cases/:id/portal-invite', params: ByCase, response: CaseChanged,
   capability: 'onb_track', versioned: true, errors: [403, 404, 409],
-  summary: 'Record a portal invite for an employee who has started (If-Match: the case). No portal login is created yet: that is added on People & access until onboarding is connected to the portal.' });
+  summary: 'Record a portal invite for an employee who has started (If-Match: the case). No portal login is created yet: that is added on Setup · Employees until onboarding is connected to the portal.' });
 
 export const getOnboardingSetup = defineEndpoint({ method: 'GET', path: '/api/v1/onboarding/config', response: OnboardingSetup, capability: 'onb_cfg',
   summary: 'Onboarding setup: the step switches, the document settings, and the policies with their acknowledged counts' });
@@ -322,13 +323,13 @@ export const removeOnboardingPolicy = defineEndpoint({ method: 'DELETE', path: '
 
 export const getOnboardingTemplate = defineEndpoint({ method: 'GET', path: '/api/v1/onboarding/templates/:id', params: ByTemplate, response: OnbTemplateRecord,
   capability: 'onb_cfg', errors: [404],
-  summary: 'One onboarding template whole: its name, job profiles, step switches, document switches and policies. Every document in the shared list has a row.' });
+  summary: 'One onboarding template whole: its name, positions, step switches, document switches and policies. Every document in the shared list has a row.' });
 export const createOnboardingTemplate = defineEndpoint({ method: 'POST', path: '/api/v1/onboarding/templates', request: CreateOnbTemplate, response: OnbTemplateSaved,
   capability: 'onb_cfg', errors: [404, 409],
-  summary: 'Create an onboarding template as a copy of the Default one, or of another template with copyFrom. It has no job profiles until it is saved with some. A name is needed and no two share one. One audit row.' });
+  summary: 'Create an onboarding template as a copy of the Default one, or of another template with copyFrom. It has no positions until it is saved with some. A name is needed and no two share one. One audit row.' });
 export const updateOnboardingTemplate = defineEndpoint({ method: 'PUT', path: '/api/v1/onboarding/templates/:id', params: ByTemplate, request: UpdateOnbTemplate, response: OnbTemplateSaved,
   capability: 'onb_cfg', versioned: true, errors: [404, 409],
-  summary: 'Save an onboarding template whole (If-Match): its name, job profiles, step switches, document switches and policies. A job profile another template holds is refused. One audit row.' });
+  summary: 'Save an onboarding template whole (If-Match): its name, positions, step switches, document switches and policies. A position another template holds is refused. One audit row.' });
 export const deleteOnboardingTemplate = defineEndpoint({ method: 'DELETE', path: '/api/v1/onboarding/templates/:id', params: ByTemplate, response: OnbTemplateDeleted,
   capability: 'onb_cfg', versioned: true, errors: [404],
-  summary: 'Delete an onboarding template (If-Match). Its job profiles use the Default template from now on. One audit row.' });
+  summary: 'Delete an onboarding template (If-Match). Its positions use the Default template from now on. One audit row.' });

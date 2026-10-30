@@ -41,7 +41,7 @@ export function RenameRolesDialog({ types, self, onClose }: { types: readonly Us
       const [t, ...more] = rest;
       if (!t) {
         onClose();
-        toastInfo(`Roles renamed: ${types.map(x => nameOf(x).trim()).join(', ')}.`, 'It is live for everyone now.');
+        toastInfo(`Access roles renamed: ${types.map(x => nameOf(x).trim()).join(', ')}.`, 'It is live for everyone now.');
         return;
       }
       setSending(t.id);
@@ -53,7 +53,7 @@ export function RenameRolesDialog({ types, self, onClose }: { types: readonly Us
   const warn = sending && rename.refusal && !rename.refusal.field ? `${rename.refusal.message} ${rename.refusal.next}` : undefined;
 
   return (
-    <Modal open onOpenChange={o => { if (!o) onClose(); }} title="Rename roles"
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} title="Rename access roles"
       description="What each persona may do is set by the permission matrix. This only changes what they are called, across the switcher, the matrix, notifications and the audit log."
       footer={<>
         <Button testId={tid.roleNames.cancel} kind="ghost" onClick={onClose}>Cancel</Button>

@@ -1,4 +1,4 @@
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from 'react';
+import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from 'react';
 import { CheckIcon, ChevronDownIcon } from 'lucide-react';
 import { Popover } from 'radix-ui';
 import { cn } from '@/lib/utils';
@@ -11,7 +11,12 @@ export const COMBOBOX_LIMIT = 50;
 export interface ComboboxProps extends SelectBoxProps {
   /* The search box has no visible label, so it names itself. */
   searchLabel?: string;
+  /* plain: no field box, so the closed picker reads as its own text (the week grid's allocation cell, where three
+     boxed pickers crowded two time fields); display: what it shows closed, in place of the chosen label */
+  plain?: boolean;
+  display?: ReactNode;
 }
+const PLAIN = 'flex w-full items-start gap-xs rounded-control px-xs py-[3px] text-left outline-none hover:enabled:bg-surface-tint focus-visible:shadow-focus disabled:cursor-not-allowed data-[state=open]:bg-surface-tint';
 
 /* A SelectBox you can type into: the closed control is the same trigger, the
    panel adds a search box over the list. Props match SelectBox, so swapping
@@ -25,7 +30,7 @@ export interface ComboboxProps extends SelectBoxProps {
    screen. Opened from the keyboard it appears at once (index.css). */
 export function Combobox({ testId, options, value, onValueChange, placeholder, disabled, name, id,
   'aria-describedby': ariaDescribedBy, 'aria-required': ariaRequired, 'aria-invalid': ariaInvalid, 'aria-label': ariaLabel,
-  look = 'field', searchLabel = 'Search' }: ComboboxProps) {
+  look = 'field', searchLabel = 'Search', plain, display }: ComboboxProps) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [active, setActive] = useState(0);
@@ -90,9 +95,12 @@ export function Combobox({ testId, options, value, onValueChange, placeholder, d
         data-slot="select-trigger" data-size={look === 'filter' ? 'filter' : 'default'}
         data-placeholder={selected || hasValue ? undefined : ''}
         onKeyDown={openFromKey}
-        className={pickerTrigger(look === 'filter' ? 'filter' : 'default')}>
-        <span className="line-clamp-1 flex items-center gap-2">{selected ? selected.label : hasValue ? value : placeholder}</span>
-        <ChevronDownIcon className="size-4" />
+        className={plain ? PLAIN : pickerTrigger(look === 'filter' ? 'filter' : 'default')}>
+        {plain
+          ? <><span className="min-w-0 flex-1">{display ?? (selected ? selected.label : hasValue ? value : placeholder)}</span>
+            <ChevronDownIcon aria-hidden="true" className="mt-[3px] size-3.5 shrink-0 text-text-muted" /></>
+          : <><span className="line-clamp-1 flex items-center gap-2">{display ?? (selected ? selected.label : hasValue ? value : placeholder)}</span>
+            <ChevronDownIcon className="size-4" /></>}
       </Popover.Trigger>
       {name && <input type="hidden" name={name} value={value ?? ''} />}
       <Popover.Portal>

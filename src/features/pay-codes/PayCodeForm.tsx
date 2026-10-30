@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { tid } from '@/testids';
-import { Banner, Button, ConfirmModal, Field, FormWarn, Modal, NativeSelect, Small, SwitchField, TextInput, UnitInput, toastInfo } from '@/ui';
+import { Button, ConfirmModal, Field, FormWarn, Modal, NativeSelect, Note, Small, SwitchField, TextInput, UnitInput, toastInfo } from '@/ui';
 import { useCreatePayCode, useRemovePayCode, useUpdatePayCode, type PayCodeRow } from '@/api/pay-codes';
 import { PAY_CODE_BASES, isValued, usagePhrase, type PayCodeBasis } from '@/domain/pay-codes';
 import { PAY_BASIS } from '@/domain/timesheet';
@@ -49,7 +49,7 @@ export function PayCodeForm({ row, onClose }: { row?: PayCodeRow; onClose(): voi
       setLast('create');
       create.mutate({ ...body, code: v.code }, { onSuccess: d => {
         const where = d.record.workType ? 'available now as a rate type on timesheets and in Timesheet setup’s pay rules'
-          : 'claimable now by an employee type in Timesheet setup';
+          : 'claimable now by a work pattern in Timesheet setup';
         toastInfo(`${d.record.code} created · ${d.record.label} · ${where}`); onClose(); } });
     }
   }
@@ -93,9 +93,9 @@ export function PayCodeForm({ row, onClose }: { row?: PayCodeRow; onClose(): voi
           <SwitchField testId={tid.mpay.wt} checked={v.workType} onCheckedChange={c => set('workType', c)} /></Field>
       </div>
       {row && used && (
-        <Banner testId={tid.mpay.inUse} tone="info" title={`In use by ${used}`}>
+        <Note testId={tid.mpay.inUse} title={`In use by ${used}`}>
           Changing the value or element affects everything that posts through this code from now on. Records already posted keep the value they were posted with.
-        </Banner>)}
+        </Note>)}
       {row && <ConfirmModal open={asking} onOpenChange={setAsking} title={`Remove ${row.code}?`} danger confirmLabel="Remove" cancelLabel="Keep it"
         body={`${row.code} (${row.label}) will be removed from your pay codes. This cannot be undone.`} onConfirm={drop} />}
       {held && <Small testId={tid.mpay.removeWhy} id={tid.mpay.removeWhy}>{held}</Small>}

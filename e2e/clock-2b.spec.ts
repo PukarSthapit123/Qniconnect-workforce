@@ -162,7 +162,7 @@ test('nobody reaches someone else’s clock: another employee’s day is not fou
   await signInEmail(page, RACHEL);
   const rachel = await sendVersioned(page, 'POST', '/api/v1/clock/in', 0);
   expect(rachel.status).toBe(409);
-  expect(rachel.body).toMatchObject({ code: 'NOT_CLOCK_TYPE', message: 'Service Manager records time on the day form, not the clock.' });
+  expect(rachel.body).toMatchObject({ code: 'NOT_CLOCK_TYPE', message: 'Salaried records time on the day form, not the clock.' });
   const theirs = await sendVersioned(page, 'POST', '/api/v1/clock/2026-08-11/close', 1, { finish: '15:00' });
   expect(theirs.status).toBe(409);
   expect(await held()).toEqual(before);

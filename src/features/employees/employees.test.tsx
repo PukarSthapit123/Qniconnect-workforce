@@ -22,18 +22,23 @@ describe('Setup · Employees, as an admin', () => {
     for (const r of rows) expect(r.querySelector('[data-tone]')).not.toBeNull();
     expectTestIdCoverage(document.body);
   });
-  test('CR An Add control replaces the old stub, and rows offer Edit', async () => {
+  test('CR An Add control replaces the old stub; a row offers View, and Edit is on the record', async () => {
     renderPage(<AdminEmployeesPage />);
-    await screen.findByTestId(tid.employees.table);
+    const row = within(await screen.findByTestId(tid.employees.table)).getByTestId(tid.employees.row('CP-1042'));
     expect(screen.getByTestId(tid.employees.add)).toHaveTextContent('Add employee');
-    expect(screen.getByTestId(tid.employees.edit('CP-1042'))).toHaveTextContent('Edit');
+    /* one button per row (user ruling 2026-10-27) */
+    expect(within(row).getAllByRole('button').map(b => b.getAttribute('data-testid'))).toEqual([tid.employees.open('CP-1042')]);
+    expect(within(row).getByTestId(tid.employees.open('CP-1042'))).toHaveAccessibleName('View Amara Okafor');
+    expect(screen.queryByTestId(tid.employees.edit('CP-1042'))).toBeNull();
+    await userEvent.click(within(row).getByTestId(tid.employees.open('CP-1042')));
+    expect(await screen.findByTestId(tid.employee.edit)).toHaveTextContent('Edit');
   });
-  test('PC Employees lists who somebody is, not what they are contracted to, and does not repeat the employee type as a job profile', async () => {
+  test('PC Employees lists who somebody is, not what they are contracted to, and does not repeat the work pattern as a position', async () => {
     renderPage(<AdminEmployeesPage />);
     const headers = within(await screen.findByTestId(tid.employees.table)).getAllByRole('columnheader').map(h => h.textContent ?? '');
     expect(headers).not.toContain('Contracted');
     expect(headers).not.toContain('Max');
-    expect(headers.filter(h => /type|profile/i.test(h))).toEqual(['Employee type']);
+    expect(headers.filter(h => /pattern|position/i.test(h))).toEqual(['Work pattern']);
   });
   test('CR A state filter is offered: a leaver drops out of the default list, but is reachable through the state filter', async () => {
     renderPage(<AdminEmployeesPage />);
@@ -75,7 +80,7 @@ describe('Setup · Employees, as an admin', () => {
 
 describe('My team · Employees, as a manager', () => {
   beforeEach(async () => { await signInAs('manager'); });
-  test('the page has full test id coverage and shows only the manager\'s location', async () => {
+  test('the page has full test id coverage and shows only the manager\'s site', async () => {
     renderPage(<TeamEmployeesPage />);
     await screen.findByTestId(tid.employees.table);
     expect(screen.getByTestId(tid.employees.row('CP-1042'))).toBeInTheDocument();

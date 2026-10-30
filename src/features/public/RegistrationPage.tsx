@@ -14,11 +14,12 @@
    Tenant verification and the company lookup are account setup's, after
    sign-in (Ruling Q12). Upgrades: the step heading takes focus when the step
    changes, and a Continue that cannot go on says why. */
-import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { ArrowLeft, Check, CheckCircle2, X } from 'lucide-react';
 import { useNavigate } from 'react-router';
 import { submitRegistration } from '@/api/bc/registration';
-import { INDUSTRIES, INITIAL_REGISTRATION, isStepValid, planLine, planName, stepTotal, type Billing, type Plan, type RegistrationForm } from '@/domain/registration';
+import { INDUSTRIES, INITIAL_REGISTRATION, isStepValid, planLine, stepTotal, type Billing, type RegistrationForm } from '@/domain/registration';
+import { ADD_ONS, BASE_INCLUDES, addOnPrice, gbp, monthlyPrice } from '@/domain/pricing';
 import { cn } from '@/lib/utils';
 import { tid } from '@/testids';
 import { Banner, Button, Card, CheckRow, CheckboxField, Field, FieldGrid, Pill, Seg, SelectBox, TextInput, Wide } from '@/ui';
@@ -28,16 +29,9 @@ import { LEGAL_URL, PublicLayout, SUPPORT_MAIL, TopLink } from './PublicLayout';
 export const STEPS = [
   { label: 'Company info', title: 'Company information', subtitle: 'Tell us about your organisation' },
   { label: 'BC configuration', title: 'Business Central configuration', subtitle: 'Connect your Business Central environment' },
-  { label: 'Plan selection', title: 'Select your plan', subtitle: 'Choose the right plan for your organisation' },
+  { label: 'Plan', title: 'Your plan', subtitle: 'One price per employee, with add-ons priced separately' },
   { label: 'Contact & confirm', title: 'Contact and confirmation', subtitle: 'Review your details and complete registration' },
 ] as const;
-
-/* REG step 3's cards (729-731): the base prices, whatever the billing (REG.R15) */
-const PLANS: { key: Plan; price: string; popular?: boolean; features: string[] }[] = [
-  { key: 'basic', price: '£0.5', features: ['Profile visibility', 'Payslip access', 'Secure auth'] },
-  { key: 'essential', price: '£5', popular: true, features: ['All Basic', 'Document mgmt', 'Leave mgmt'] },
-  { key: 'premium', price: '£7', features: ['All Essential', 'Starter checklist', 'Priority support'] },
-];
 
 const legal = (n: number, text: string) => (
   <a href={LEGAL_URL} target="_blank" rel="noopener noreferrer" data-testid={tid.reg.legal(n)}
@@ -85,7 +79,7 @@ export function RegistrationPage() {
   const valid = isStepValid(step, form);
   return (
     <PublicLayout testId={tid.page('register')} nav={<TopLink href={SUPPORT_MAIL} testId={tid.pub.help}>Need help?</TopLink>}>
-      <div className="mx-auto grid w-full max-w-[1120px] items-start gap-2xl px-xl py-2xl max-lg:gap-lg max-lg:px-md max-md:py-lg lg:grid-cols-[300px_1fr]">
+      <div className="mx-auto grid w-full max-w-[1120px] items-start gap-2xl px-xl py-2xl max-lg:gap-lg max-lg:px-lg max-md:py-lg lg:grid-cols-[300px_1fr]">
         <aside>
           <Button testId={tid.reg.back} kind="ghost" small onClick={() => { void navigate('/'); }}><ArrowLeft aria-hidden="true" />Home</Button>
           <div className="max-lg:hidden">
@@ -153,7 +147,7 @@ export function RegistrationPage() {
                       </Wide>
                     </FieldGrid>)}
 
-                  {step === 3 && <PlanStep form={form} onPlan={set('selectedPlan')} onBilling={set('paymentFrequency')} />}
+                  {step === 3 && <PlanStep form={form} onBilling={set('paymentFrequency')} />}
 
                   {step === 4 && (
                     <>
@@ -191,74 +185,43 @@ export function RegistrationPage() {
     </PublicLayout>);
 }
 
-/* REG step 3: billing, the three plans as one choice, and the total. */
-function PlanStep({ form, onPlan, onBilling }: { form: RegistrationForm; onPlan(p: Plan): void; onBilling(b: Billing): void }) {
-  const labelId = useId();
+/* REG step 3 (Ruling Q23): the billing, what the base price includes, the
+   add-ons priced separately, and the total. There is no plan to choose. */
+function PlanStep({ form, onBilling }: { form: RegistrationForm; onBilling(b: Billing): void }) {
   const annual = form.paymentFrequency === 'annual';
   return (
     <>
       <p className="mb-xs text-xs font-semibold text-text-secondary">Billing frequency</p>
       <Seg label="Billing frequency" value={form.paymentFrequency} onChange={onBilling} testId={v => tid.reg.billing(v)}
         options={[{ value: 'monthly', label: 'Monthly' }, { value: 'annual', label: 'Annual (save 20%)' }]} />
-      <p id={labelId} className="mt-lg mb-sm text-xs font-semibold text-text-secondary">Plan</p>
-      <RadioCards labelledBy={labelId} value={form.selectedPlan} onChange={onPlan} options={PLANS.map(p => ({
-        value: p.key, testId: tid.reg.plan(p.key),
-        body: <>
-          <span className="flex items-center gap-sm">
-            <b className="text-sm font-semibold">{planName(p.key)}</b>
-            {p.popular && <Pill tone="hi">Popular</Pill>}
-          </span>
-          <span className="mt-xs block text-lg font-semibold tabular-nums">{p.price}<span className="text-xs font-normal text-text-muted">/user/mo</span></span>
-          <ul className="mt-sm flex flex-col gap-[2px] text-xs text-text-secondary">
-            {p.features.map(f => <li key={f} className="flex items-center gap-xs"><Check aria-hidden="true" className="size-3 shrink-0 text-ok" />{f}</li>)}
-          </ul>
-        </>,
-      }))} />
+      <div data-testid={tid.reg.plan('base')} className="mt-lg rounded-card border border-brand bg-brand-subtle p-md dark:border-brand-accent">
+        <p className="flex flex-wrap items-baseline justify-between gap-sm">
+          <b className="text-sm font-semibold">QniConnect</b>
+          <span className="text-lg font-semibold tabular-nums">{gbp(monthlyPrice(form.paymentFrequency))}<span className="text-xs font-normal text-text-muted">/user/mo</span></span>
+        </p>
+        <ul className="mt-sm flex flex-col gap-[2px] text-xs text-text-secondary">
+          {BASE_INCLUDES.map(f => <li key={f} className="flex items-center gap-xs"><Check aria-hidden="true" className="size-3 shrink-0 text-ok" />{f}</li>)}
+        </ul>
+      </div>
+      <p className="mt-lg mb-sm text-xs font-semibold text-text-secondary">Add-on modules, priced separately</p>
+      <ul className="flex flex-col gap-sm">
+        {ADD_ONS.map(o => (
+          <li key={o.code} data-testid={tid.reg.addOn(o.code)} className="flex flex-wrap items-baseline justify-between gap-x-sm text-sm">
+            <b className="font-semibold">{o.name}</b><span className="text-text-secondary">{addOnPrice(o)}</span>
+          </li>))}
+      </ul>
+      <p className="mt-xs text-xs text-text-muted">Add-ons are not in the total until their prices are set.</p>
       <div className="mt-lg flex flex-wrap items-center justify-between gap-md rounded-card bg-surface-tint px-lg py-md">
         <p data-testid={tid.reg.totalNote} className="text-sm text-text-secondary">
-          {planName(form.selectedPlan)} plan · {form.numberOfEmployees || '—'} users · billed {annual ? 'annually' : 'monthly'}
+          QniConnect · {form.numberOfEmployees || '—'} users · billed {annual ? 'annually' : 'monthly'}
           {annual && <Pill tone="ok" className="ml-sm">20% off</Pill>}
         </p>
         <p className="text-right">
-          <span data-testid={tid.reg.total} className="block text-xl font-semibold tabular-nums">£{stepTotal(form)}</span>
+          <span data-testid={tid.reg.total} className="block text-xl font-semibold tabular-nums">{stepTotal(form)}</span>
           <span className="text-xs text-text-muted">{annual ? 'per year' : 'per month'}</span>
         </p>
       </div>
     </>);
-}
-
-/* A choice of cards that is one radio group: arrow keys move the choice; only
-   the press scales, and the chosen fill lands at once. */
-function RadioCards<T extends string>({ labelledBy, value, onChange, options }: {
-  labelledBy: string; value: T; onChange(v: T): void; options: { value: T; testId: string; body: ReactNode }[];
-}) {
-  const refs = useRef<(HTMLButtonElement | null)[]>([]);
-  const move = (i: number, step: number) => {
-    const next = (i + step + options.length) % options.length;
-    const o = options[next];
-    if (!o) return;
-    onChange(o.value);
-    refs.current[next]?.focus();
-  };
-  return (
-    <div role="radiogroup" aria-labelledby={labelledBy} className="grid gap-sm md:grid-cols-3">
-      {options.map((o, i) => {
-        const on = o.value === value;
-        return (
-          <button key={o.value} ref={el => { refs.current[i] = el; }} type="button" role="radio" aria-checked={on} tabIndex={on ? 0 : -1}
-            data-testid={o.testId} onClick={() => { onChange(o.value); }}
-            onKeyDown={e => {
-              const step = e.key === 'ArrowDown' || e.key === 'ArrowRight' ? 1 : e.key === 'ArrowUp' || e.key === 'ArrowLeft' ? -1 : 0;
-              if (step) { e.preventDefault(); move(i, step); }
-            }}
-            className={cn('relative rounded-card border bg-surface-card p-md text-left transition-[scale] duration-(--dur-press) ease-(--ease-out) select-none',
-              'focus-visible:shadow-focus active:scale-[0.98] motion-reduce:active:scale-100',
-              on ? 'border-brand bg-brand-subtle dark:border-brand-accent' : 'hover:border-border-strong hover:bg-surface-tint')}>
-            {on && <CheckCircle2 aria-hidden="true" className="absolute top-md right-md size-4 text-brand dark:text-brand-accent" />}
-            {o.body}
-          </button>);
-      })}
-    </div>);
 }
 
 /* REG step 4's Registration summary: empty shown as a dash */

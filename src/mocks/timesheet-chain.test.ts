@@ -179,7 +179,7 @@ describe('permissions on every layer', () => {
     expect(snapshot(...WRITES)).toEqual(before);
   });
   test('the wrong layer, no capability and out of scope are each refused, and nothing is written', async () => {
-    await payrollEveryDay('Own location');
+    await payrollEveryDay('Own site');
     const mgr = await as('manager'), admin = await as('admin'), emp = await as('employee');
     const waiting = plant('CP-1153', '2026-08-13', { state: 'mgrok', history: managerSigned }), away = plant('CP-1288', '2026-08-12');
     const before = snapshot(...WRITES);

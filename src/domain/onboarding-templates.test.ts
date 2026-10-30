@@ -29,16 +29,16 @@ const CONFIG: OnboardingConfig = {
 };
 const BASE: BaseConfig = { ...CONFIG, policies: ['pol_conduct', 'pol_privacy'] };
 const SENIOR: OnbTemplate = {
-  id: 'onbt-senior', name: 'Senior consultants', jobProfiles: ['SCONS'],
+  id: 'onbt-senior', name: 'Senior consultants', positions: ['SCONS'],
   steps: STEP_IDS.map(id => ({ id, on: id !== 'additional' })),
   documents: [{ id: 'rtw', on: true, req: true, blocks: true }, { id: 'addr', on: false, req: true, blocks: false }, { id: 'photo', on: true, req: false, blocks: false }],
   policies: ['pol_conduct'],
 };
-const OTHER: OnbTemplate = { ...SENIOR, id: 'onbt-other', name: 'Other', jobProfiles: [] };
-const draftOf = (t: OnbTemplate): OnbTemplateDraft => ({ name: t.name, jobProfiles: t.jobProfiles, steps: t.steps, documents: t.documents, policies: t.policies });
+const OTHER: OnbTemplate = { ...SENIOR, id: 'onbt-other', name: 'Other', positions: [] };
+const draftOf = (t: OnbTemplate): OnbTemplateDraft => ({ name: t.name, positions: t.positions, steps: t.steps, documents: t.documents, policies: t.policies });
 const ctx = (was: OnbTemplate | null): TemplateRuleContext => ({
   base: BASE, was, others: [SENIOR],
-  jobProfiles: [{ code: 'CONS', name: 'Consultant' }, { code: 'SCONS', name: 'Senior Consultant' }, { code: 'PM', name: 'Project Manager' }],
+  positions: [{ code: 'CONS', name: 'Consultant' }, { code: 'SCONS', name: 'Senior Consultant' }, { code: 'PM', name: 'Project Manager' }],
   policyIds: ['pol_conduct', 'pol_privacy'], features: ALL_FEATURES,
 });
 const PDF = { name: 'scan.pdf', size: 2048, type: 'application/pdf', at: AT, kind: 'pdf' as const };
@@ -53,7 +53,7 @@ function completeFor(t: OnbTemplate): OnboardingCase {
 }
 
 describe('resolution', () => {
-  test('the starter\'s job profile picks the template that lists it', () => {
+  test('the starter\'s position picks the template that lists it', () => {
     expect(templateFor('SCONS', [SENIOR])).toBe(SENIOR);
   });
   test('a profile no template lists, and no profile at all, get the default', () => {
@@ -102,9 +102,9 @@ describe('normalising, copying and ids', () => {
     expect(t.documents.map(d => d.id)).toEqual(['rtw', 'addr', 'photo', 'licence', 'cert']);
     expect(t.documents.find(d => d.id === 'licence')).toEqual({ id: 'licence', on: false, req: false, blocks: false });
   });
-  test('a new template copies the source\'s steps, documents and policies, with no job profiles', () => {
-    expect(newTemplateFrom('onbt-a', 'A', null, BASE)).toMatchObject({ jobProfiles: [], policies: ['pol_conduct', 'pol_privacy'] });
-    expect(newTemplateFrom('onbt-b', 'B', SENIOR, BASE)).toMatchObject({ jobProfiles: [], policies: ['pol_conduct'] });
+  test('a new template copies the source\'s steps, documents and policies, with no positions', () => {
+    expect(newTemplateFrom('onbt-a', 'A', null, BASE)).toMatchObject({ positions: [], policies: ['pol_conduct', 'pol_privacy'] });
+    expect(newTemplateFrom('onbt-b', 'B', SENIOR, BASE)).toMatchObject({ positions: [], policies: ['pol_conduct'] });
     expect(newTemplateFrom('onbt-b', 'B', SENIOR, BASE).steps.find(s => s.id === 'additional')?.on).toBe(false);
   });
   test('ids are onbt- and a slug, made unique', () => {
@@ -122,10 +122,10 @@ describe('the save rules', () => {
     expect(onbTemplateNameProblem(' senior CONSULTANTS ', others)?.message).toBe(TEMPLATE_NAME_TAKEN);
     expect(onbTemplateNameProblem('Senior consultants', others, 'onbt-senior')).toBeNull();
   });
-  test('a job profile another template holds is refused, naming that template; an unknown code is refused', () => {
-    expect(onbTemplateProblem({ ...draftOf(OTHER), jobProfiles: ['SCONS'] }, ctx(OTHER))).toEqual({ code: 'PROFILE_TAKEN', field: 'jobProfiles',
+  test('a position another template holds is refused, naming that template; an unknown code is refused', () => {
+    expect(onbTemplateProblem({ ...draftOf(OTHER), positions: ['SCONS'] }, ctx(OTHER))).toEqual({ code: 'PROFILE_TAKEN', field: 'positions',
       message: 'Senior Consultant (SCONS) is already in Senior consultants. Take it out of Senior consultants first.', next: 'Reload the page to see who holds it.' });
-    expect(onbTemplateProblem({ ...draftOf(OTHER), jobProfiles: ['XX'] }, ctx(OTHER))).toMatchObject({ code: 'VALIDATION', field: 'jobProfiles', message: 'There is no job profile with the code XX.' });
+    expect(onbTemplateProblem({ ...draftOf(OTHER), positions: ['XX'] }, ctx(OTHER))).toMatchObject({ code: 'VALIDATION', field: 'positions', message: 'There is no position with the code XX.' });
   });
   test('a fixed step cannot be switched off, a step whose features are off cannot be switched on, and unknown documents or policies are refused', () => {
     const off = (id: string) => ({ ...draftOf(OTHER), steps: draftOf(OTHER).steps.map(s => (s.id === id ? { ...s, on: false } : s)) });

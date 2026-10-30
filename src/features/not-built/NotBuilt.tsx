@@ -8,7 +8,7 @@ export function NotBuilt({ tab }: { tab: NavTab }) {
   return (
     <Page testId={tid.page(tab.view)}>
       <div data-testid={tid.notBuilt.root}>
-        <PageHead title={tab.label} crumb={tab.section ? `Setup · ${tab.label}` : undefined} />
+        <PageHead title={tab.label} />
         <Card className="max-w-[520px]">
           <p className="text-text-secondary">A future enhancement. It arrives with <b data-testid={tid.notBuilt.subProject} className="text-text-primary">{tab.subProject}</b>.</p>
         </Card>

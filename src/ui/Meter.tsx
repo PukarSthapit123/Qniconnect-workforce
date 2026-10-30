@@ -7,12 +7,14 @@ import { cn } from '@/lib/utils';
    it is hidden from screen readers. */
 type MeterTone = 'ok' | 'warn' | 'err';
 const FILL: Record<MeterTone, string> = { ok: 'bg-ok', warn: 'bg-warn', err: 'bg-err' };
-export function Meter({ testId, pct, tone, strong, children }: { testId?: string; pct: number; tone: MeterTone; strong?: boolean; children: ReactNode }) {
+/* `inverse`: on the dark lead block (ui/Lead), the figure in its pale ink
+   and the track in the clock ring's translucent white (.ring .rt). */
+export function Meter({ testId, pct, tone, strong, inverse, children }: { testId?: string; pct: number; tone: MeterTone; strong?: boolean; inverse?: boolean; children: ReactNode }) {
   const w = Math.max(0, Math.min(100, pct));
   return (
     <div className="flex items-center gap-sm">
-      <strong data-testid={testId} data-tone={tone} className={cn('font-semibold tabular-nums', strong ? 'text-err' : 'text-text-primary')}>{children}</strong>
-      <span aria-hidden="true" className="inline-block h-[6px] min-w-[52px] flex-1 overflow-hidden rounded-pill bg-surface-tint">
+      <strong data-testid={testId} data-tone={tone} className={cn('font-semibold tabular-nums', strong ? 'text-err' : inverse ? 'text-text-on-inverse' : 'text-text-primary')}>{children}</strong>
+      <span aria-hidden="true" className={cn('inline-block h-[6px] min-w-[52px] flex-1 overflow-hidden rounded-pill', inverse ? 'bg-ring-track' : 'bg-surface-tint')}>
         <i className={cn('block h-full rounded-pill', FILL[tone])} style={{ width: `${w}%` }} />
       </span>
     </div>);

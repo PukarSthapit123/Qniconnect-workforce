@@ -42,7 +42,7 @@ const FULL: [z.ZodType, unknown][] = [
   [notificationSeen.response, { systemId: 'n1', seen: true }],
   /* the admin pages' (Task 19) */
   [portalUsersList.response, { value: [{ id: 'pu-1', name: 'Dee', email: 'd@b.c', status: 'Active', isAdmin: true, employeeNo: 'E1', role: 'Admin', lastLogin: '2026-08-12T08:15:00Z' }] }],
-  /* People & access's (Task 20) */
+  /* Setup · Employees' (Task 20) */
   [portalUserCreate.response, { id: 'pu-2', name: 'Ann', email: 'a@b.c', status: 'PendingFirstLogin', isAdmin: false, employeeNo: '', role: 'User', lastLogin: null }],
   [portalUserUpdate.response, { id: 'pu-2', name: 'Ann Lee', email: 'a@b.c', status: 'Active', isAdmin: false, employeeNo: 'E2', role: 'User', lastLogin: null }],
   [adminEnvironmentsList.response, { value: [{ id: 'env-1', name: 'Production', type: 'Production', url: 'https://x', status: 'Active', companyName: 'C' }] }],

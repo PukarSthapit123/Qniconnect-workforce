@@ -6,7 +6,7 @@ export interface Reply { status: number; body: unknown }
 export interface Api { get(path: string): Promise<Reply> }
 export interface EmployeeRow {
   id: string; version: number; code: string; name: string; state: string; end: string; location: string; email: string;
-  contractedHours: number; maxHours: number; phone: string; address: string; bankAccount: string; employeeType: string; resource: string;
+  contractedHours: number; maxHours: number; phone: string; address: string; bankAccount: string; workPattern: string; resource: string;
 }
 export interface AuditRow { act: string; entityId: string; reason?: string; before?: unknown; after?: unknown }
 

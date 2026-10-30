@@ -8,11 +8,11 @@ import { audits, resetTo, signInAs } from '@/test/api-helpers';
 import { OrganisationPage } from './OrganisationPage';
 
 /* The social seed runs on the Social Care & Charity template: every module on,
-   three employee types, nothing saved here yet. */
+   three work patterns, nothing saved here yet. */
 withFakeServer();
 beforeEach(async () => { resetTo('social'); await signInAs('admin'); });
-const tenant = () => store.coll<{ name: string; template: string; timezone: string; modules: Record<string, boolean>; company: { country: string } }>('tenant').tenant;
-const saved = () => store.coll<{ template: { name: string; scope: string } }>('templates');
+const tenant = () => store.coll<{ name: string; preset: string; timezone: string; modules: Record<string, boolean>; company: { country: string } }>('tenant').tenant;
+const saved = () => store.coll<{ preset: { name: string; scope: string } }>('setupPresets');
 const open = async () => {
   renderPage(<OrganisationPage />);
   await screen.findByTestId(tid.aorg.template('mne'));
@@ -26,12 +26,12 @@ const saveAs = async (name: string) => {
 
 test('the page shows the spine, every template with the live one marked, the company, compliance and pay periods, with full test id coverage', async () => {
   await open();
-  expect(screen.getByTestId(tid.aorg.spine)).toHaveTextContent('Organisation & template→Modules→Features→Fields→Employee types→Employees');
+  expect(screen.getByTestId(tid.aorg.spine)).toHaveTextContent('Organisation & preset→Modules→Features→Fields→Work patterns→Employees');
   expect(screen.getByTestId(tid.aorg.template('social'))).toHaveAttribute('aria-pressed', 'true');
   expect(screen.getByTestId(tid.aorg.template('mne'))).toHaveTextContent('M&E / Building Services');
-  expect(screen.getByTestId(tid.aorg.template('mne'))).toHaveTextContent('Site Engineer · Contracts Manager · Office / Admin');
+  expect(screen.getByTestId(tid.aorg.template('mne'))).toHaveTextContent('Mobile · Salaried · Hourly');
   await waitFor(() => expect(screen.getByTestId(tid.aorg.live)).toHaveTextContent(
-    'Social Care & Charity is applied to Brightpath Support Services, activating 3 employee types and 3 modules.'));
+    'Social Care & Charity is applied to Brightpath Support Services, activating 3 work patterns and 3 modules.'));
   expect(screen.getByTestId(tid.aorg.name)).toHaveValue('Brightpath Support Services');
   expect(screen.getByTestId(tid.aorg.country)).toHaveValue('United Kingdom');
   expect(screen.getByTestId(tid.aorg.nmw)).toHaveAttribute('aria-checked', 'true');
@@ -96,7 +96,7 @@ test('save a template: a name is needed, then it is listed as saved here with wh
   expect(within(box).getByTestId(tid.aorg.scope('config'))).toBeChecked();
   expect(within(box).queryByText(/Everything, including employees/)).toBeNull();
   await userEvent.click(within(box).getByTestId(tid.aorg.save));
-  expect(within(box).getByTestId(tid.aorg.saveWarn)).toHaveTextContent('A template needs a name.');
+  expect(within(box).getByTestId(tid.aorg.saveWarn)).toHaveTextContent('A preset needs a name.');
   expect(Object.keys(saved())).toEqual([]);
   await userEvent.type(within(box).getByTestId(tid.aorg.saveName), 'Care, two-stage approval');
   await userEvent.click(within(box).getByTestId(tid.aorg.scope('structure')));
@@ -106,7 +106,7 @@ test('save a template: a name is needed, then it is listed as saved here with wh
   const row = await screen.findByTestId(tid.aorg.savedRow('tpl_care_two_stage_approval'));
   expect(row).toHaveTextContent('Configuration and structure');
   expect(row).toHaveTextContent('Saved from Brightpath Support Services');
-  expect(saved().tpl_care_two_stage_approval?.template.scope).toBe('structure');
+  expect(saved().tpl_care_two_stage_approval?.preset.scope).toBe('structure');
   expect(await screen.findByTestId(tid.aorg.template('tpl_care_two_stage_approval'))).toBeInTheDocument();
 });
 
@@ -114,7 +114,7 @@ test('a name a shipped template has is refused in the dialog', async () => {
   await open();
   await saveAs('M&E / Building Services');
   const box = await screen.findByTestId(tid.modal.root);
-  expect(await within(box).findByText('That name matches a template that ships with the app. Choose another.')).toBeInTheDocument();
+  expect(await within(box).findByText('That name matches a preset that ships with the app. Choose another.')).toBeInTheDocument();
   expect(within(box).getByTestId(tid.aorg.saveName)).toHaveAttribute('aria-invalid', 'true');
   expect(Object.keys(saved())).toEqual([]);
 });
@@ -125,18 +125,18 @@ test('apply shows what would change, add and stay first, and applies only when c
   const box = await screen.findByTestId(tid.modal.root);
   expect(within(box).getByTestId(tid.modal.title)).toHaveTextContent('Apply M&E / Building Services?');
   expect(await within(box).findByTestId(tid.aorg.plan('changes'))).toHaveTextContent('Activity reads as Cost code.');
-  expect(within(box).getByTestId(tid.aorg.plan('added'))).toHaveTextContent('Employee type Site Engineer (driver).');
+  expect(within(box).getByTestId(tid.aorg.plan('added'))).toHaveTextContent('Work pattern Mobile (driver).');
   expect(within(box).getByTestId(tid.aorg.plan('leftAlone'))).toHaveTextContent('Brightpath Support Services keeps its name');
   expectTestIdCoverage(document.body);
   await userEvent.click(within(box).getByTestId(tid.aorg.applyCancel));
-  expect(tenant()?.template).toBe('social');
+  expect(tenant()?.preset).toBe('social');
 
   await userEvent.click(screen.getByTestId(tid.aorg.template('mne')));
   const again = await screen.findByTestId(tid.modal.root);
   await within(again).findByTestId(tid.aorg.plan('changes'));
   await userEvent.click(within(again).getByTestId(tid.aorg.apply));
   expect(await screen.findByText(/^M&E \/ Building Services applied\./)).toBeInTheDocument();
-  expect([tenant()?.template, tenant()?.name]).toEqual(['mne', 'Brightpath Support Services']);
+  expect([tenant()?.preset, tenant()?.name]).toEqual(['mne', 'Brightpath Support Services']);
   await waitFor(() => expect(screen.getByTestId(tid.aorg.template('mne'))).toHaveAttribute('aria-pressed', 'true'));
 });
 
@@ -145,18 +145,18 @@ test('remove asks first; the template in use is refused with the server\'s words
   await saveAs('In use');
   await screen.findByTestId(tid.aorg.savedRow('tpl_in_use'));
   const t = tenant();
-  if (t) t.template = 'tpl_in_use';
+  if (t) t.preset = 'tpl_in_use';
   expect(screen.queryByTestId(tid.aorg.remove('mne'))).toBeNull();
   await userEvent.click(screen.getByTestId(tid.aorg.remove('tpl_in_use')));
   const box = await screen.findByTestId(tid.modal.root);
   expect(within(box).getByTestId(tid.modal.title)).toHaveTextContent('Remove In use?');
   await userEvent.click(within(box).getByTestId(tid.modal.confirm));
-  expect(await screen.findByText('This tenant is running on that template.')).toBeInTheDocument();
+  expect(await screen.findByText('This tenant is running on that preset.')).toBeInTheDocument();
   expect(saved().tpl_in_use).toBeDefined();
 
   /* a refusal puts the store back as it was, so the tenant is read afresh */
   const now = tenant();
-  if (now) now.template = 'social';
+  if (now) now.preset = 'social';
   await userEvent.click(screen.getByTestId(tid.aorg.remove('tpl_in_use')));
   await userEvent.click(within(await screen.findByTestId(tid.modal.root)).getByTestId(tid.modal.confirm));
   expect(await screen.findByText('In use removed.')).toBeInTheDocument();
@@ -168,10 +168,10 @@ test('import a file: it is listed, with what was left out; a file that is not JS
   await open();
   const body = { kind: 'qnipay.template', v: 1, key: 'tpl_x', template: {
     name: 'From a file', description: 'Brought in', scope: 'config', modules: { ON: false }, flags: {}, extras: {}, labels: { project: 'Contract' },
-    employeeTypes: [], company: { currency: 'GBP £' } } };
+    workPatterns: [], company: { currency: 'GBP £' } } };
   await userEvent.upload(screen.getByTestId(tid.aorg.importFile), new File([JSON.stringify(body)], 'from-a-file.json', { type: 'application/json' }), { applyAccept: false });
   expect(await screen.findByText('From a file imported. Choose it to apply it.')).toBeInTheDocument();
-  expect(screen.getByText('Left out, because a template does not hold them: company.')).toBeInTheDocument();
+  expect(screen.getByText('Left out, because a preset does not hold them: company.')).toBeInTheDocument();
   expect(await screen.findByTestId(tid.aorg.savedRow('tpl_from_a_file'))).toHaveTextContent('Imported by');
   expect(JSON.stringify(saved())).not.toMatch(/currency|£/);
 

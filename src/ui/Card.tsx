@@ -8,11 +8,16 @@ import { Tip } from './Affordances';
 export function Card({ className, children, testId }: { className?: string; children: ReactNode; testId?: string }) {
   return <div data-testid={testId} className={cn('mb-md rounded-card border bg-surface-card p-(--qp-density-pad)', className)}>{children}</div>;
 }
-/* .cardhead: a 14px/600 title, 8px gaps, 12px under it, actions pushed right. */
-export function CardHead({ title, actions }: { title: ReactNode; actions?: ReactNode }) {
+/* .cardhead: a 14px/600 title, 8px gaps, 12px under it, actions pushed right.
+   The title is an h2 at that size: a card is a section of its page, and a
+   card titled in plain text gave its section no heading, so its own h3s hung
+   straight off the page's h1 (taste review 2026-10-26, page hierarchy).
+   `level` 3 is for a card inside a section that has its own h2. */
+export function CardHead({ title, actions, level = 2 }: { title: ReactNode; actions?: ReactNode; level?: 2 | 3 }) {
+  const H = level === 3 ? 'h3' : 'h2';
   return (
     <div className="mb-md flex flex-wrap items-center gap-sm">
-      <div className="text-sm font-semibold">{title}</div>
+      <H className="text-sm leading-[normal] font-semibold">{title}</H>
       {actions && <div className="ml-auto flex items-center gap-sm">{actions}</div>}
     </div>);
 }
@@ -28,7 +33,10 @@ export function IconTile({ children, off }: { children: ReactNode; off?: boolean
 /* The prototype's .acard (v15:1402-1405, 1440-1442): an admin card with an
    icon tile and a 16px title, 16px 24px padding (16px on a narrow screen).
    A tip on the title carries what the card is for; `desc` is the .acard-h p
-   line under the title (12px muted, 2px above). */
+   line under the title (12px muted, 2px above). The title is an h2 drawn at
+   the h3's 16px: the cards are a page's top-level sections, straight under
+   its h1, so an h3 skipped a level on every setup page (taste review
+   2026-10-26, page hierarchy). */
 export function AdminCard({ icon, title, tip, tipTestId, testId, desc, children }: {
   icon: ReactNode; title: string; tip?: string; tipTestId?: string; testId?: string; desc?: ReactNode; children: ReactNode;
 }) {
@@ -36,7 +44,7 @@ export function AdminCard({ icon, title, tip, tipTestId, testId, desc, children 
     <section data-testid={testId} className="mb-md rounded-card border bg-surface-card px-xl py-lg max-lg:p-md">
       <div className="mb-md flex items-start gap-md">
         <IconTile>{icon}</IconTile>
-        <div><h3>{title}{tip && tipTestId && <Tip testId={tipTestId} text={tip} />}</h3>
+        <div><h2 className="text-(length:--qp-text-16)">{title}{tip && tipTestId && <Tip testId={tipTestId} text={tip} />}</h2>
           {desc && <p className="mt-[2px] text-xs text-text-muted">{desc}</p>}</div>
       </div>
       {children}

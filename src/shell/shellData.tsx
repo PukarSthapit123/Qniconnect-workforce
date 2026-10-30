@@ -26,7 +26,7 @@ export { useTenant };
    this sign-in (never read from storage), and Workforce's follow the
    session's capabilities (N18). While looking at the app as someone else
    the nav is theirs, and their portal access is not known, so the Business
-   Central pages (and People & access's portal logins) are not shown. */
+   Central pages (and Setup · Employees' portal logins) are not shown. */
 export const isPortalAdmin = (portal: PortalState, session: Session | null) =>
   portal.adminVerified && portal.isAdmin && !session?.viewingAs;
 export function usePortalAdmin(): boolean {

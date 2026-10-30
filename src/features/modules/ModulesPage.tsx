@@ -26,7 +26,7 @@ const ICON: Record<string, ReactNode> = { users: <Users />, clock: <Clock />, ca
 const iconOf = (m: ModuleDef) => ICON[m.icon] ?? <Blocks />;
 const CAUTION = 'Switching a module or a feature takes effect for the whole tenant at once. Drafting a change first is a future enhancement.';
 const LICENCE = 'Linking these switches to the tenant’s licence is a future enhancement. For now an administrator sets them.';
-const FEATURES_TIP = 'Tenant-wide switches. Employee types then decide who actually sees the fields a feature unlocks.';
+const FEATURES_TIP = 'Tenant-wide switches. Work patterns then decide who actually sees the fields a feature unlocks.';
 const OFF_NOTE = 'These are shown rather than hidden so it is clear what switching the module on would bring back.';
 
 export function ModulesPage() {
@@ -103,7 +103,7 @@ function ModuleCard({ m, tenant }: { m: ModuleDef; tenant: Tenant }) {
 
 /* -------------------------------------------------------- the drill-in */
 function FeaturesHead({ m, off }: { m: ModuleDef; off?: boolean }) {
-  return <PageHead title={`${m.name} features`} crumb={`Modules · ${m.name} · ${m.name} features`}
+  return <PageHead title={`${m.name} features`}
     tip={m.description} tipTestId={tid.head.tip('mfeat')}
     actions={off ? <Pill testId={tid.amods.offPill} tone="neu" glyph="—">Module off</Pill> : undefined} />;
 }

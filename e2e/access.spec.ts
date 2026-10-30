@@ -12,9 +12,9 @@ test('Permissions: granting a capability to a template is saved and audited', as
   await saved;
   await expect(cell).toHaveAttribute('aria-pressed', was === 'true' ? 'false' : 'true');
   const types = (await api.get('/api/v1/user-types')).body as { id: string; capabilities: string[] }[];
-  const employeeType = types.find(t => t.id === 'employee');
-  if (!employeeType) throw new Error('no "employee" user type in the response');
-  expect(employeeType.capabilities.includes('proxy')).toBe(was !== 'true');
+  const employeeRole = types.find(t => t.id === 'employee');
+  if (!employeeRole) throw new Error('no "employee" access role in the response');
+  expect(employeeRole.capabilities.includes('proxy')).toBe(was !== 'true');
   const audit = (await api.get('/api/v1/audit?entity=userType')).body as { items: { act: string }[] };
   expect(audit.items[0]?.act).toBe('Permission changed');
 });

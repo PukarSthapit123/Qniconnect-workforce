@@ -1,43 +1,34 @@
 import { useState } from 'react';
 import { tid } from '@/testids';
-import { Button, Card, FilterBar, Page, PageHead, Row, SearchFilter, SelectFilter } from '@/ui';
+import { Button, Card, Count, FilterBar, Page, PageHead, Row, SearchFilter, SelectFilter } from '@/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/shadcn/table';
-import { useAudit, type AuditEntry } from '@/api/audit';
-import { formatDateTime, describeChange } from '@/lib/format';
+import { useAudit } from '@/api/audit';
+import { formatDateTime } from '@/lib/format';
 import { useDebounced } from '@/lib/useDebounced';
+import { auditCount, detail, whoLabel } from './entry';
 
 /* The entities the session, view-as, access and plan 1b handlers write (see
    mocks/session.ts, access.ts, employees.ts and the rest). A future handler adding a new kind of
    audited change should add its label here too. */
 const ENTITY_OPTIONS = [
   { value: 'all', label: 'All records' },
-  { value: 'userType', label: 'Permission templates' },
+  { value: 'userType', label: 'Access roles' },
   { value: 'account', label: 'User accounts' },
   { value: 'session', label: 'Sessions and view-as' },
   { value: 'employee', label: 'Employees' },
   { value: 'profileChange', label: 'Profile changes' },
-  { value: 'employeeType', label: 'Employee types' },
-  { value: 'location', label: 'Locations' },
+  { value: 'workPattern', label: 'Work patterns' },
+  { value: 'location', label: 'Sites' },
   { value: 'department', label: 'Departments' },
   { value: 'costCentre', label: 'Cost centres' },
-  { value: 'jobProfile', label: 'Job profiles' },
+  { value: 'position', label: 'Positions' },
   { value: 'project', label: 'Projects' },
   { value: 'timesheetDay', label: 'Timesheets' },
   { value: 'timesheetConfig', label: 'Timesheet setup' },
   { value: 'tenant', label: 'Modules, features and tenant settings' },
   { value: 'savedData', label: 'Saved data' },
-  { value: 'template', label: 'Templates' },
+  { value: 'setupPreset', label: 'Setup presets' },
 ];
-const ENTITY_LABEL: Record<string, string> = { userType: 'Permission template', account: 'User account', session: 'Session',
-  employee: 'Employee', profileChange: 'Profile change', employeeType: 'Employee type', location: 'Location', department: 'Department',
-  costCentre: 'Cost centre', jobProfile: 'Job profile', project: 'Project', timesheetDay: 'Timesheet',
-  timesheetConfig: 'Timesheet setup', tenant: 'Tenant', savedData: 'Saved data', template: 'Template' };
-
-const whoLabel = (who: AuditEntry['who']) => (who.viewingAs ? `${who.name} (as ${who.viewingAs})` : who.name);
-const recordLabel = (e: AuditEntry) => `${ENTITY_LABEL[e.entity] ?? e.entity}: ${e.entityId}`;
-/* The prototype's Detail column: everything about the change beyond who and
-   what, in one muted line. Here that is the record, the change and the reason. */
-const detail = (e: AuditEntry) => [recordLabel(e), describeChange(e.before, e.after), e.reason].filter(Boolean).join(' · ');
 
 /* Ported from the prototype's admAudit (qnipay-workforce-v15.html:9682-9688):
    When (12px muted), Who, Action, Detail (12px muted). The filters the spec
@@ -58,13 +49,14 @@ export function AuditPage() {
 
   return (
     <Page testId={tid.page('iaudit')}>
-      <PageHead title="Audit log" crumb="Setup · Audit log" tip="Every state change anyone makes, newest first, with who acted and when."
+      <PageHead title="Audit log" tip="Every status change anyone makes, newest first, with who acted and when."
         tipTestId={tid.head.tip('iaudit')} />
 
       <FilterBar>
         <SelectFilter testId={tid.audit.filterEntity} label="Record type" value={entity} onValueChange={setEntity} options={ENTITY_OPTIONS} />
         <SearchFilter testId={tid.audit.filterWho} label="Who" value={who} onChange={e => setWho(e.target.value)} placeholder="Who" />
         <SearchFilter testId={tid.audit.filterText} label="Search" value={q} onChange={e => setQ(e.target.value)} placeholder="Search the log" />
+        {audit.isSuccess && <Count testId={tid.audit.count}>{auditCount(audit.data.items.length, audit.data.total)}</Count>}
       </FilterBar>
 
       {audit.isPending && <p className="text-text-secondary">Loading the audit log&hellip;</p>}

@@ -109,7 +109,7 @@ The database has 58 tables in Azure SQL. Most map one to one to a collection in 
 
 | Table | Key columns | Notes |
 | --- | --- | --- |
-| `person` | code, name, email, phone, address, emergency\_name, emergency\_phone, bank\_account, bank\_sort\_code, job\_profile\_id, employee\_type\_id, category, location\_id, department\_id, manager\_person\_id, contracted\_hours, max\_hours, night, cis, state, start\_date, end\_date, bc\_resource\_no, bc\_employee\_no | Bank fields are encrypted (Always Encrypted) and masked in every response. `manager_person_id` replaces today's free-text manager name. State changes only through the transition endpoint. |
+| `person` | code, name, email, phone, address, emergency\_first\_name, emergency\_last\_name, emergency\_phone, bank\_account, bank\_sort\_code, job\_profile\_id, employee\_type\_id, category, location\_id, department\_id, manager\_person\_id, contracted\_hours, max\_hours, night, cis, state, start\_date, end\_date, bc\_resource\_no, bc\_employee\_no | Bank fields are encrypted (Always Encrypted) and masked in every response. `manager_person_id` replaces today's free-text manager name. State changes only through the transition endpoint. |
 | `person_history` | person\_id, at, by\_person\_id, source, field, from\_value, to\_value, reason | Append-only. |
 | `location` | code, name, area, department\_id, cost\_centre\_id, support\_level, min\_per\_shift, manager\_person\_id, address, active, bc\_dimension\_value |  |
 | `department`, `cost_centre` | code, name, manager\_person\_id, bc\_dimension\_value | Mirror Business Central dimension values. |

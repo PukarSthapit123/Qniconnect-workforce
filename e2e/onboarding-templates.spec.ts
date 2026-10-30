@@ -4,7 +4,7 @@ import { tid } from '../src/testids';
 import { sendVersioned, signInEmail } from './support/timesheet';
 import { EDDIE, TOM, openPortal } from './support/onboarding';
 
-/* Onboarding templates chosen by the starter's job profile, on qnipay at the
+/* Onboarding templates chosen by the starter's position, on qnipay at the
    frozen clock: Tom (EMP003) and Priya (EMP002) are both Consultants (CONS).
    Eddie, the administrator, makes a template for CONS with proof of address
    switched off; the starters on that profile are no longer asked for it, and
@@ -14,9 +14,9 @@ test.beforeEach(async ({ api }) => { await api.seed('qnipay'); await api.setCloc
 type Api = { get(path: string): Promise<{ status: number; body: unknown }> };
 const docIds = async (api: Api, code: string) =>
   ((await api.get(`/api/v1/onboarding/team/${code}`)).body as { documents: { id: string }[] }).documents.map(d => d.id);
-async function setProfile(page: Page, api: Api, id: string, jobProfile: string) {
+async function setProfile(page: Page, api: Api, id: string, position: string) {
   const emp = (await api.get(`/api/v1/employees/${id}`)).body as { version: number };
-  expect((await sendVersioned(page, 'PATCH', `/api/v1/employees/${id}`, emp.version, { jobProfile })).status).toBe(200);
+  expect((await sendVersioned(page, 'PATCH', `/api/v1/employees/${id}`, emp.version, { position })).status).toBe(200);
 }
 /* A template for CONS with proof of address off, written straight to the server as the signed-in administrator. */
 async function consultantsWithoutAddress(page: Page) {
@@ -24,7 +24,7 @@ async function consultantsWithoutAddress(page: Page) {
   expect(made.status).toBe(200);
   const row = (made.body as { record: { id: string; version: number; steps: unknown; documents: { id: string; on: boolean }[]; policies: unknown } }).record;
   const put = await sendVersioned(page, 'PUT', `/api/v1/onboarding/templates/${row.id}`, row.version, {
-    name: 'Consultants', jobProfiles: ['CONS'], steps: row.steps, policies: row.policies,
+    name: 'Consultants', positions: ['CONS'], steps: row.steps, policies: row.policies,
     documents: row.documents.map(d => (d.id === 'addr' ? { ...d, on: false } : d)),
   });
   expect(put.status, JSON.stringify(put.body)).toBe(200);
@@ -36,7 +36,7 @@ const portalDocs = async (page: Page) => {
   await page.getByTestId(tid.onb.docs).waitFor();
 };
 
-test('OT an admin makes a template for a job profile and switches a document off; its starters are not asked for it, and others are', async ({ page, api }) => {
+test('OT an admin makes a template for a position and switches a document off; its starters are not asked for it, and others are', async ({ page, api }) => {
   test.setTimeout(120_000);
   await signInEmail(page, EDDIE);
   await page.goto('/setup/monb');
@@ -68,7 +68,7 @@ test('OT an admin makes a template for a job profile and switches a document off
   await expect(page.getByTestId(tid.onb.doc('addr'))).toHaveCount(0);
 });
 
-test('OT a job profile change before submission switches what is asked, and deleting the template falls back to the default', async ({ page, api }) => {
+test('OT a position change before submission switches what is asked, and deleting the template falls back to the default', async ({ page, api }) => {
   test.setTimeout(120_000);
   await signInEmail(page, EDDIE);
   await consultantsWithoutAddress(page);

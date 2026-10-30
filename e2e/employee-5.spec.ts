@@ -43,7 +43,8 @@ test('a new starter lands on the portal alone, completes every step, uploads, ac
   await next.click();
   await body('emergency').waitFor();
 
-  await page.getByTestId(tid.onb.contactField(0, 'nm')).fill('Sanne Achterberg');
+  await page.getByTestId(tid.onb.contactField(0, 'fn')).fill('Sanne');
+  await page.getByTestId(tid.onb.contactField(0, 'ln')).fill('Achterberg');
   await pick(page, tid.onb.contactField(0, 'rel'), 'partner');
   await page.getByTestId(tid.onb.contactField(0, 'ph')).fill('07700 900654');
   await next.click();

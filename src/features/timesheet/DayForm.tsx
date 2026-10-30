@@ -85,7 +85,7 @@ export function DayFields(p: DayFieldsProps) {
     return v === true || (typeof v === 'string' && v.trim() !== '');
   })).map(g => g.group.key)));
   if (!groups.length) return p.which === 'closed' ? null
-    : <Empty testId={tid.dayForm.empty}>No fields are enabled for this employee type yet. Turn a capability on under Employee types.</Empty>;
+    : <Empty testId={tid.dayForm.empty}>No fields are enabled for this work pattern yet. Turn a capability on under Work patterns.</Empty>;
   const shown = groups.filter(g => p.which === 'all' || (p.which === 'open') === g.group.open);
   return <>{shown.map(({ group, fields }) => group.open
     ? <div key={group.key}><FormGroupLabel>{group.name}</FormGroupLabel><GroupBody fields={fields} p={p} /></div>

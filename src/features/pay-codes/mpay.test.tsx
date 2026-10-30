@@ -31,7 +31,7 @@ describe('Pay codes', () => {
     expect(screen.getByTestId(tid.mpay.row('OT-SAT'))).toHaveTextContent('Overtime: Saturday');
     expect(screen.getByTestId(tid.mpay.workType('OT-SAT'))).toHaveTextContent('Yes');
     expect(screen.getByTestId(tid.mpay.value('OT15'))).toHaveTextContent('1.5 ×');
-    expect(screen.getByTestId(tid.mpay.claimed('STD'))).toHaveTextContent('Support Worker, Relief / Bank Worker');
+    expect(screen.getByTestId(tid.mpay.claimed('STD'))).toHaveTextContent('Shift, Bank');
     expect(screen.getByTestId(tid.mpay.claimed('OT20'))).toHaveTextContent('No type yet');
     expect(screen.getByTestId(tid.mpay.row('UNSOC'))).toHaveTextContent('The amount is set in Business Central.');
     expect(screen.getByTestId(tid.mpay.edit('STD'))).toBeInTheDocument();
@@ -137,10 +137,10 @@ describe('Pay codes', () => {
     const user = userEvent.setup();
     await open();
     await user.click(screen.getByTestId(tid.mpay.edit('STD')));
-    expect(screen.getByTestId(tid.mpay.inUse)).toHaveTextContent(/In use by 2 employee types and \d+ timesheet days/);
+    expect(screen.getByTestId(tid.mpay.inUse)).toHaveTextContent(/In use by 2 work patterns and \d+ timesheet days/);
     const remove = screen.getByTestId(tid.mpay.remove);
     expect(remove).toBeDisabled();
-    expect(screen.getByTestId(tid.mpay.removeWhy)).toHaveTextContent(/^In use by 2 employee types and \d+ timesheet days, so it cannot be removed\. Remove those references first\.$/);
+    expect(screen.getByTestId(tid.mpay.removeWhy)).toHaveTextContent(/^In use by 2 work patterns and \d+ timesheet days, so it cannot be removed\. Remove those references first\.$/);
     expect(remove).toHaveAccessibleDescription(screen.getByTestId(tid.mpay.removeWhy).textContent ?? '');
     await user.click(remove);
     expect(screen.queryByRole('dialog', { name: /Remove STD/ })).toBeNull();

@@ -34,7 +34,7 @@ describe('GET /api/v1/profile', () => {
   test('an employee reads their own record, the six fields, and nothing pending', async () => {
     const p = getProfile.response.parse((await (await as('employee'))('GET', '/api/v1/profile')).body);
     expect(p.employee.code).toBe(accountOf('employee').employeeCode);
-    expect(p.fields.map(f => f.key)).toEqual(['phone', 'address', 'emergencyName', 'emergencyPhone', 'bankAccount', 'bankSortCode']);
+    expect(p.fields.map(f => f.key)).toEqual(['phone', 'address', 'emergencyFirstName', 'emergencyLastName', 'emergencyPhone', 'bankAccount', 'bankSortCode']);
     expect(p.pending).toEqual([]);
     expect(p.selfEdit).toBe(true);
     expect(p.employee.bankAccount).toMatch(/^(\*{4}.{0,4})?$/);
@@ -92,7 +92,7 @@ describe('POST /api/v1/profile-changes', () => {
 });
 
 describe('GET /api/v1/profile-changes', () => {
-  test('a manager sees the pending changes for employees at their location', async () => {
+  test('a manager sees the pending changes for employees at their site', async () => {
     const q = listProfileChanges.response.parse((await (await as('manager'))('GET', '/api/v1/profile-changes')).body);
     expect(q.map(c => [c.employeeCode, c.field]).sort()).toEqual([['CP-1088', 'phone'], ['CP-1201', 'address']]);
     expect(q[0]?.employeeName).toBeTruthy();
@@ -189,10 +189,10 @@ describe('POST /api/v1/profile-changes/:id/decision', () => {
     expect(employeeOf('CP-1088').phone).toBe('07700 900555');
     expect(changeFor('CP-1088', 'phone').status).toBe('pending');
   });
-  test('a manager cannot decide for someone at another location', async () => {
+  test('a manager cannot decide for someone at another site', async () => {
     const mine = String(employeeOf(accountOf('manager').employeeCode).location);
     const other = Object.values(store.coll<{ code: string; location: string }>('employees')).find(p => p.location !== mine);
-    if (!other) throw new Error('nobody outside the manager\'s location');
+    if (!other) throw new Error('nobody outside the manager\'s site');
     const id = 'pfc_test_other';
     store.coll('profileChanges')[id] = { id, version: 1, updatedAt: store.now(), employeeCode: other.code, field: 'phone', from: '', to: '1',
       note: '', raisedAt: store.now(), status: 'pending', stage: 'manager', route: ['manager'], decisions: [] };

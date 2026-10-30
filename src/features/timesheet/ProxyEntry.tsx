@@ -38,7 +38,7 @@ export function ProxyEntry({ employee, onClose }: { employee: ProxyTarget; onClo
     <Modal open onOpenChange={o => { if (!o) onClose(); }} title={`Log time · ${employee.name}`} width="wide">
       <Banner testId={tid.proxy.banner} tone="info" title={`Entering on behalf of ${employee.name}`}>
         Recorded as a proxy entry against {employee.code} and attributed to you. {first} is notified.
-        {week && <> The form below is the one their employee type renders: {week.employee.typeName}.</>}</Banner>
+        {week && <> The form below is the one their work pattern renders: {week.employee.typeName}.</>}</Banner>
       {q.isError && <p data-testid={tid.proxy.error} role="alert" className="text-err">{employee.name}’s timesheet could not be loaded. Close this and try again.</p>}
       {!q.isError && !week && <p className="text-text-secondary">Loading {first}’s timesheet&hellip;</p>}
       {week && day && <>

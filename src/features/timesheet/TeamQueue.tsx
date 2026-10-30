@@ -44,7 +44,7 @@ export function TeamQueue({ returnReasonRequired }: { returnReasonRequired: bool
       {decide.refusal && <FormWarn testId={tid.tteam.refusal}>{decide.refusal.message} <span className="opacity-90">{decide.refusal.next}</span></FormWarn>}
       <Table variant="records" data-testid={tid.tteam.table}>
         <TableHeader><TableRow>
-          <TableHead>Employee</TableHead><TableHead>Date</TableHead><TableHead>Location</TableHead>
+          <TableHead>Employee</TableHead><TableHead>Date</TableHead><TableHead>Site</TableHead>
           <TableHead>Pay elements<Tip testId={tid.tteam.elementsTip} text="Employee-declared allowances plus base hours." /></TableHead>
           <TableHead className="text-right">Hours</TableHead><TableHead>Status</TableHead><TableHead><span className="sr-only">Actions</span></TableHead>
         </TableRow></TableHeader>
@@ -62,7 +62,7 @@ export function TeamQueue({ returnReasonRequired }: { returnReasonRequired: bool
                     {r.clock?.closedLate && <Pill testId={tid.clock.queueClosedLate(r.id)} tone="neu" glyph={<History />}>Closed later</Pill>}</span>
                 </TableCell>
                 <TableCell label="Date" className="tabular-nums">{formatDmy(r.date)}</TableCell>
-                <TableCell label="Location">{r.locationName}</TableCell>
+                <TableCell label="Site">{r.locationName}</TableCell>
                 <TableCell label="Pay elements" className="text-xs">{payElements(r)}</TableCell>
                 <TableCell label="Hours" className="text-right tabular-nums">{queueHours(r.minutes)}</TableCell>
                 <TableCell label="Status">

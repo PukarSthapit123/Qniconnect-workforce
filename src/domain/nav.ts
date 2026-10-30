@@ -56,9 +56,9 @@ function setupSections(can: (c: string) => boolean, on: (m: string) => boolean, 
       [portalAdmin, tab('setup', 'aauth', 'Authorization')],
       [portalAdmin, tab('setup', 'asettings', 'Settings')],
     ]),
-    sec('org', 'Organisation', 'Who this organisation is, the template it runs on, the bank holidays, and how it looks', [
+    sec('org', 'Organisation', 'Who this organisation is, the setup preset it runs on, the bank holidays, and how it looks', [
       [can('master_data'), tab('setup', 'aorg', 'Organisation')],
-      [can('master_data'), tab('setup', 'acal', 'Bank holidays')],
+      [can('master_data'), tab('setup', 'acal', 'Calendar')],
     ]),
     sec('mods', 'Modules', 'What this tenant runs, the features inside each module, and how each behaves', [
       [can('mod_cfg'), tab('setup', 'amods', 'Modules & features')],
@@ -67,12 +67,13 @@ function setupSections(can: (c: string) => boolean, on: (m: string) => boolean, 
       [can('onb_cfg') && on('ON'), tab('setup', 'monb', 'Onboarding', { module: 'ON' })],
     ]),
     sec('employees', 'Employees', 'The canonical employee record, what each employee is, and the structure work is costed to', [
-      /* People & access (D12): its portal-login half is a QniConnect page, so
+      /* Setup · Employees (D12): its portal-login half is a QniConnect page, so
          isAdmin alone reaches it (N18, D8); its Workforce half needs master_data */
-      [can('master_data') || portalAdmin, tab('setup', 'aemployees', 'People & access')],
-      [can('type_cfg'), tab('setup', 'atypes', 'Employee types')],
-      [can('master_data'), tab('setup', 'acon', 'Contracts')],
-      [can('master_data'), tab('setup', 'aloc', 'Dimensions')],
+      [can('master_data') || portalAdmin, tab('setup', 'aemployees', 'Employees')],
+      [can('type_cfg'), tab('setup', 'atypes', 'Work patterns')],
+      /* user ruling 2026-10-27: Working hours is a column on Employees, and Dimensions became Master data:
+         the dimensions, positions and projects (with their tasks), each its own kind of thing */
+      [can('master_data'), tab('setup', 'aloc', 'Master data')],
     ]),
     sec('gov', 'Governance', 'Who may do what, who is told, and who signs it off', [
       [can('perm_cfg'), tab('setup', 'aperm', 'Permissions')],

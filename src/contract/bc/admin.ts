@@ -1,5 +1,5 @@
 /* The admin pages' calls (docs/superpowers/inventory/admin.md): the overview
-   (ADM.C2 to ADM.C4; ADM.C1 is People & access's USERS.C1, in
+   (ADM.C2 to ADM.C4; ADM.C1 is Setup · Employees' USERS.C1, in
    ./portal-users.ts), Environments (ENV.C1, ENV.C2) and Authorization
    (AUTHZ.C1 to AUTHZ.C3). Every one went through fetchThroughBackend (BCS):
    Content-Type and Accept, the bc token, credentials include, the

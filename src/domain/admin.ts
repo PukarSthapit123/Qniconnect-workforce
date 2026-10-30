@@ -45,6 +45,15 @@ export function daysRemaining(expiresAt: string | null | undefined, now = Date.n
   return d ? Math.ceil((d.getTime() - now) / DAY_MS) : null;
 }
 
+/* The authorization's whole term in days, from when it was issued to when it
+   expires, or null when either is unknown or they are out of order. The
+   overview's meter measures the days left against it (Ruling Q20). */
+export function authTermDays(issuedAt: string | null | undefined, expiresAt: string | null | undefined): number | null {
+  const from = valid(issuedAt), to = valid(expiresAt);
+  if (!from || !to || to <= from) return null;
+  return Math.round((to.getTime() - from.getTime()) / DAY_MS);
+}
+
 /* ---------- the overview (ADM.DASH) ---------- */
 
 export interface UserCounts { total: number; active: number; pending: number; inactive: number }

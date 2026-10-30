@@ -31,7 +31,7 @@ describe('who is greeted, and how', () => {
     expect(['00:00', '11:59', '12:00', '17:59', '18:00', '23:30'].map(greeting))
       .toEqual(['Good morning', 'Good morning', 'Good afternoon', 'Good afternoon', 'Good evening', 'Good evening']);
   });
-  test('the who-line names the job, the type only when it differs, and the location', () => {
+  test('the who-line names the job, the type only when it differs, and the site', () => {
     expect(whoLine({ job: 'Support Worker', type: 'Shift worker', location: 'Willow House' })).toBe('Support Worker · Shift worker · Willow House');
     expect(whoLine({ job: 'Shift worker', type: 'shift worker', location: 'Willow House' })).toBe('Shift worker · Willow House');
     expect(whoLine({ job: '', type: 'Salaried', location: '' })).toBe('Salaried');

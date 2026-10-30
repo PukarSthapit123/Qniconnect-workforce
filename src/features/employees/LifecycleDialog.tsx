@@ -24,7 +24,7 @@ export function LifecycleDialog({ employee, onClose }: { employee: Employee; onC
     <Modal open onOpenChange={o => { if (!o) onClose(); }} title={employee.name}
       footer={<>
         <Button testId={tid.lifecycle.cancel} kind="ghost" onClick={onClose}>Cancel</Button>
-        <Button testId={tid.lifecycle.save} kind="primary" pending={move.anyPending} onClick={save}>Change state</Button></>}>
+        <Button testId={tid.lifecycle.save} kind="primary" pending={move.anyPending} onClick={save}>Change status</Button></>}>
       <div className="mb-md flex flex-wrap items-center gap-sm">
         <StatePill testId={tid.lifecycle.from} state={employee.state} />
         <Small>{from.note}</Small>

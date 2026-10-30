@@ -77,7 +77,7 @@ test('phone: no horizontal overflow on built pages at 390px', async ({ page, sig
    persona that reaches it; the employee form and the proposal dialog too. */
 const PAGES_1B: Record<'admin' | 'manager' | 'employee', [string, string][]> = {
   admin: [['/setup/aemployees', tid.employees.table], ['/setup/aloc', tid.dims.card('locations')], ['/setup/aloc?d=locations', tid.dims.table],
-    ['/setup/aloc?d=projects', tid.dims.table], ['/setup/acon', tid.contracts.table], ['/setup/atypes', tid.types.detail]],
+    ['/setup/aloc?d=projects', tid.dims.table], ['/setup/atypes', tid.types.detail]],
   manager: [['/team/temployees', tid.employees.table]],
   employee: [['/work/profile', tid.profile.state]],
 };
@@ -112,6 +112,7 @@ for (const theme of ['light', 'dark'] as const) {
   }
 }
 test('phone: plan 1b pages have no horizontal overflow at 390px', async ({ page, signInAs }) => {
+  test.setTimeout(60_000); // three sign-ins and eight page loads, about 31s on the dev server
   await page.setViewportSize({ width: 390, height: 844 });
   for (const persona of ['admin', 'manager', 'employee'] as const) {
     await signInAs(persona);
@@ -188,8 +189,8 @@ test.describe('module 2 pages', () => {
    and a guide on Permissions, for Dee Fitzgerald. Team Home, the inbox panel
    and the page-unavailable page for Rachel Hussain. My home with its day
    dialog, and Documents for Amara Okafor. */
-const TEMPLATE_FILE = JSON.stringify({ kind: 'qnipay.template', v: 1, key: 'tpl_x', template: {
-  name: 'From a file', description: 'Brought in', scope: 'config', modules: { R: true }, flags: {}, extras: {}, labels: {}, employeeTypes: [] } });
+const PRESET_FILE = JSON.stringify({ kind: 'qnipay.template', v: 1, key: 'tpl_x', template: {
+  name: 'From a file', description: 'Brought in', scope: 'config', modules: { R: true }, flags: {}, extras: {}, labels: {}, workPatterns: [] } });
 const PAGES_1C: [string, Step[]][] = [
   [DEE, [
     ['/setup/aorg', async page => { await open('/setup/aorg', tid.aorg.spine)(page); await page.getByTestId(tid.aorg.noSaved).waitFor(); }],
@@ -197,7 +198,7 @@ const PAGES_1C: [string, Step[]][] = [
     ['template save dialog', async page => { await escape(page); await click(tid.aorg.saveOpen, tid.aorg.saveName)(page); }],
     ['template imported', async page => {
       await escape(page);
-      await page.getByTestId(tid.aorg.importFile).setInputFiles({ name: 'from-a-file.json', mimeType: 'application/json', buffer: Buffer.from(TEMPLATE_FILE) });
+      await page.getByTestId(tid.aorg.importFile).setInputFiles({ name: 'from-a-file.json', mimeType: 'application/json', buffer: Buffer.from(PRESET_FILE) });
       await page.getByTestId(tid.aorg.savedRow('tpl_from_a_file')).waitFor();
     }],
     ['template remove confirm', click(tid.aorg.remove('tpl_from_a_file'), tid.modal.confirm)],
@@ -357,7 +358,7 @@ const pages5 = (api: Parameters<typeof completeMine>[1]): [string, Step[]][] => 
     ['remove policy confirm', async page => { await escape(page); await click(tid.monb.polRemove('pol_itsec'), tid.modal.root)(page); }],
     ['add document dialog', async page => { await escape(page); await click(tid.monb.docAdd, tid.monb.docName)(page); }],
     ['named template', open('/setup/monb?template=onbt-senior-consultants', tid.monb.card('applies'))],
-    ['add job profile list', click(tid.monb.profileAdd, `${tid.monb.profileAdd}-search`)],
+    ['add position list', click(tid.monb.profileAdd, `${tid.monb.profileAdd}-search`)],
     ['new template dialog', async page => { await escape(page); await click(tid.monb.templateNew, tid.monb.newName)(page); }],
     ['delete template confirm', async page => { await escape(page); await click(tid.monb.templateDelete, tid.modal.root)(page); }],
   ]],
@@ -480,39 +481,39 @@ test.describe('pay codes pages', () => {
   });
 });
 
-/* The employee form's job profile combobox with its panel open: the search box
+/* The employee form's position combobox with its panel open: the search box
    and the list sit in a portal over the dialog. */
 test.describe('searchable combobox', () => {
-  const openJobProfile = async (page: Page) => {
+  const openPosition = async (page: Page) => {
     await page.goto('/setup/aemployees');
     await page.getByTestId(tid.employees.table).waitFor();
     await page.getByTestId(tid.employees.add).click();
     await page.getByTestId(tid.employeeForm.root).waitFor();
-    await page.getByTestId(tid.employeeForm.field('jobProfile')).click();
-    await page.getByTestId(`${tid.employeeForm.field('jobProfile')}-search`).waitFor();
+    await page.getByTestId(tid.employeeForm.field('position')).click();
+    await page.getByTestId(`${tid.employeeForm.field('position')}-search`).waitFor();
   };
   for (const theme of ['light', 'dark'] as const) {
-    test(`axe: the open job profile combobox has no violations (${theme})`, async ({ page, signInAs }) => {
+    test(`axe: the open position combobox has no violations (${theme})`, async ({ page, signInAs }) => {
       await signInAs('admin');
-      await openJobProfile(page);
+      await openPosition(page);
       await setTheme(page, theme);
       await page.waitForFunction(() => document.getAnimations().every(a => a.playState !== 'running'));
       const r = await new AxeBuilder({ page }).analyze();
       expect(r.violations.map(v => `${v.id}: ${v.nodes.length}`)).toEqual([]);
     });
   }
-  test('phone: the open job profile combobox has no horizontal overflow at 390px, even with a long label', async ({ page, api, signInAs }) => {
+  test('phone: the open position combobox has no horizontal overflow at 390px, even with a long label', async ({ page, api, signInAs }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await signInAs('admin');
     const long = 'Senior regional operations and compliance lead for the north west and the islands';
-    const made = await api.send('POST', '/api/v1/job-profiles', { code: 'LONGPROFILE', name: long, night: false });
+    const made = await api.send('POST', '/api/v1/positions', { code: 'LONGPROFILE', name: long, night: false });
     expect(made.status).toBeLessThan(300);
-    await openJobProfile(page);
-    await expect(page.getByTestId(`${tid.employeeForm.field('jobProfile')}-option-LONGPROFILE`)).toBeVisible();
+    await openPosition(page);
+    await expect(page.getByTestId(`${tid.employeeForm.field('position')}-option-LONGPROFILE`)).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     const box = await page.getByRole('listbox').boundingBox();
     expect(box && box.x >= 0 && box.x + box.width <= 390, 'the panel within the screen').toBe(true);
-    const row = await page.getByTestId(`${tid.employeeForm.field('jobProfile')}-option-LONGPROFILE`).boundingBox();
+    const row = await page.getByTestId(`${tid.employeeForm.field('position')}-option-LONGPROFILE`).boundingBox();
     expect(row && row.x >= 0 && row.x + row.width <= 390, 'the long row within the screen').toBe(true);
   });
 });
@@ -523,7 +524,7 @@ test.describe('searchable combobox', () => {
    a failed authorization callback); account setup (environment selection, its
    "Sign in required" and "Access not provisioned" cards, the first-login
    welcome); and Business Central setup (overview, environments with the add
-   dialog, authorization with its dialog, settings) and People & access with
+   dialog, authorization with its dialog, settings) and Setup · Employees with
    the add user dialog, for Dee Fitzgerald, a portal admin. */
 const FIRST_LOGIN = 'firstlogin@brightpath.org';
 /* The fake /bc's data lives in this page's memory: change it through the
@@ -560,7 +561,7 @@ test.describe('QniConnect pages', () => {
         ['/', open('/', tid.page('landing'))],
         ['/login', open('/login', tid.page('login'))],
         ['/register', open('/register', tid.reg.step)],
-        ['/pricing with the comparison', async p => { await open('/pricing', tid.price.compare)(p); await click(tid.price.compare, tid.price.table)(p); }],
+        ['/pricing', open('/pricing', tid.price.base)],
         ['/auth-error', open('/auth-error', tid.auth.errorMessage)],
         ['/auth/callback, failed', open('/auth/callback?error=access_denied&error_description=The%20admin%20declined', tid.auth.callbackReturn)],
       ];
@@ -583,7 +584,7 @@ test.describe('QniConnect pages', () => {
       await serious(page, 'first-login welcome', theme);
     });
 
-    test(`axe: Business Central setup and People & access have no serious issues (${theme})`, async ({ page }) => {
+    test(`axe: Business Central setup and Setup · Employees have no serious issues (${theme})`, async ({ page }) => {
       test.setTimeout(240_000);
       await signInEmail(page, DEE);
       const steps: Step[] = [
@@ -593,8 +594,9 @@ test.describe('QniConnect pages', () => {
         ['/setup/aauth', async p => { await escape(p); await open('/setup/aauth', tid.aauth.details)(p); }],
         ['new authorization dialog', click(tid.aauth.start, tid.aauth.begin)],
         ['/setup/asettings', async p => { await escape(p); await open('/setup/asettings', tid.asettings.save)(p); }],
-        ['/setup/aemployees', async p => { await open('/setup/aemployees', tid.ausers.list)(p); await p.getByTestId(tid.people.portalCol('CP-1042')).waitFor(); }],
-        ['add user dialog', click(tid.ausers.add, tid.ausers.save)],
+        ['/setup/aemployees', async p => { await open('/setup/aemployees', tid.employees.table)(p); await p.getByTestId(tid.people.portalCol('CP-1042')).waitFor(); }],
+        /* the login is managed on the record now (2026-10-27): its edit dialog is the same form the add dialog was */
+        ['login dialog', async p => { await click(tid.employees.open('CP-1042'), tid.employee.record)(p); await click(tid.ausers.menu('pu-CP-1042'), tid.ausers.edit('pu-CP-1042'))(p); await click(tid.ausers.edit('pu-CP-1042'), tid.ausers.save)(p); }],
       ];
       for (const [where, go] of steps) { await go(page); await serious(page, where, theme); }
     });
@@ -610,7 +612,7 @@ test.describe('QniConnect pages', () => {
     await fits('environment selection');
     await signInEmail(page, DEE);
     for (const [path, ready] of [['/setup/aoverview', tid.aoverview.users], ['/setup/aenv', tid.aenv.list], ['/setup/aauth', tid.aauth.details],
-      ['/setup/asettings', tid.asettings.save], ['/setup/aemployees', tid.ausers.list]] as const) {
+      ['/setup/asettings', tid.asettings.save], ['/setup/aemployees', tid.employees.table]] as const) {
       await open(path, ready)(page); await fits(path);
     }
   });

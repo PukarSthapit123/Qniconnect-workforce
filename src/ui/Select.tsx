@@ -1,6 +1,6 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/ui/shadcn/select';
 
-/* disabled: shown, but cannot be chosen (a job profile another template already holds). */
+/* disabled: shown, but cannot be chosen (a position another template already holds). */
 export interface SelectOption { value: string; label: string; disabled?: boolean; }
 
 export interface SelectBoxProps {

@@ -48,10 +48,10 @@ export function onbConfig(): StoredConfig & BaseConfig {
   return { ...withDocs, ...withPolicies(withDocs, policiesNow().map(pol => pol.id)) };
 }
 
-/* What an employee is asked: their job profile's template, or the default when
+/* What an employee is asked: their position's template, or the default when
    none lists it (or the employee is unknown). */
 export function resolvedFor(employeeCode: string): ResolvedOnboarding & { template: StoredTemplate | null } {
-  const template = templateFor(employeeByCode(employeeCode)?.jobProfile ?? '', templatesNow());
+  const template = templateFor(employeeByCode(employeeCode)?.position ?? '', templatesNow());
   return { ...configFor(template, onbConfig()), template };
 }
 export const caseContext = (employeeCode: string): BlockerContext => ({ config: resolvedFor(employeeCode).config, features: featuresNow() });

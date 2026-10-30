@@ -16,7 +16,8 @@ import { bcStore } from '@/mocks/bc/seed';
 import { MANUAL_REDIRECT_KEY } from '@/api/bc/cleanup';
 import { expectTestIdCoverage } from '@/test/testid-coverage';
 import { accountOf, clearStubAccount, resetTo, setSeedEnvironment, setStubAccount, testAuth } from '@/test/api-helpers';
-import { COMPARISON, TIERS } from './PricingPage';
+import { HOW } from './PricingPage';
+import { ADD_ONS, BASE_INCLUDES } from '@/domain/pricing';
 import { LANDING_CLEARS } from './LandingPage';
 
 const BASE = (import.meta.env.REACT_APP_API_BASE_URL ?? '').replace(/\/+$/, '');
@@ -285,95 +286,42 @@ describe('LOGIN: the sign-in page', () => {
   });
 });
 
-describe('PRICE: pricing', () => {
-  const panel = () => screen.getByTestId(/^price-panel-/);
-
-  test('PRICE.S1 and PRICE.R1: Basic shows first, one tier at a time, and the tier control changes it', async () => {
+describe('PRICE: pricing (Ruling Q23: one base price, add-ons priced separately)', () => {
+  test('the title is the price, £0.50 per employee a month, with the annual price beside it; the base block lists what it includes, with full test id coverage', async () => {
     open('/pricing');
     await screen.findByTestId(tid.page('pricing'));
-    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Choose the right plan for your organization');
-    expect(screen.getByTestId(tid.page('pricing'))).toHaveTextContent('QniConnect offers flexible license options to meet the specific needs of your business');
-    expect(screen.getAllByTestId(/^price-panel-/)).toHaveLength(1);
-    expect(panel()).toHaveAttribute('data-testid', tid.price.panel('basic'));
-    expect(screen.getByTestId(tid.price.tier('basic'))).toHaveAttribute('aria-pressed', 'true');
-    fireEvent.click(screen.getByTestId(tid.price.tier('premium')));
-    expect(panel()).toHaveAttribute('data-testid', tid.price.panel('premium'));
-    expect(screen.getByTestId(tid.price.tier('premium'))).toHaveAttribute('aria-pressed', 'true');
-    expect(screen.getByTestId(tid.price.tier('basic'))).toHaveAttribute('aria-pressed', 'false');
-    expect(screen.queryByTestId(tid.price.table)).toBeNull();
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(/^£0.50 per employee a month$/);
+    expect(screen.getByTestId(tid.page('pricing'))).toHaveTextContent('QniConnect gives your employees their payslips and their profile, signed in with Microsoft 365 and read from your Business Central payroll. Billed monthly, or £0.40 a month billed annually (20% off).');
+    const base = screen.getByTestId(tid.price.base);
+    expect(within(base).getByRole('heading', { level: 2 })).toHaveTextContent('What QniConnect includes');
+    expect(within(base).getAllByRole('listitem').map(li => li.textContent)).toEqual([...BASE_INCLUDES]);
+    /* no tiers left to choose between or compare */
+    expect(screen.queryByRole('group', { name: 'License tier' })).toBeNull();
+    expect(screen.queryByRole('table')).toBeNull();
+    expect(screen.getByTestId(tid.page('pricing'))).not.toHaveTextContent(/Essential|Premium|£5|£7/);
     expectTestIdCoverage();
   });
 
-  test('PRICE.S2 and PRICE.R5: each tier\'s copy, price, list and call to action, word for word', async () => {
+  test('Timesheet and Onboarding are add-ons, each with what it does and its price still to be confirmed, and an email to ask', async () => {
     open('/pricing');
     await screen.findByTestId(tid.page('pricing'));
-    const expected = {
-      basic: ['Basic license', '£0.5', 'Employee profile visibility', 'Payslip list and detailed preview', 'Secure PDF payslip download', 'Microsoft 365 authentication', 'Get started with Basic', 'Designed for employees who need:', 'Seamless login with existing Microsoft 365 credentials'],
-      essential: ['Essential license', 'Most popular', '£5', 'All Basic features included', 'Personalized employee dashboard', 'Document management system', 'Leave management and time tracking', 'Reporting and analytics tools', 'Get started with Essential', 'Perfect for organizations that need:', 'Time tracking capabilities for accurate attendance records'],
-      premium: ['Premium license', '£7', 'All Basic & Essential features included', 'Comprehensive starter checklist', 'Advanced onboarding tools', 'Enhanced reporting capabilities', 'Priority support', 'Get started with Premium', 'Ideal for organizations that want:', 'Priority support with dedicated account management'],
-    };
-    for (const [tier, words] of Object.entries(expected)) {
-      fireEvent.click(screen.getByTestId(tid.price.tier(tier)));
-      const p = screen.getByTestId(tid.price.panel(tier));
-      for (const w of words) expect(p, `${tier}: ${w}`).toHaveTextContent(w);
-      expect(p).toHaveTextContent('per employee/month');
-      expect(p).toHaveTextContent('billed monthly');
+    for (const o of ADD_ONS) {
+      const row = screen.getByTestId(tid.price.addOn(o.code));
+      expect(within(row).getByRole('heading', { level: 3 })).toHaveTextContent(o.name);
+      expect(row).toHaveTextContent('Price to be confirmed');
+      expect(row).toHaveTextContent(o.summary);
     }
-    expect(Object.values(TIERS).map(t => t.price)).toEqual(['£0.5', '£5', '£7']);
+    expect(ADD_ONS.map(o => o.name)).toEqual(['Timesheet', 'Onboarding']);
+    expect(screen.getByTestId(tid.price.ask)).toHaveAttribute('href', 'mailto:support@dogmagroup.co.uk');
   });
 
-  test('PRICE.R2 and PRICE.S3: the comparison opens and closes, and says which', async () => {
+  test('PRICE.R4: the call to action goes to /register', async () => {
     open('/pricing');
-    const toggle = await screen.findByTestId(tid.price.compare);
-    expect(toggle).toHaveTextContent('View detailed comparison');
-    expect(toggle).toHaveAttribute('aria-expanded', 'false');
-    fireEvent.click(toggle);
-    expect(toggle).toHaveTextContent('Hide detailed comparison');
-    expect(toggle).toHaveAttribute('aria-expanded', 'true');
-    expect(toggle.querySelector('svg')).toHaveClass('rotate-180');
-    expect(screen.getByTestId(tid.price.table)).toBeInTheDocument();
-    expectTestIdCoverage();
-    fireEvent.click(toggle);
-    expect(screen.queryByTestId(tid.price.table)).toBeNull();
-  });
-
-  test('PRICE.R3: the comparison has QniConnect\'s twelve rows, in order, ticked as it ticked them, on alternating rows', async () => {
-    open('/pricing');
-    fireEvent.click(await screen.findByTestId(tid.price.compare));
-    const table = screen.getByTestId(tid.price.table);
-    expect(within(table).getAllByRole('columnheader').map(h => h.textContent)).toEqual(['Feature', 'Basic', 'Essential', 'Premium']);
-    const rows = within(table).getAllByRole('row').slice(1);
-    expect(rows.map(r => r.firstChild?.textContent)).toEqual(['Profile page visibility', 'Payslip list view', 'Payslip preview', 'Payslip download (PDF)',
-      'Microsoft 365 authentication', 'Business Central integration', 'Dashboard', 'Document management', 'Leave management', 'Time tracking',
-      'Reporting & analytics', 'Starter checklist']);
-    rows.forEach((r, i) => {
-      const marks = [...r.querySelectorAll('svg')].map(s => s.getAttribute('aria-label'));
-      /* a label on an svg is read only with role img */
-      expect([...r.querySelectorAll('svg')].every(s => s.getAttribute('role') === 'img')).toBe(true);
-      expect(marks, r.firstChild?.textContent ?? '').toEqual(COMPARISON[i]?.slice(1).map(on => (on ? 'Included' : 'Not included')));
-    });
-    expect(rows.slice(6).map(r => r.querySelectorAll('[aria-label="Included"]').length)).toEqual([2, 2, 2, 2, 2, 1]);
-    expect(table.querySelector('tbody')?.className).toContain('nth-child(even)');
-  });
-
-  test('PRICE.R4: every call to action goes to /register, without the tier', async () => {
-    open('/pricing');
-    await screen.findByTestId(tid.page('pricing'));
-    for (const tier of ['basic', 'essential', 'premium']) {
-      fireEvent.click(screen.getByTestId(tid.price.tier(tier)));
-      expect(screen.getByTestId(tid.price.cta(tier))).toHaveAttribute('href', '/register');
-    }
-    fireEvent.click(screen.getByTestId(tid.price.cta('premium')));
+    const cta = await screen.findByTestId(tid.price.cta);
+    expect(cta).toHaveTextContent('Register your organisation');
+    expect(cta).toHaveAttribute('href', '/register');
+    fireEvent.click(cta);
     expect(await screen.findByTestId(tid.page('register'))).toBeInTheDocument();
-    /* the form starts on Essential whatever was chosen here (REG.R1) */
-  });
-
-  test('PRICE.R6 and PRICE.R7: no annual discount here, and the tiers\' own wording, not registration\'s', async () => {
-    open('/pricing');
-    const page = await screen.findByTestId(tid.page('pricing'));
-    expect(page).not.toHaveTextContent(/annual|20%/i);
-    expect(page).toHaveTextContent('Employee profile visibility');
-    expect(page).not.toHaveTextContent('Profile visibility,');
   });
 
   test('PRICE.R8: public, and open to someone signed in', async () => {
@@ -392,23 +340,15 @@ describe('PRICE: pricing', () => {
     expect(screen.getByTestId(tid.pub.year)).toHaveTextContent(String(new Date().getFullYear()));
   });
 
-  test('PRICE.R10: one tier control at every width: a group of three pressed buttons, no separate phone select', async () => {
-    open('/pricing');
-    await screen.findByTestId(tid.page('pricing'));
-    const group = screen.getByRole('group', { name: 'License tier' });
-    expect(within(group).getAllByRole('button').map(b => b.textContent)).toEqual(['Basic', 'Essential', 'Premium']);
-    expect(document.querySelector('select')).toBeNull();
-  });
-
-  test('PRICE header: the logo goes home, Register and Sign in go to their pages; How it works has its three steps', async () => {
+  test('PRICE header: the logo goes home, Register and Sign in go to their pages; How access works is three plain lines, not numbered cards', async () => {
     open('/pricing');
     await screen.findByTestId(tid.page('pricing'));
     expect(screen.getByTestId(tid.pub.home)).toHaveAttribute('href', '/');
     expect(screen.getByTestId(tid.pub.register)).toHaveAttribute('href', '/register');
     expect(screen.getByTestId(tid.pub.signIn)).toHaveAttribute('href', '/login');
-    const how = screen.getByRole('region', { name: 'How license-based access works' });
-    expect(how).toHaveTextContent('QniConnect intelligently adapts to your organization’s license tier, showing only the features your employees have access to.');
-    expect(within(how).getAllByRole('listitem').map(li => li.querySelector('h3')?.textContent)).toEqual(['User authentication', 'License detection', 'Personalized experience']);
+    const how = screen.getByRole('region', { name: 'How access works' });
+    expect(within(how).getAllByRole('listitem').map(li => li.textContent)).toEqual([...HOW]);
+    expect(how.querySelector('ol, h3')).toBeNull();
   });
 });
 
@@ -522,36 +462,36 @@ describe('REG: the registration form', () => {
     expect(screen.getByTestId(tid.reg.next)).toBeEnabled();
   });
 
-  test('REG.R11 to REG.R15: step 3: billing, the plans and the total; step 4: the plan line', async () => {
+  test('REG.R11 to REG.R13 (Ruling Q23): step 3: billing, the base price and what it includes, the add-ons to be priced, and the total; step 4: the plan line', async () => {
     open('/register');
     await screen.findByTestId(tid.page('register'));
     type('companyName', 'A'); type('companyEmail', 'b'); next();
     for (const k of ['tenantId', 'domainName', 'bcEnvironment', 'bcCompanyName']) type(k, 'x');
     type('numberOfEmployees', '10'); next();
-    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Select your plan');
+    expect(screen.getByRole('heading', { level: 2 })).toHaveTextContent('Your plan');
     expect(screen.getByTestId(tid.reg.billing('annual'))).toHaveAttribute('aria-pressed', 'true');
     expect(screen.getByTestId(tid.reg.billing('annual'))).toHaveTextContent('Annual (save 20%)');
-    expect(screen.getByTestId(tid.reg.plan('essential'))).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByTestId(tid.reg.plan('essential'))).toHaveTextContent('Popular');
-    expect(screen.getByTestId(tid.reg.plan('basic'))).toHaveTextContent(/Basic£0\.5\/user\/mo.*Profile visibility.*Payslip access.*Secure auth/);
-    expect(screen.getByTestId(tid.reg.total)).toHaveTextContent('£480.00');
-    expect(screen.getByTestId(tid.reg.totalNote)).toHaveTextContent('Essential plan · 10 users · billed annually20% off');
+    /* one base, nothing to choose */
+    expect(screen.queryByRole('radiogroup')).toBeNull();
+    const base = screen.getByTestId(tid.reg.plan('base'));
+    expect(base).toHaveTextContent('QniConnect£0.40/user/mo');
+    expect(within(base).getAllByRole('listitem').map(li => li.textContent)).toEqual([...BASE_INCLUDES]);
+    for (const o of ADD_ONS) expect(screen.getByTestId(tid.reg.addOn(o.code))).toHaveTextContent(`${o.name}Price to be confirmed`);
+    expect(screen.getByTestId(tid.page('register'))).toHaveTextContent('Add-ons are not in the total until their prices are set.');
+    expect(screen.getByTestId(tid.reg.total)).toHaveTextContent('£48.00');
+    expect(screen.getByTestId(tid.reg.totalNote)).toHaveTextContent('QniConnect · 10 users · billed annually20% off');
     expect(screen.getByTestId(tid.page('register'))).toHaveTextContent('per year');
-    fireEvent.click(screen.getByTestId(tid.reg.plan('premium')));
-    expect(screen.getByTestId(tid.reg.total)).toHaveTextContent('£672.00');
-    fireEvent.keyDown(screen.getByTestId(tid.reg.plan('premium')), { key: 'ArrowRight' });
-    expect(screen.getByTestId(tid.reg.plan('basic'))).toHaveAttribute('aria-checked', 'true');
-    expect(screen.getByTestId(tid.reg.plan('basic'))).toHaveFocus();
     fireEvent.click(screen.getByTestId(tid.reg.billing('monthly')));
+    expect(base).toHaveTextContent('QniConnect£0.50/user/mo');
     expect(screen.getByTestId(tid.reg.total)).toHaveTextContent('£5.00');
-    expect(screen.getByTestId(tid.reg.totalNote)).toHaveTextContent(/^Basic plan · 10 users · billed monthly$/);
+    expect(screen.getByTestId(tid.reg.totalNote)).toHaveTextContent(/^QniConnect · 10 users · billed monthly$/);
     expect(screen.getByTestId(tid.page('register'))).toHaveTextContent('per month');
     next();
-    expect(screen.getByTestId(tid.reg.summary('plan'))).toHaveTextContent('Basic · £0.5/user/mo');
+    expect(screen.getByTestId(tid.reg.summary('plan'))).toHaveTextContent('QniConnect · £0.50/user/mo');
     fireEvent.click(screen.getByTestId(tid.reg.prev));
     fireEvent.click(screen.getByTestId(tid.reg.billing('annual')));
     next();
-    expect(screen.getByTestId(tid.reg.summary('plan'))).toHaveTextContent('Basic · £0.40/user/mo');
+    expect(screen.getByTestId(tid.reg.summary('plan'))).toHaveTextContent('QniConnect · £0.40/user/mo');
   });
 
   test('REG step 4: the summary shows what was typed, a dash for nothing, and the agreements link to the legal page', async () => {

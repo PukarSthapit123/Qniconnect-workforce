@@ -97,11 +97,11 @@ test.describe('on qnipay', () => {
 test.describe('on social', () => {
   test.beforeEach(async ({ api }) => { await api.seed('social'); await api.setClock(FROZEN); });
 
-  test('a manager sees and acts on starters at their own location only', async ({ page, api }) => {
+  test('a manager sees and acts on starters at their own site only', async ({ page, api }) => {
     /* Dee adds a starter at Beacon Court */
     await signInEmail(page, DEE);
     const made = await api.send('POST', '/api/v1/employees', {
-      code: 'CP-9001', name: 'Hannah Vogel', email: 'hannah.vogel@brightpath.org', phone: '', jobProfile: 'SW', employeeType: 'shift', category: '', location: 'BC',
+      code: 'CP-9001', firstName: 'Hannah', middleName: '', lastName: 'Vogel', knownAs: '', email: 'hannah.vogel@brightpath.org', phone: '', position: 'SW', workPattern: 'shift', employmentType: '', location: 'BC', grade: '', level: '',
       department: '', manager: '', contractedHours: 30, maxHours: 0, night: false, resource: '', cis: false, start: '2026-09-01', state: 'candidate', userType: 'employee',
     });
     expect(made.status).toBe(200);

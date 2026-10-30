@@ -73,7 +73,7 @@ export const homeHandlers = [
       month, label: monthLabel(month), thisMonth: monthOf(today), bounds, today,
       employee: { code: p.code, name: p.name, location: nameOf('locations', p.location) },
       greeting: `${greeting(clock.time)}, ${firstName(p.name)}`,
-      who: whoLine({ job: p.jobProfile ? nameOf('jobProfiles', p.jobProfile) : '', type: p.employeeType ? nameOf('employeeTypes', p.employeeType) : '', location: nameOf('locations', p.location) }),
+      who: whoLine({ job: p.position ? nameOf('positions', p.position) : '', type: p.workPattern ? nameOf('workPatterns', p.workPattern) : '', location: nameOf('locations', p.location) }),
       leadingBlanks: leadingBlanks(month), days, totals, summary: monthSummary(totals), key: monthKey(keyDays),
       todayDay: dayOf(today),
       week: { minutes: weekMinutes, text: hm(weekMinutes), contracted: p.contractedHours },

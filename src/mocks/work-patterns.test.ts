@@ -1,42 +1,42 @@
 import { server } from './node';
 import { store } from './store';
 import { Refusal } from '@/contract/common';
-import { createEmployeeType, getTypeLibrary, listEmployeeTypes, removeEmployeeType, updateEmployeeType } from '@/contract/employee-types';
+import { createWorkPattern, getTypeLibrary, listWorkPatterns, removeWorkPattern, updateWorkPattern } from '@/contract/work-patterns';
 import { audits, caller, fault, resetTo, snapshot, tokenFor, type Persona } from '@/test/api-helpers';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' })); afterAll(() => server.close());
 beforeEach(() => resetTo('social'));
 const as = async (p: Persona) => caller(await tokenFor(p));
-const WRITES = ['employeeTypes', 'audit'];
-const BASE = '/api/v1/employee-types';
-const sample = { code: 'waking_night', name: 'Waking Night Support', category: 'Contracted', mode: 'clock', uom: 'hour', capabilities: ['shift'], startedFrom: 'blank' };
+const WRITES = ['workPatterns', 'audit'];
+const BASE = '/api/v1/work-patterns';
+const sample = { code: 'waking_night', name: 'Waking Night Support', employmentType: 'Contracted', mode: 'clock', uom: 'hour', fieldGroups: ['shift'], startedFrom: 'blank' };
 const typeByCode = (code: string) => {
-  const t = Object.values(store.coll<{ id: string; version: number; code: string }>('employeeTypes')).find(x => x.code === code);
-  if (!t) throw new Error(`no employee type ${code}`);
+  const t = Object.values(store.coll<{ id: string; version: number; code: string }>('workPatterns')).find(x => x.code === code);
+  if (!t) throw new Error(`no work pattern ${code}`);
   return t;
 };
 const heldType = () => {
-  const p = Object.values(store.coll<{ employeeType: string }>('employees'))[0];
+  const p = Object.values(store.coll<{ workPattern: string }>('employees'))[0];
   if (!p) throw new Error('no employees');
-  return p.employeeType;
+  return p.workPattern;
 };
 
 test('the list parses with in-use counts, for anyone signed in', async () => {
-  const list = listEmployeeTypes.response.parse((await (await as('employee'))('GET', BASE)).body);
+  const list = listWorkPatterns.response.parse((await (await as('employee'))('GET', BASE)).body);
   expect(list.find(t => t.code === heldType())?.inUse).toBeGreaterThan(0);
 });
-test('the library offers the prototype\'s archetypes and type capabilities, to type_cfg only', async () => {
+test('the library offers the prototype\'s archetypes and field groups, to type_cfg only', async () => {
   const lib = getTypeLibrary.response.parse((await (await as('admin'))('GET', `${BASE}/library`)).body);
   expect(lib.archetypes.length).toBeGreaterThan(2);
-  expect(lib.capabilities.map(c => c.code)).toEqual(['vehicle', 'site', 'project', 'shift']);
+  expect(lib.fieldGroups.map(c => c.code)).toEqual(['vehicle', 'site', 'project', 'shift']);
   expect((await (await as('manager'))('GET', `${BASE}/library`)).status).toBe(403);
 });
 test('ET A type is created, with entry mode and pay basis, and audited with where it started from', async () => {
   const r = await (await as('admin'))('POST', BASE, sample);
   expect(r.status).toBe(200);
-  const { record, auditId } = createEmployeeType.response.parse(r.body);
+  const { record, auditId } = createWorkPattern.response.parse(r.body);
   expect(record).toMatchObject({ code: 'waking_night', mode: 'clock', uom: 'hour', version: 1 });
-  expect(audits().find(a => a.id === auditId)).toMatchObject({ act: 'Employee type created', after: expect.objectContaining({ startedFrom: 'blank' }) });
+  expect(audits().find(a => a.id === auditId)).toMatchObject({ act: 'Work pattern created', after: expect.objectContaining({ startedFrom: 'blank' }) });
 });
 test('ET A name is required', async () => {
   const call = await as('admin'), before = snapshot(...WRITES);
@@ -53,13 +53,13 @@ test('a duplicate or malformed type code is refused', async () => {
 test('a manager is refused, naming the capability', async () => {
   const r = await (await as('manager'))('POST', BASE, sample);
   expect(r.status).toBe(403);
-  expect(Refusal.parse(r.body).message).toContain('Employee types and configuration');
+  expect(Refusal.parse(r.body).message).toContain('Work patterns and configuration');
 });
 test('an edit reports the fields that changed, and the code cannot change', async () => {
   const call = await as('admin'), t = typeByCode(heldType());
-  const out = updateEmployeeType.response.parse((await call('PATCH', `${BASE}/${t.id}`, { mode: 'grid', capabilities: ['shift', 'site'] }, t.version)).body);
-  expect(out.changed.sort()).toEqual(['capabilities', 'mode']);
-  expect(audits().find(a => a.id === out.auditId)?.act).toBe('Employee type edited');
+  const out = updateWorkPattern.response.parse((await call('PATCH', `${BASE}/${t.id}`, { mode: 'grid', fieldGroups: ['shift', 'site'] }, t.version)).body);
+  expect(out.changed.sort()).toEqual(['fieldGroups', 'mode']);
+  expect(audits().find(a => a.id === out.auditId)?.act).toBe('Work pattern edited');
   const fresh = typeByCode(heldType());
   const r = await call('PATCH', `${BASE}/${fresh.id}`, { code: 'renamed' }, fresh.version);
   expect(r.status).toBe(422);
@@ -75,8 +75,8 @@ test('ET It can be removed once nobody holds it', async () => {
   const t = typeByCode('waking_night');
   const r = await call('DELETE', `${BASE}/${t.id}`, undefined, t.version);
   expect(r.status).toBe(200);
-  expect(audits().find(a => a.id === removeEmployeeType.response.parse(r.body).auditId)?.act).toBe('Employee type removed');
-  expect(store.coll('employeeTypes')[t.id]).toBeUndefined();
+  expect(audits().find(a => a.id === removeWorkPattern.response.parse(r.body).auditId)?.act).toBe('Work pattern removed');
+  expect(store.coll('workPatterns')[t.id]).toBeUndefined();
 });
 test('ET Removing a type employees hold is refused, and names them', async () => {
   const call = await as('admin'), t = typeByCode(heldType()), before = snapshot(...WRITES, 'employees');
@@ -86,11 +86,11 @@ test('ET Removing a type employees hold is refused, and names them', async () =>
   expect(snapshot(...WRITES, 'employees')).toEqual(before);
 });
 test('the last type cannot be removed', async () => {
-  const types = store.coll<{ id: string; code: string }>('employeeTypes');
+  const types = store.coll<{ id: string; code: string }>('workPatterns');
   for (const t of Object.values(types).slice(1)) Reflect.deleteProperty(types, t.id);
   const only = Object.values(types)[0];
   if (!only) throw new Error('no types');
-  for (const p of Object.values(store.coll<{ employeeType: string }>('employees'))) p.employeeType = 'nobody_holds_this';
+  for (const p of Object.values(store.coll<{ workPattern: string }>('employees'))) p.workPattern = 'nobody_holds_this';
   const t = typeByCode(only.code);
   const r = await (await as('admin'))('DELETE', `${BASE}/${t.id}`, undefined, t.version);
   expect(r.status).toBe(409);

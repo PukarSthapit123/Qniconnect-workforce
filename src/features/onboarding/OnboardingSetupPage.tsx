@@ -29,7 +29,6 @@ import { TemplateDraftView } from './OnbSetupTemplate';
    prototype has none for this page. A template bar sits above the cards: the
    Default template is the page below it, and each named template has a draft
    of its own (OnbSetupTemplate.tsx). The open template is ?template=<id>. */
-const CRUMB = 'Modules · Onboarding · Onboarding setup';
 const OFF = 'The Onboarding module is off for this tenant. Turn it on under Modules & features.';
 
 export function OnboardingSetupPage() {
@@ -47,7 +46,7 @@ export function OnboardingSetupPage() {
   const toDefault = useCallback(() => setParams({}), [setParams]);
   return (
     <Page testId={tid.page('monb')}>
-      <PageHead title="Onboarding setup" crumb={CRUMB} tipTestId={tid.head.tip('monb')}
+      <PageHead title="Onboarding setup" tipTestId={tid.head.tip('monb')}
         tip="What a new starter completes, what they must prove, and who checks it"
         actions={tenant.data && !on ? undefined : <Caution testId={tid.head.caution('monb')} text={REQUIRED_CHANGE_WARNING} />} />
       {tenant.data && !on && <Card><Empty testId={tid.monb.off}>{OFF}</Empty></Card>}

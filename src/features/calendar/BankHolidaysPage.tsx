@@ -21,7 +21,7 @@ export function BankHolidaysPage() {
   const tenant = useTenant();
   return (
     <Page testId={tid.page('acal')}>
-      <PageHead title="Bank holidays" crumb="Setup · Bank holidays" tipTestId={tid.head.tip('acal')}
+      <PageHead title="Calendar" tipTestId={tid.head.tip('acal')}
         tip="The financial year, shared week start and bank holidays for this organisation" />
       {tenant.data
         ? <><YearCard key={tenant.data.version} tenant={tenant.data} /><HolidaysCard key={`holidays-${tenant.data.version}`} tenant={tenant.data} /></>

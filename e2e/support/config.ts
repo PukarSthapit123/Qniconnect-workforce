@@ -14,7 +14,7 @@ import { stored } from './read';
 export { AMARA, DEE, GRACE, RACHEL } from './read';
 
 type Get = { get(path: string): Promise<Reply> };
-export interface TenantRead { version: number; name: string; template: string; modules: Record<string, boolean>; flags: Record<string, boolean> }
+export interface TenantRead { version: number; name: string; preset: string; modules: Record<string, boolean>; flags: Record<string, boolean> }
 export async function tenantOf(api: Get): Promise<TenantRead> {
   const r = await api.get('/api/v1/tenant');
   expect(r.status, 'tenant').toBe(200);

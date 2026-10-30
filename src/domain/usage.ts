@@ -2,14 +2,14 @@
    Ported from the `used` functions in the prototype's DIMS table, plus the
    projects at a location, which the prototype did not count. A project has no
    users until timesheet lines arrive in sub-project 2. */
-export type UsageKind = 'locations' | 'departments' | 'cost-centres' | 'job-profiles' | 'projects' | 'employee-types';
+export type UsageKind = 'locations' | 'departments' | 'cost-centres' | 'positions' | 'projects' | 'work-patterns';
 export interface UsedBy { kind: string; count: number; examples: string[] }
-interface P { code: string; name: string; location: string; department: string; jobProfile: string; employeeType: string }
+interface P { code: string; name: string; location: string; department: string; position: string; workPattern: string }
 interface L { code: string; name: string; department: string; costCentre: string }
 interface J { code: string; name: string; costCentre: string; location: string }
 export interface UsageWorld {
   employees: readonly P[]; locations: readonly L[]; projects: readonly J[];
-  onboardingTemplates?: readonly { name: string; jobProfiles: readonly string[] }[];
+  onboardingTemplates?: readonly { name: string; positions: readonly string[] }[];
 }
 
 function group(kind: string, hits: readonly { code: string; name: string }[]): UsedBy[] {
@@ -19,14 +19,14 @@ function group(kind: string, hits: readonly { code: string; name: string }[]): U
 export function usageOf(kind: UsageKind, code: string, w: UsageWorld): UsedBy[] {
   switch (kind) {
     case 'locations': return [...group('employees', w.employees.filter(p => p.location === code)), ...group('projects', w.projects.filter(p => p.location === code))];
-    case 'departments': return [...group('locations', w.locations.filter(l => l.department === code)), ...group('employees', w.employees.filter(p => p.department === code))];
-    case 'cost-centres': return [...group('locations', w.locations.filter(l => l.costCentre === code)), ...group('projects', w.projects.filter(p => p.costCentre === code))];
-    case 'job-profiles': {
-      const templates = (w.onboardingTemplates ?? []).filter(t => t.jobProfiles.includes(code));
-      return [...group('employees', w.employees.filter(p => p.jobProfile === code)),
+    case 'departments': return [...group('sites', w.locations.filter(l => l.department === code)), ...group('employees', w.employees.filter(p => p.department === code))];
+    case 'cost-centres': return [...group('sites', w.locations.filter(l => l.costCentre === code)), ...group('projects', w.projects.filter(p => p.costCentre === code))];
+    case 'positions': {
+      const templates = (w.onboardingTemplates ?? []).filter(t => t.positions.includes(code));
+      return [...group('employees', w.employees.filter(p => p.position === code)),
         ...(templates.length ? [{ kind: 'onboarding templates', count: templates.length, examples: templates.slice(0, 3).map(t => t.name) }] : [])];
     }
-    case 'employee-types': return group('employees', w.employees.filter(p => p.employeeType === code));
+    case 'work-patterns': return group('employees', w.employees.filter(p => p.workPattern === code));
     case 'projects': return [];
   }
 }

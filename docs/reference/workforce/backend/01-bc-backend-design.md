@@ -158,7 +158,7 @@ Kind: **R** reuse as is · **X** reuse and extend with `SIR_WF` fields · **N** 
 | email | `Company E-Mail` | |
 | phone | `Mobile Phone No.` | |
 | address | `Address`, `Address 2`, `City`, `Post Code` | The contract's single string is split on commas. |
-| emergency name and phone | `Employee Relative` row with `SIR_WF Emergency Contact = true` | |
+| emergency first name, last name and phone | `Employee Relative` row (`First Name`, `Last Name`, `Phone No.`) with `SIR_WF Emergency Contact = true` | |
 | bank account, sort code | `SIR Employee Bank Account` (`Bank Account No.`, `Bank Branch No.`), the one in `SIR Preferred Bank Acc. Code` | Masked in every response. |
 | job profile | `SIR_WF Job Profile Code` | New field. |
 | employee type | `SIR_WF Employee Type Code` | New field. |
@@ -534,7 +534,7 @@ Keys: `(Entity, At)`, `(Who Employee No., At)`, `(Correlation Id)`. Archive by y
 |---|---|---|---|
 | 1 | Entry No. | Integer | PK, AutoIncrement. |
 | 10 | Employee No. | Code[20] | |
-| 11 | Field Key | Enum `SIR_WF Self Field` | phone, address, emergencyName, emergencyPhone, bankAccount, bankSortCode |
+| 11 | Field Key | Enum `SIR_WF Self Field` | phone, address, emergencyFirstName, emergencyLastName, emergencyPhone, bankAccount, bankSortCode |
 | 12 | From Value | Text[250] | Masked for bank fields. |
 | 13 | To Value | Blob | Kept whole until applied, then cleared for bank fields. Classified `EndUserIdentifiableInformation`. |
 | 14 | Note | Text[500] | |

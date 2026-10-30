@@ -160,8 +160,8 @@ describe('my onboarding: the starter acts on their own case only (D5)', () => {
 });
 
 /* -------------------------------------------------------------- tracker */
-describe('the tracker and its scope: own location, or every location with Configure onboarding (D5)', () => {
-  test('the manager sees the starters at their own location; the administrator sees every location', async () => {
+describe('the tracker and its scope: own site, or every site with Configure onboarding (D5)', () => {
+  test('the manager sees the starters at their own site; the administrator sees every site', async () => {
     setEmployee('CP-1502', { location: 'BC' });
     const mine = TeamOnboarding.parse((await (await as('manager'))('GET', '/api/v1/onboarding/team')).body);
     expect(mine.rows.map(r => r.employee.code)).toEqual(['CP-1501']);
@@ -171,7 +171,7 @@ describe('the tracker and its scope: own location, or every location with Config
     expect(all.rows.map(r => r.employee.code)).toEqual(['CP-1501', 'CP-1502']);
     expect(all.all).toBe(true);
   });
-  test('a manager is refused every action on a starter at another location, and nothing is written', async () => {
+  test('a manager is refused every action on a starter at another site, and nothing is written', async () => {
     setEmployee('CP-1502', { location: 'BC' });
     await upload(await asEmail(TOM), 'photo', PHOTO, 1);
     const call = await as('manager'), before = snapshot(...WRITES);
@@ -239,13 +239,13 @@ describe('the tracker and its scope: own location, or every location with Config
     if (!c) throw new Error('no case for CP-1502');
     store.coll('onboardingCases')[c.id] = { ...c, signature: 'T Achterberg', consent: true,
       data: { personal: { dob: '1990-04-02', gender: '', nat: 'Dutch', ni: 'QQ 12 34 56 C' }, contact: { mob: '07700 900123', alt: '', a1: '14 Larkspur Road', a2: '', city: 'Leeds', post: 'LS6 2AB' },
-        emergency: [{ nm: 'Anke Achterberg', rel: 'Parent', ph: '07700 900456' }], additional: { conv: 'Yes', convDetail: 'Speeding fine 2024', wtd: '', quals: [] }, documents: { rtwType: 'Passport' } } };
+        emergency: [{ fn: 'Anke', ln: 'Achterberg', rel: 'Parent', ph: '07700 900456' }], additional: { conv: 'Yes', convDetail: 'Speeding fine 2024', wtd: '', quals: [] }, documents: { rtwType: 'Passport' } } };
     await upload(await asEmail(TOM), 'photo', PHOTO, version('CP-1502'));
     const r = await (await as('manager'))('GET', '/api/v1/onboarding/team/CP-1502');
     const view = StarterOnboarding.parse(r.body), text = JSON.stringify(r.body);
     expect(view.documents.find(d => d.id === 'photo')?.file).toMatchObject({ name: 'face.jpg', preview: PHOTO.preview });
     expect(Object.keys(r.body as object).sort()).toEqual(['caseRef', 'documents', 'employee', 'progress', 'ref', 'steps', 'submittedAt', 'template', 'toStart']);
-    for (const secret of ['QQ 12 34 56 C', '1990-04-02', '14 Larkspur Road', 'LS6 2AB', '07700 900123', 'Anke Achterberg', 'Speeding fine', 'T Achterberg', '"signature"', '"consent"', '"data"'])
+    for (const secret of ['QQ 12 34 56 C', '1990-04-02', '14 Larkspur Road', 'LS6 2AB', '07700 900123', 'Anke', 'Speeding fine', 'T Achterberg', '"signature"', '"consent"', '"data"'])
       expect(text, secret).not.toContain(secret);
   });
   test('an employee who is not onboarding is not on the tracker\'s actions; nobody checks their own documents', async () => {
@@ -405,7 +405,7 @@ describe('invite (D6)', () => {
 
 /* --------------------------------------------------------- D1, D7, D8 */
 const newStarter = (over: Record<string, unknown> = {}) => ({
-  code: 'CP-9001', name: 'Hannah Vogel', email: 'hannah.vogel@brightpath.org', phone: '', jobProfile: 'SW', employeeType: 'shift', category: '', location: 'WH',
+  code: 'CP-9001', firstName: 'Hannah', middleName: '', lastName: 'Vogel', knownAs: '', email: 'hannah.vogel@brightpath.org', phone: '', position: 'SW', workPattern: 'shift', employmentType: '', location: 'WH', grade: '', level: '',
   department: '', manager: 'Rachel Hussain', contractedHours: 30, maxHours: 0, night: false, resource: '', cis: false, start: '2026-09-01', state: 'candidate', userType: 'employee', ...over,
 });
 describe('a case for every starter (D1)', () => {

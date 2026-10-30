@@ -4,8 +4,9 @@ import hooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 
 export default tseslint.config(
-  /* .claude holds agent worktrees: a second copy of the tree, not this one. */
-  { ignores: ['dist', 'public/mockServiceWorker.js', 'playwright-report', 'test-results', '.claude'] },
+  /* .claude holds agent worktrees: a second copy of the tree, not this one.
+     .agents holds installed agent skills, third-party scripts that are not this app. */
+  { ignores: ['dist', 'public/mockServiceWorker.js', 'playwright-report', 'test-results', '.claude', '.agents'] },
   js.configs.recommended,
   ...tseslint.configs.strict,
   {

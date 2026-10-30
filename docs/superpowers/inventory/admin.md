@@ -139,6 +139,7 @@ Note: ADM.C3 and ADM.C4 results are dereferenced with no null check (`authStatus
 ### States
 - Loading: `isLoading` true initially -> centered spinner (:225-231).
 - Success: header, 4 stat cards, optional expiry alert, quick actions, user status overview, BC resources.
+- **Port layout (Ruling Q20, taste review 2026-10-26):** the connection leads: a `Business Central connection` block with the authorization (status in its R5 colour, `Remaining: n days`, and a meter of the days left against the term from `issuedAt` to `expiresAt`, both read from ADM.C3), the active environment with its type, the environment count, the R6 expiry alert inside the block, and `Refresh authorization` as its one primary action (the third quick action, moved, so it is not offered twice). The users are one strip, `Total`, `Active`, `Pending`, `Inactive`; R7's `Active: n` line is the strip's Active count (so a zero still has its name). The `Add user` and `Add environment` quick actions and the resources share one row below. Every figure, text and link above is kept; the wire is unchanged.
 - Partial: a failed sub-call gives `[]`/`{}`: counts 0, status `Unknown`, days 0 (so the alert and a red badge show, R5-R6).
 - Error: there is no error UI. The outer catch only logs; the page shows the initial zeros (`users` 0, `environments` 0, `auth.status 'Unknown'`, `daysRemaining 0`).
 - Static strings: title `Admin Dashboard`; subtitle `Management console for QniConnect Employee Portal`; stat titles `Total Users` (secondary `Active: <n>`), `Environments`, `Authentication Status` (secondary `Remaining: <n> days`), `Active Environment` (value `activeEnvironment?.name || 'None'`, secondary `Type: <activeEnvironment?.type || 'N/A'>`); alert title `Authentication Token Expiring Soon`; alert text `Your authentication token will expire in {n} days. Please refresh your authorization to ensure uninterrupted access to Business Central.`; alert link `Manage Authorization` -> `/admin/authorization`; `Quick Actions` cards (each footer is a router `<Link>` whose text is `<buttonText>`, a space, then an aria-hidden `→` (`&rarr;`), AdminDashboard.js:190-195; so `Add User →`, `Add Environment →`, `Go to Authorization →`): `Add User` (`Create a new portal user account`, button `Add User` -> `/admin/users`), `Add Environment` (`Connect a new Business Central environment`, button `Add Environment` -> `/admin/environments`), `Refresh Authorization` (`Update Business Central OAuth authorization`, button `Go to Authorization` -> `/admin/authorization`); `User Status Overview` / `Portal Users` / link `View All Users` -> `/admin/users`; tiles `Active`, `Pending`, `Inactive`; `Business Central Resources` with two external links (`https://learn.microsoft.com/en-us/dynamics365/business-central/` titled `Business Central Documentation` / `Official Microsoft documentation for Business Central`; `https://learn.microsoft.com/en-us/dynamics365/business-central/dev-itpro/administration/automation-apis-using-s2s-authentication` titled `Service-to-Service Authentication Guide` / `Learn about OAuth and service-to-service authentication`; `target=_blank rel="noopener noreferrer"`).
@@ -150,7 +151,7 @@ Note: ADM.C3 and ADM.C4 results are dereferenced with no null check (`authStatus
 - ADM.DASH.R4 (:117-119) User counts are exact-string status matches: `Active`, `PendingFirstLogin` (shown as "Pending"), `Inactive`. Other statuses count only in the total.
 - ADM.DASH.R5 (:234-246) Auth badge colour: red if `status === 'Inactive' || 'Expired'` (case-sensitive) OR `daysRemaining <= 0`; else yellow if `<= 14`; else green.
 - ADM.DASH.R6 (:310-351) Expiry alert shown when `daysRemaining <= 14` (includes 0 and negatives; also whenever `expiresAt` is missing since days = 0). Red variant when `<= 7`, yellow when 8-14.
-- ADM.DASH.R7 (:213) StatCard secondary line renders `{secondaryValue && ...}`: a numeric `0` (Active users = 0) renders the literal text `0` instead of `Active: 0`.
+- ADM.DASH.R7 (:213) StatCard secondary line renders `{secondaryValue && ...}`: a numeric `0` (Active users = 0) renders the literal text `0` instead of `Active: 0`. Port: the strip names every count, so `Active` `0` shows (Ruling Q20).
 - ADM.DASH.R8 (:264 vs :143-147) BUG in today's code: the header "Tenant" line renders `dashboardData.tenantInfo.companyName`, but state is written as `tenantInfo.name`, so the tenant name is always empty (initial value `''`). `tenantInfo.id` is never rendered. `Registered: <formatDate(registrationDate)>` does render.
 - ADM.DASH.R9 (:160-168) `formatDate`: falsy -> `Unknown`; else `toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'})` (invalid date -> `Invalid Date`).
 - ADM.DASH.R10 (:122) Days use `Math.floor` here; the AUTHZ page uses `Math.ceil` (AUTHZ.R9), so the two pages can disagree by one day.
@@ -203,6 +204,23 @@ USERS.C4 behaviours (BC:932-994): invalid token (falsy, `'Not Readable'`, `'mock
 - Create modal strings: title `Add New User`; text `Create a new portal user account. The user will receive an email with login instructions.`; labels `Full Name`, `Email Address`, `Role` (options `User`, `Admin`), checkbox `Administrator Access` + helper `Administrators can manage users, environments, and authentication settings`; notice `Security Notice: Administrator users have complete access to all portal features and can manage other users.`; buttons `Create User` / `Creating...` (spinner) / `Cancel`.
 - Edit modal strings: title `Edit User`; subtitle `<editingUser.email>`; same fields, helper and notice; buttons `Save Changes` / `Saving...` / `Cancel`.
 - Form error (red box inside the modal): messages in R7, R8, R11, R12.
+- **Port layout (user ruling, 2026-10-27).** These rules apply to Setup · Employees, where a portal admin with `master_data` sees records and logins in one table.
+  - **Login-only logins are not listed there.** A login that matches no Workforce record is left out of that table. It still appears in the logins-only list that a portal admin without `master_data` gets, which keeps the tabs, Add and the row menu above.
+  - **One button per row: View.** It opens the record. The login's status, admin flag, last login, menu (R4 to R5, R12) and, for a record without a login, Invite are all on the record.
+  - **Errors appear where the action was taken.** A failed activate or deactivate shows its banner on the record while the record is open.
+  - **Edit login closes the record first.**
+  - **The row shows the login as a symbol beside the Status pill**, not as a column of its own. Each symbol has screen-reader text, and the Status header's tip is the legend.
+    - No symbol: no login.
+    - An envelope: invited, pending first login.
+    - A green key: active.
+    - A lock: inactive.
+    - An amber key: an active login on a leaver or archived record.
+    - A shield: admin.
+  - **No Add on that page.** A login for a person is started from their record's Invite.
+  - **Other changes to the same page:**
+    - Contracted hours became an Hours column.
+    - The prototype's Working hours page (admContracts, `acon`) is gone; `/setup/acon` redirects to Employees.
+    - Dimensions became **Master data**, in three sections: Dimensions (sites, departments, cost centres), Positions, and Projects. Each project lists its tasks, read only, from its BC job.
 
 ### Rules and edge cases
 - USERS.R1 (:30-104) Users load once on mount (and if `bcService` identity changes, which does not happen in practice). No refetch after create, edit or status change.

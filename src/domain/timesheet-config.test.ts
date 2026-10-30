@@ -2,7 +2,7 @@ import social from '@/mocks/seed/social.json';
 import qnipay from '@/mocks/seed/qnipay.json';
 import { DEFAULT_RULES, timesheetConfigProblem, type ConfigInput } from './timesheet';
 
-const ctx = { employeeTypes: ['shift', 'salaried'], payCodes: ['STD', 'OT15'] };
+const ctx = { workPatterns: ['shift', 'salaried'], payCodes: ['STD', 'OT15'] };
 const base = (): ConfigInput => ({
   rules: { ...DEFAULT_RULES }, cutoff: 'Monday 12:00',
   allowances: { SLEEP_IN: { code: 'SLEEP_IN', label: 'Sleep-in', payCode: 'SLEEP_IN', tier: 'care' } },
@@ -14,9 +14,9 @@ const field = (c: ConfigInput) => timesheetConfigProblem(c, ctx)?.field;
 
 test('both seeds\' configs pass the setup checks', () => {
   for (const s of [social, qnipay]) {
-    const d = s.data as unknown as { timesheetConfig: { timesheetConfig: ConfigInput }; employeeTypes: Record<string, { code: string }>; payCodes: Record<string, { code: string }> };
+    const d = s.data as unknown as { timesheetConfig: { timesheetConfig: ConfigInput }; workPatterns: Record<string, { code: string }>; payCodes: Record<string, { code: string }> };
     expect(timesheetConfigProblem(d.timesheetConfig.timesheetConfig, {
-      employeeTypes: Object.values(d.employeeTypes).map(t => t.code), payCodes: Object.values(d.payCodes).map(p => p.code),
+      workPatterns: Object.values(d.workPatterns).map(t => t.code), payCodes: Object.values(d.payCodes).map(p => p.code),
     })).toBeNull();
   }
 });
@@ -34,7 +34,7 @@ const cases: [string, (c: ConfigInput) => void, string, string][] = [
   ['an allowance with no label', c => { c.allowances.X = { code: 'X', label: ' ', payCode: 'X', tier: 'core' }; }, 'allowances.X.label', 'Give the allowance a label.'],
   ['an allowance label carrying an amount', c => { c.allowances.X = { code: 'X', label: 'Sleep-in £30', payCode: 'X', tier: 'core' }; }, 'allowances.X.label',
     'An allowance label names the allowance, never an amount. Business Central holds the rates.'],
-  ['an unknown employee type', c => { c.types.agency = { fields: {}, allowances: [], rules: [] }; }, 'types.agency', 'There is no employee type with the code agency.'],
+  ['an unknown work pattern', c => { c.types.agency = { fields: {}, allowances: [], rules: [] }; }, 'types.agency', 'There is no work pattern with the code agency.'],
   ['a type allowance that does not exist', c => { const t = c.types.shift; if (t) c.types.shift = { ...t, allowances: ['NOPE'] }; }, 'types.shift.allowances', 'NOPE is neither an allowance nor a pay code.'],
   ['a rule trigger the engine does not know', c => { withRule(c, { trigger: 'Full moon', when: 'moon', code: 'OT15', value: '2×', how: 'Auto (BC)' }); }, 'types.shift.rules.0.when', 'Choose a trigger from the list.'],
   ['a rule pay code that does not exist', c => { withRule(c, { trigger: 'Saturday', when: 'sat', code: 'OT99', value: '2×', how: 'Auto (BC)' }); }, 'types.shift.rules.0.code', 'OT99 is not a pay code.'],

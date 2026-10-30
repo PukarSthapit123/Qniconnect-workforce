@@ -4,13 +4,16 @@ import { Button, Field, TextInput, Pill, SelectBox, CheckboxField, SwitchField, 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/shadcn/table';
 import { expectTestIdCoverage } from '@/test/testid-coverage';
 
-/* The page frame and head every screen shares (src/ui/Page.tsx): a crumb, one
-   h1 with its tip beside it, the actions slot, and no lede paragraph. */
-test('Page and PageHead render the crumb, one h1 with its tip, and the actions', () => {
-  render(<Page testId="page-demo"><PageHead title="Audit log" crumb="Setup · Audit log" tip="Who did what, and when." tipTestId="head-tip-demo"
+/* The page frame and head every screen shares (src/ui/Page.tsx): one h1 with
+   its tip beside it, an optional line of context under it, the actions slot,
+   no crumb (the shell says where; taste review 2026-10-26) and no lede paragraph. */
+test('Page and PageHead render one h1 with its tip, the context under it, and the actions; no crumb', () => {
+  render(<Page testId="page-demo"><PageHead title="Audit log" context="Week commencing 10/08/2026" tip="Who did what, and when." tipTestId="head-tip-demo"
     actions={<Button testId="demo-action">Export</Button>} /></Page>);
   const page = screen.getByTestId('page-demo');
-  expect(page).toHaveTextContent(/^Setup · Audit log/);
+  /* the title comes first: nothing above it repeats where the page is */
+  expect(page).toHaveTextContent(/^Audit log/);
+  expect(screen.getByRole('heading', { level: 1 }).nextElementSibling).toHaveTextContent(/^Week commencing 10\/08\/2026$/);
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Audit log');
   expect(screen.getByRole('heading', { level: 1 })).toContainElement(screen.getByTestId('head-tip-demo'));
   expect(screen.getByTestId('demo-action')).toBeInTheDocument();

@@ -214,7 +214,7 @@ export interface TypeCapture {
   fields: Record<string, FieldSetting>; allowances: readonly string[]; rules: readonly TypeRule[];
 }
 /* What decides whether a field is offered: the tenant's modules and flags, the
-   type's capabilities (from employee types) and the tenant's field defaults. */
+   type's capabilities (from work patterns) and the tenant's field defaults. */
 export interface FieldEnv {
   modules: Record<string, boolean>; flagOn: (code: string) => boolean;
   capabilities: readonly string[]; defaults: Record<string, FieldDefault>;
@@ -275,7 +275,8 @@ export function fieldProblem(code: string, value: string, setting: FieldDefault 
    task lists the chosen project's own tasks (the first open project's while
    none is chosen), because Business Central will not take a job journal line
    whose task is not on the job it is booked to. Values are the names. */
-export interface OpenProject { code: string; name: string; tasks: readonly string[] }
+/* costCentre: the project's default cost centre (its job's default dimension in BC), '' for none */
+export interface OpenProject { code: string; name: string; tasks: readonly string[]; costCentre: string }
 export const projectOptions = (projects: readonly OpenProject[]): string[] => projects.map(p => p.name);
 export function taskOptions(projects: readonly OpenProject[], chosen: string): string[] {
   const pr = projects.find(p => p.name === chosen) ?? projects[0];
@@ -284,6 +285,32 @@ export function taskOptions(projects: readonly OpenProject[], chosen: string): s
 /* A choice made in one select empties the task chosen under the old project. */
 export const taskReset = (code: string, was: unknown, now: unknown): Record<string, string> =>
   (code === 'project' && was !== now ? { job_task: '' } : {});
+
+/* The week grid's one picker for project and task, as a BC time sheet line is
+   Job No. and Job Task No.: a value is the project's name, or the project and
+   task joined by an invisible separator. With no task field it lists projects
+   only. '' is "No project": time not charged to one. */
+export const PROJECT_TASK_SEP = '\u001f';
+export const projectTaskValue = (ctx: Readonly<Record<string, string>>): string =>
+  (ctx.job_task ? `${ctx.project ?? ''}${PROJECT_TASK_SEP}${ctx.job_task}` : ctx.project ?? '');
+export function projectTaskOptions(projects: readonly OpenProject[], withTasks: boolean): { value: string; label: string }[] {
+  return [{ value: '', label: 'No project' }, ...projects.flatMap(p => [{ value: p.name, label: p.name },
+    ...(withTasks ? p.tasks.map(t => ({ value: `${p.name}${PROJECT_TASK_SEP}${t}`, label: `${p.name} › ${t}` })) : [])])];
+}
+/* Choosing in that picker sets the project and its task together. A cost centre
+   field follows the project's default, unless someone chose a different one
+   for this row: a project's cost centre can differ by person, so it stays
+   editable and a choice made by hand is kept. */
+export function chooseProjectTask(ctx: Readonly<Record<string, string>>, value: string, projects: readonly OpenProject[]): Record<string, string> {
+  const [project = '', task = ''] = value.split(PROJECT_TASK_SEP);
+  const next: Record<string, string> = { ...ctx, project };
+  if ('job_task' in ctx) next.job_task = task;
+  if ('cost_c' in ctx) {
+    const was = projects.find(p => p.name === ctx.project)?.costCentre ?? '';
+    if (!ctx.cost_c || ctx.cost_c === was) next.cost_c = projects.find(p => p.name === project)?.costCentre ?? '';
+  }
+  return next;
+}
 /* The server's check on an entry's allocation: a project must be one of the
    tenant's open projects, and a task must be on the chosen project (or, with
    none chosen, on some open project). Fields are named as the entry names them. */
@@ -427,12 +454,12 @@ export function weekModel(fields: readonly FieldDef[], type: TypeCapture | undef
     if (!fieldVisible(f, type, env)) continue;
     if (f.cat === 'Time') { hasTime = true; continue; }
     if (f.input === 'calc') continue;
-    if (f.input === 'select' && (f.cat === 'Project' || f.cat === 'Location'))
+    if (f.input === 'select' && (f.cat === 'Project' || f.cat === 'Site'))
       ctx.push({ c: f.c, label: fieldSettingFor(f, type, env).label, opts: f.opts ?? [] });
   }
   return { ctx, hasTime, multi: ctx.length > 0, times: weekGrid === 'times' };
 }
-export const NO_TIME_FIELDS = 'No time fields are enabled for this employee type. Turn Start or Finish back on under Timesheet setup.';
+export const NO_TIME_FIELDS = 'No time fields are enabled for this work pattern. Turn Start or Finish back on under Timesheet setup.';
 
 /* submitWeekGrid's per-day check, before anything is written: a future day is
    held back rather than blocking the week; a closed period or an impossible total blocks it. */
@@ -531,7 +558,7 @@ export function queueChecksum(rows: readonly QueueRow[]): string {
 export interface ConfigInput {
   rules: CaptureRules; cutoff: string; allowances: Record<string, AllowanceDef>; types: Record<string, TypeCapture>;
 }
-export interface ConfigContext { employeeTypes: readonly string[]; payCodes: readonly string[] }
+export interface ConfigContext { workPatterns: readonly string[]; payCodes: readonly string[] }
 const CURRENCY = /[£$€]/;
 export const CUTOFF_PATTERN = /^(Sunday|Monday|Tuesday|Wednesday|Thursday) (\d{2}:\d{2})$/;
 export function timesheetConfigProblem(c: ConfigInput, ctx: ConfigContext): Problem | null {
@@ -552,7 +579,7 @@ export function timesheetConfigProblem(c: ConfigInput, ctx: ConfigContext): Prob
   }
   const payable = (code: string) => ctx.payCodes.includes(code) || Object.hasOwn(c.allowances, code);
   for (const [code, t] of Object.entries(c.types)) {
-    if (!ctx.employeeTypes.includes(code)) return bad(`types.${code}`, `There is no employee type with the code ${code}.`);
+    if (!ctx.workPatterns.includes(code)) return bad(`types.${code}`, `There is no work pattern with the code ${code}.`);
     const unknown = t.allowances.find(a => !payable(a));
     if (unknown) return bad(`types.${code}.allowances`, `${unknown} is neither an allowance nor a pay code.`);
     for (const [i, rule] of t.rules.entries()) {

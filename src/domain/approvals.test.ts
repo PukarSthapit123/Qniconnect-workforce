@@ -145,7 +145,7 @@ describe('who decides', () => {
   test('scope narrows a role\'s holders; nobody decides their own', () => {
     const own = [step({ role: 'Service Manager', scope: 'Own department' })];
     expect(whoDecides(own, 'Timesheet', 'E', '2026-08-13', world, [])[0]?.deciders.map(d => d.approver)).toEqual(['R', 'S']);
-    const loc = [step({ role: 'Service Manager', scope: 'Own location' })];
+    const loc = [step({ role: 'Service Manager', scope: 'Own site' })];
     expect(whoDecides(loc, 'Timesheet', 'E', '2026-08-13', world, [])[0]?.deciders.map(d => d.approver)).toEqual(['R']);
     expect(whoDecides(loc, 'Timesheet', 'R', '2026-08-13', world, [])[0]?.deciders).toEqual([]);
     expect(whoDecides([step({ role: 'Payroll', scope: 'All departments' })], 'Timesheet', 'E', '2026-08-13', world, [])[0]?.deciders.map(d => d.approver)).toEqual(['D']);

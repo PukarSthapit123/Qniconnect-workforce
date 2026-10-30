@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react';
 import { tid } from '@/testids';
-import { ActionBar, Banner, Button, Page, PageHead, SettingSelect, Tip, toastInfo } from '@/ui';
+import { ActionBar, Button, Note, Page, PageHead, SettingSelect, Tip, toastInfo } from '@/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/shadcn/table';
 import { useNotificationMatrix, useUpdateMatrix, type NotificationMatrix, type UpdateMatrix } from '@/api/notifications';
 import { NOTIF_CHANNELS, NOTIF_PERSONAS, channelLabel, isNotifChannel, type NotifChannel, type NotifPersona } from '@/domain/notifications';
@@ -20,7 +20,7 @@ export function NotificationsPage() {
   const m = useNotificationMatrix();
   return (
     <Page testId={tid.page('anotif')}>
-      <PageHead title="Notifications" crumb="Setup · Notifications" tipTestId={tid.anotif.tip}
+      <PageHead title="Notifications" tipTestId={tid.anotif.tip}
         tip="One platform notification model. Every module raises events into the same framework." />
       {m.data
         ? <Matrix matrix={m.data} />
@@ -48,9 +48,9 @@ function Matrix({ matrix }: { matrix: NotificationMatrix }) {
   const modules = [...new Set(matrix.events.map(e => e.module))];
   return (
     <>
-      <Banner tone="info" testId={tid.anotif.notConnected} title="Only in-app notifications are delivered">
+      <Note testId={tid.anotif.notConnected} title="Only in-app notifications are delivered">
         Email and SMS are not connected yet. A channel that includes them is recorded as not connected, and nothing is sent.
-      </Banner>
+      </Note>
       <Table variant="matrix" data-testid={tid.anotif.table}>
         <TableHeader>
           <TableRow>

@@ -1,8 +1,8 @@
 import { useState, type ReactNode } from 'react';
-import { Download, Eye, FileText } from 'lucide-react';
+import { Download, FileText } from 'lucide-react';
 import { tid } from '@/testids';
 import { cn } from '@/lib/utils';
-import { Banner, Button, Card, CardHead, Empty, GuideButton, Page, PageHead, SelectBox, Small, Tip } from '@/ui';
+import { Banner, Button, Card, CardHead, Empty, GuideButton, Masked, Page, PageHead, PayMaskToggle, SelectBox, Small, Tip, usePayMask, type PayMask } from '@/ui';
 import { PdfPreview } from '@/ui/PdfPreview';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/shadcn/table';
 import { ApiError } from '@/api/client';
@@ -37,7 +37,7 @@ export function DocumentsPage() {
   const own = useOwnPayroll();
   return (
     <Page testId={tid.page('docs')}>
-      <PageHead title="Documents" crumb={d ? `My work · Documents · ${d.employee.name}` : 'My work · Documents'}
+      <PageHead title="Documents" context={d?.employee.name}
         tip="Access and manage your employment documents." tipTestId={tid.docs.headTip} actions={<GuideButton view="docs" />} />
       {/* a refusal is brought into view: on a phone the page is long, and the banner is at its top */}
       {banner && <div key={banner} ref={el => { el?.scrollIntoView?.({ block: 'nearest' }); }}><Banner testId={tid.docs.banner} tone="warn" title="Document not available"
@@ -139,14 +139,16 @@ function Payroll({ say }: { say: Say }) {
 
   const loading = q.isPending && q.fetchStatus !== 'idle';
   const payslips = payslipsIn(data?.payslips ?? [], year);
+  /* the payslips' amounts start hidden; the eye beside the year shows them (ui/PayMask) */
+  const mask = usePayMask();
   return (
     <>
       {loading
         ? <p data-testid={tid.docs.payLoading} role="status" className="mb-md text-text-secondary">Loading your payslips and tax documents&hellip;</p>
         : <>
-          <Section id="docs-payslips-head" title="Payslips" actions={<YearFilter data={data} year={year} onPick={y => setPick({ of: data, year: y })} />}>
+          <Section id="docs-payslips-head" title="Payslips" actions={<>{payslips.length > 0 && <PayMaskToggle testId={tid.docs.mask} mask={mask} />}<YearFilter data={data} year={year} onPick={y => setPick({ of: data, year: y })} /></>}>
             {payslips.length
-              ? <PayslipTable payslips={payslips} busy={busy} onAct={(slip, row, action) => void payslip(slip, `payslip-${row}-${action}`, action)} />
+              ? <PayslipTable payslips={payslips} mask={mask} busy={busy} onAct={(slip, row, action) => void payslip(slip, `payslip-${row}-${action}`, action)} />
               : <Card testId={tid.docs.payslipsEmpty}><Nothing title="No payslips found">
                 No payslips are available for the selected fiscal year. Try selecting a different year or contact your administrator.</Nothing></Card>}
           </Section>
@@ -174,7 +176,7 @@ function Section({ id, title, actions, children }: { id: string; title: string; 
     <section aria-labelledby={id} className="mb-lg">
       <div className="mb-sm flex flex-wrap items-center gap-sm">
         <h2 id={id} className="text-sm font-semibold">{title}</h2>
-        {actions && <div className="ml-auto flex items-center gap-sm">{actions}</div>}
+        {actions && <div className="ml-auto flex flex-wrap items-center justify-end gap-sm">{actions}</div>}
       </div>
       {children}
     </section>);
@@ -194,18 +196,19 @@ function Nothing({ title, children }: { title: string; children: ReactNode }) {
 function YearFilter({ data, year, onPick }: { data: DocumentsData | undefined; year: string | null; onPick: (y: string | null) => void }) {
   const options = (data?.years ?? []).map(o => ({ value: o.fiscalYear, label: yearLabel(o) }));
   return (
-    <>
+    /* the label stays with its select when the row wraps on a phone */
+    <span className="inline-flex items-center gap-sm">
       <label htmlFor="docs-year" className="text-xs text-text-muted">Fiscal year</label>
       <SelectBox testId={tid.docs.year} id="docs-year" look="filter" options={options} value={year ?? ''} disabled={options.length === 0}
         placeholder={data ? 'No fiscal years' : 'Loading…'} onValueChange={v => onPick(v || null)} />
-    </>);
+    </span>);
 }
 
 const MONEY = 'text-right max-md:text-left';
 /* DOCS.R9: the payslips of the year, in the order the server sent them. Pay
    date is the expected payment date, else the pay date; tax is taxAmount,
    else taxPaid. */
-function PayslipTable({ payslips, busy, onAct }: { payslips: Payslip[]; busy: string | null; onAct: (slip: Payslip, row: number, action: Action) => void }) {
+function PayslipTable({ payslips, mask, busy, onAct }: { payslips: Payslip[]; mask: PayMask; busy: string | null; onAct: (slip: Payslip, row: number, action: Action) => void }) {
   return (
     <Table data-testid={tid.docs.payslips} variant="records">
       <TableHeader>
@@ -222,9 +225,9 @@ function PayslipTable({ payslips, busy, onAct }: { payslips: Payslip[]; busy: st
             <TableRow key={`${String(slip.id ?? '')}-${row}`} data-testid={tid.docs.payslip(row)}>
               <TableCell kind="title" className="font-medium">{slip.period}</TableCell>
               <TableCell label="Pay date">{formatPortalDate(slip.expectedPaymentDate || slip.payDate)}</TableCell>
-              <TableCell label="Gross pay" className={MONEY}>{pounds(slip.grossPay)}</TableCell>
-              <TableCell label="Tax" className={MONEY}>{pounds(slip.taxAmount ?? slip.taxPaid ?? 0)}</TableCell>
-              <TableCell label="Net pay" className={cn(MONEY, 'font-semibold')}>{pounds(slip.netPay)}</TableCell>
+              <TableCell label="Gross pay" className={MONEY}><Masked shown={mask.shown}>{pounds(slip.grossPay)}</Masked></TableCell>
+              <TableCell label="Tax" className={MONEY}><Masked shown={mask.shown}>{pounds(slip.taxAmount ?? slip.taxPaid ?? 0)}</Masked></TableCell>
+              <TableCell label="Net pay" className={cn(MONEY, 'font-semibold')}><Masked shown={mask.shown}>{pounds(slip.netPay)}</Masked></TableCell>
               <TableCell kind="foot">
                 <Actions busy={busy} keyOf={a => `payslip-${row}-${a}`} label={label}
                   viewId={tid.docs.payslipView(row)} downloadId={tid.docs.payslipDownload(row)} onAct={a => onAct(slip, row, a)} />
@@ -265,7 +268,7 @@ function Actions({ busy, keyOf, label, viewId, downloadId, onAct }: {
   return (
     <div className="flex items-center justify-center gap-sm max-md:justify-start">
       <Button testId={viewId} small kind="ghost" aria-label={`View ${label}`} disabled={!!busy && !on('view')} pending={on('view')} onClick={() => onAct('view')}>
-        {!on('view') && <Eye aria-hidden="true" />}View</Button>
+        {!on('view') && <FileText aria-hidden="true" />}View</Button>
       <Button testId={downloadId} small kind="ghost" aria-label={`Download ${label}`} disabled={!!busy && !on('download')} pending={on('download')} onClick={() => onAct('download')}>
         {!on('download') && <Download aria-hidden="true" />}Download</Button>
     </div>);

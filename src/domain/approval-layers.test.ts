@@ -16,7 +16,7 @@ const employees = [employee('M'), employee('S'), employee('A', { location: 'FS',
 const item = (o: Partial<ChainItem> = {}): ChainItem => ({ employeeCode: 'E', location: 'WH', department: 'CARE', facts: {}, ...o });
 const input = (o: Partial<WalkInput> = {}): WalkInput =>
   ({ module: 'Timesheet', steps: [step()], item: item(), signed: [], date: '2026-08-13', employees, delegations: [], ...o });
-const twoLayers = [step(), step({ role: 'Payroll', scope: 'Own location' })];
+const twoLayers = [step(), step({ role: 'Payroll', scope: 'Own site' })];
 
 describe('the conditions the Timesheet chain offers are the ones the server reads', () => {
   test('Timesheet: every timesheet, a premium, an absence, a proxy entry; the escalation is read too', () => {
@@ -44,7 +44,7 @@ describe('walking a chain', () => {
     expect(walkProgress(i).signed.map(l => l.step.role)).toEqual(['Line manager']);
   });
   test('the escalation layer applies once the SLA is breached and takes over from the unsigned layer before it', () => {
-    const steps = [step(), step({ role: 'Payroll', scope: 'Own location', when: 'Only when the SLA is breached' })];
+    const steps = [step(), step({ role: 'Payroll', scope: 'Own site', when: 'Only when the SLA is breached' })];
     expect(walkChain(input({ steps })).layers.map(l => l.step.role)).toEqual(['Line manager']);
     const breached = input({ steps, item: item({ facts: { slaBreached: true } }) });
     expect([walkChain(breached).current?.step.role, walkChain(breached).final]).toEqual(['Payroll', true]);

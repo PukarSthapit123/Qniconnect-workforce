@@ -6,7 +6,7 @@
    (D6) rules and every sentence the card and the server say are here too, so
    the client and the fake server cannot disagree. The prototype's "·" asides
    are plain sentences. */
-import { addDays, clockFromIso, formatDay, formatTime, pad, toMin } from './time';
+import { addDays, clockFromIso, elapsedMinutes, formatDay, formatTime, pad, toMin } from './time';
 import type { BreakInput } from './timesheet';
 
 export type ClockKind = 'in' | 'breakStart' | 'breakEnd' | 'out';
@@ -155,6 +155,18 @@ export function clockInAgainProblem(existing: readonly BreakInput[], events: rea
 export function eventsFor(state: ClockState, move: ClockMove, now: string): ClockEvent[] {
   if (move === 'out' && state === 'onBreak') return [{ kind: 'breakEnd', at: now }, { kind: 'out', at: now }];
   return [{ kind: move, at: now }];
+}
+/* A clock closed at a chosen finish holds no out event, and a closed record
+   reads clocked out whatever its events say. "Clock in again" after it first
+   writes that out (with the break it ends, if it was on one) at the finish the
+   employee gave, never before the last event, so the clock then runs from its
+   events alone. Nothing when the events already end in an out. */
+export function closingEvents(date: string, events: readonly ClockEvent[], finish: string): ClockEvent[] {
+  const first = events.find(e => e.kind === 'in'), last = events.at(-1);
+  if (!first || !last || last.kind === 'out') return [];
+  const span = elapsedMinutes(date, clockTime(first.at), finish);
+  const at = new Date(Math.max(ms(first.at) + (span ?? 0) * 60000, ms(last.at))).toISOString();
+  return eventsFor(clockState(events), 'out', at);
 }
 
 /* --------------------------------------------------- forgotten (D6) */

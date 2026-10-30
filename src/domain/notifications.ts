@@ -25,7 +25,7 @@ export const isNotifPersona = (v: unknown): v is NotifPersona => typeof v === 's
 export type EventModule = 'Timesheet' | 'Onboarding' | 'Workforce';
 /* null: the event never applies to that user type (shown as a dash). */
 export type EventChannels = Readonly<Record<NotifPersona, NotifChannel | null>>;
-/* What else an event needs before it is offered in settings: an employee type
+/* What else an event needs before it is offered in settings: a work pattern
    with allowances (ts_allow), or a feature switched on. */
 export type EventNeed = { kind: 'allowances' } | { kind: 'flag'; flag: string };
 export interface NotifEvent { code: string; module: EventModule; label: string; description: string; defaults: EventChannels; needs?: EventNeed }
@@ -50,7 +50,7 @@ export const NOTIF_EVENTS: readonly NotifEvent[] = [
   { code: 'pf_req', module: 'Workforce', label: 'Profile change requested', description: 'A colleague has proposed a change to their own details', defaults: ch('In-app', 'In-app + email', 'Off') },
   { code: 'pf_done', module: 'Workforce', label: 'Profile change decided', description: 'A proposed change was approved or declined', defaults: ch('In-app + email', 'Off', 'Off') },
   /* configurable, but not raised by any 1c write (D9) */
-  { code: 'cfg', module: 'Workforce', label: 'Configuration changed', description: 'Template, feature, employee type or policy edited', defaults: ch(null, null, 'In-app + email') },
+  { code: 'cfg', module: 'Workforce', label: 'Configuration changed', description: 'Template, feature, work pattern or policy edited', defaults: ch(null, null, 'In-app + email') },
 ];
 export const eventBy = (code: string) => NOTIF_EVENTS.find(e => e.code === code);
 export type EventMatrix = Readonly<Record<string, EventChannels>>;

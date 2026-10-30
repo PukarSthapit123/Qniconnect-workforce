@@ -48,7 +48,7 @@ function readyToSubmit() {
     acks: { pol_conduct: 'v4.1', pol_privacy: 'v2.0', pol_handbook: 'v7.3', pol_itsec: 'v3.2' },
     data: { ...c.data, personal: { dob: '1994-05-14', gender: '', nat: 'British', ni: 'QQ123456C' },
       contact: { mob: '07700 900123', alt: '', a1: '4 Mill Lane', a2: '', city: 'Manchester', post: 'M50 2YR' },
-      emergency: [{ nm: 'Anita Raman', rel: 'Parent', ph: '07700 900456' }], additional: { conv: 'No', convDetail: '', wtd: 'No, I do not opt out', quals: [] },
+      emergency: [{ fn: 'Anita', ln: 'Raman', rel: 'Parent', ph: '07700 900456' }], additional: { conv: 'No', convDetail: '', wtd: 'No, I do not opt out', quals: [] },
       documents: { rtwType: 'Passport' } },
   });
 }
@@ -97,6 +97,10 @@ describe('My onboarding', () => {
     await signIn();
     await open();
     await goTo('emergency');
+    /* the contact's name is two fields, as payroll holds it: nothing is split from a full name */
+    expect(screen.getByTestId(tid.onb.contactField(0, 'fn'))).toBeInTheDocument();
+    expect(screen.getByTestId(tid.onb.contactField(0, 'ln'))).toBeInTheDocument();
+    expect(screen.queryByTestId(tid.onb.contactField(0, 'nm'))).toBeNull();
     await userEvent.click(screen.getByTestId(tid.onb.contactAdd));
     expect(screen.getByTestId(tid.onb.contact(1))).toBeInTheDocument();
     await userEvent.click(screen.getByTestId(tid.onb.contactRemove(1)));

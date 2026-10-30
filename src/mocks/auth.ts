@@ -12,7 +12,7 @@ import type { Session } from '@/contract/session';
 import type { AuditEntry } from '@/contract/audit';
 
 export interface Account { id: string; version: number; updatedAt: string; email: string; userType: Session['account']['userType']; employeeCode: string; grants: string[]; revocations: string[] }
-export interface Employee { code: string; name: string; state?: string; employeeType?: string; location?: string }
+export interface Employee { code: string; name: string; state?: string; workPattern?: string; location?: string }
 interface UserType { id: string; name?: string; description?: string; capabilities: string[] }
 /* One per signed-in address, keyed by the lower-case email (sessionKey). It
    holds what the Microsoft token cannot: who the session is viewing as. */

@@ -73,7 +73,7 @@ test('a manager enters a day on a team member’s behalf, it shows as a proxy en
   expect((await dayState(api, 'EMP004', '2026-08-12')).state).toBe('pend');
 });
 
-test('the server refuses a manager’s own day, a day outside their location, and an employee with no team rights', async ({ page, api }) => {
+test('the server refuses a manager’s own day, a day outside their site, and an employee with no team rights', async ({ page, api }) => {
   /* everyone in the qnipay roster is at Manchester, so the admin moves Jamir to Remote first */
   await signInEmail(page, EDDIE);
   const jamir = (await api.get('/api/v1/employees/emp_EMP007')).body as { version: number };
@@ -87,7 +87,7 @@ test('the server refuses a manager’s own day, a day outside their location, an
   expect(own.status).toBe(200);
   const self = await sendVersioned(page, 'POST', `/api/v1/timesheet-days/tsd_EMP001_${TODAY}/transition`, 1, { to: 'ok', reason: '' });
   expect([self.status, (self.body as { code: string }).code]).toEqual([403, 'SELF_APPROVAL']);
-  expect((self.body as { next: string }).next).toBe('Ask another approver at your location.');
+  expect((self.body as { next: string }).next).toBe('Ask another approver at your site.');
   expect((await dayState(api, 'EMP001', TODAY)).state).toBe('pend');
 
   /* someone at another location: not in the queue, and refused by the server */

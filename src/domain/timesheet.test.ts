@@ -1,5 +1,5 @@
 import {
-  DEFAULT_RULES, allocationProblem, projectOptions, taskOptions, taskReset, NOTHING_TO_SUBMIT, NO_TIME_FIELDS, RATE_TRIGGERS, TS_STATE, TS_STATES,
+  DEFAULT_RULES, PROJECT_TASK_SEP, allocationProblem, chooseProjectTask, projectOptions, projectTaskOptions, projectTaskValue, taskOptions, taskReset, NOTHING_TO_SUBMIT, NO_TIME_FIELDS, RATE_TRIGGERS, TS_STATE, TS_STATES,
   WEEK_LAYOUTS, WEEK_LAYOUT_LABEL, addDays, advisoryFlags, allSubmittedMessage, alreadySubmittedMessage, clockFromIso, cutoffFor,
   dayMinutes, deriveWorkType, dowMon, entryMinutes, fieldActive, fieldProblem, fieldSettingFor, fieldVisible,
   formatDay, formatDmy, formatMinutes, historyEntry, isoWeek, lockNote, missingMandatory, payBasisOf, payCodeList, payElement,
@@ -288,7 +288,7 @@ describe('capture fields per type', () => {
   const type: TypeCapture = { fields: { start: { vis: true, mand: true }, project: { vis: true, mand: false }, notes: { vis: false, mand: false } },
     allowances: ['OT15'], rules: [] };
   const env: FieldEnv = { modules: { C: true }, flagOn: f => f === 'PROJECT', capabilities: ['project'],
-    defaults: { start: { vis: true, mand: false, label: 'Start' }, site: { vis: false, mand: false, label: 'Location' } } };
+    defaults: { start: { vis: true, mand: false, label: 'Start' }, site: { vis: false, mand: false, label: 'Site' } } };
   test('a field needs its module, flag and capability, and a place in the type\'s map', () => {
     expect(fieldActive(start, type, env)).toBe(true);
     expect(fieldActive(project, type, env)).toBe(true);
@@ -307,7 +307,7 @@ describe('capture fields per type', () => {
     expect(fieldVisible(notes, type, env)).toBe(false);
     expect(fieldVisible(start, type, env)).toBe(true);
     expect(fieldSettingFor(start, type, env)).toEqual({ vis: true, mand: true, label: 'Start' });
-    expect(fieldSettingFor(site, undefined, env)).toEqual({ vis: false, mand: false, label: 'Location' });
+    expect(fieldSettingFor(site, undefined, env)).toEqual({ vis: false, mand: false, label: 'Site' });
     expect(fieldSettingFor(notes, undefined, env)).toEqual({ vis: true, mand: false, label: 'notes' });
   });
   test('a visible mandatory field left empty blocks the submission', () => {
@@ -385,11 +385,11 @@ describe('inline field checks', () => {
 describe('weekly layout', () => {
   const F = (o: Partial<FieldDef> & { c: string }): FieldDef => ({ tier: 'core', label: o.c, cat: 'Time', input: 'text', grp: 'core', ...o });
   const fields = [F({ c: 'start' }), F({ c: 'project', cat: 'Project', input: 'select', opts: ['J00020'] }), F({ c: 'billable', cat: 'Project', input: 'check' }),
-    F({ c: 'site', cat: 'Location', input: 'select', opts: ['MCR'] }), F({ c: 'drive', cat: 'Compliance', input: 'calc' })];
+    F({ c: 'site', cat: 'Site', input: 'select', opts: ['MCR'] }), F({ c: 'drive', cat: 'Compliance', input: 'calc' })];
   const env: FieldEnv = { modules: {}, flagOn: () => true, capabilities: [], defaults: { project: { vis: true, mand: false, label: 'Job' } } };
   const type: TypeCapture = { fields: { start: { vis: true, mand: true }, project: { vis: true, mand: false }, billable: { vis: true, mand: false } },
     allowances: [], rules: [] };
-  test('the week model carries the visible project and location selects as allocations', () => {
+  test('the week model carries the visible project and site selects as allocations', () => {
     expect(weekModel(fields, type, env, 'times')).toEqual({ ctx: [{ c: 'project', label: 'Job', opts: ['J00020'] }], hasTime: true, multi: true, times: true });
     expect(weekModel(fields, { ...type, fields: {} }, env, 'hours')).toEqual({ ctx: [], hasTime: false, multi: false, times: false });
   });
@@ -397,13 +397,13 @@ describe('weekly layout', () => {
     expect([weekLayoutFor('classic', false), weekLayoutFor('grid', false), weekLayoutFor('grid', true)]).toEqual(['classic', 'grid', 'days']);
     expect(WEEK_LAYOUTS.map(l => WEEK_LAYOUT_LABEL[l])).toEqual([
       'Classic · allocation in the first column', 'Grid · allocation as a section header', 'List · one row per day']);
-    expect(NO_TIME_FIELDS).toBe('No time fields are enabled for this employee type. Turn Start or Finish back on under Timesheet setup.');
+    expect(NO_TIME_FIELDS).toBe('No time fields are enabled for this work pattern. Turn Start or Finish back on under Timesheet setup.');
   });
 });
 
 describe('projects and tasks (fieldOpts)', () => {
-  const projects = [{ code: 'PRJ-204', name: 'Camden Supported Living', tasks: ['One-to-one support', 'Group activity'] },
-    { code: 'PRJ-114', name: 'Northgate Fit-out', tasks: ['Site survey'] }, { code: 'PRJ-009', name: 'Internal', tasks: [] }];
+  const projects = [{ code: 'PRJ-204', name: 'Camden Supported Living', tasks: ['One-to-one support', 'Group activity'], costCentre: 'CC-104' },
+    { code: 'PRJ-114', name: 'Northgate Fit-out', tasks: ['Site survey'], costCentre: 'CC-220' }, { code: 'PRJ-009', name: 'Internal', tasks: [], costCentre: '' }];
   test('Project lists the open projects; Job task lists the chosen project’s tasks, or the first project’s while none is chosen', () => {
     expect(projectOptions(projects)).toEqual(['Camden Supported Living', 'Northgate Fit-out', 'Internal']);
     expect(taskOptions(projects, 'Northgate Fit-out')).toEqual(['Site survey']);
@@ -415,6 +415,28 @@ describe('projects and tasks (fieldOpts)', () => {
     expect(taskReset('project', 'Internal', 'Northgate Fit-out')).toEqual({ job_task: '' });
     expect(taskReset('project', 'Internal', 'Internal')).toEqual({});
     expect(taskReset('job_task', 'a', 'b')).toEqual({});
+  });
+  /* the week grid's one picker: project and task together, as a BC time sheet line is Job No. and Job Task No. */
+  test('one picker lists No project, then each project followed by its tasks; its value carries both', () => {
+    expect(projectTaskOptions(projects, true).map(x => x.label)).toEqual(['No project', 'Camden Supported Living', 'Camden Supported Living › One-to-one support',
+      'Camden Supported Living › Group activity', 'Northgate Fit-out', 'Northgate Fit-out › Site survey', 'Internal']);
+    expect(projectTaskOptions(projects, false).map(x => x.label)).toEqual(['No project', 'Camden Supported Living', 'Northgate Fit-out', 'Internal']);
+    expect(projectTaskValue({ project: 'Northgate Fit-out', job_task: 'Site survey' })).toBe(`Northgate Fit-out${PROJECT_TASK_SEP}Site survey`);
+    expect(projectTaskValue({ project: 'Internal', job_task: '' })).toBe('Internal');
+    expect(projectTaskValue({})).toBe('');
+  });
+  test('choosing sets project and task together; the cost centre follows the project unless chosen by hand', () => {
+    const a = chooseProjectTask({ project: '', job_task: '', cost_c: '' }, `Northgate Fit-out${PROJECT_TASK_SEP}Site survey`, projects);
+    expect(a).toEqual({ project: 'Northgate Fit-out', job_task: 'Site survey', cost_c: 'CC-220' });
+    /* still the default, so it moves with the project */
+    expect(chooseProjectTask(a, 'Camden Supported Living', projects)).toEqual({ project: 'Camden Supported Living', job_task: '', cost_c: 'CC-104' });
+    /* chosen by hand for this person: kept */
+    expect(chooseProjectTask({ ...a, cost_c: 'WH-CAM-01' }, 'Camden Supported Living', projects).cost_c).toBe('WH-CAM-01');
+    /* No project, and a project with no default */
+    expect(chooseProjectTask(a, '', projects)).toEqual({ project: '', job_task: '', cost_c: '' });
+    expect(chooseProjectTask(a, 'Internal', projects).cost_c).toBe('');
+    /* an organisation with no task or cost centre field: none is added */
+    expect(chooseProjectTask({ project: '' }, 'Internal', projects)).toEqual({ project: 'Internal' });
   });
   test('the server refuses a project that is not open here, and a task that is not on the chosen project', () => {
     expect(allocationProblem({}, projects)).toBeNull();

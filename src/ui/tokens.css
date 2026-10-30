@@ -252,6 +252,19 @@
    own colour. */
 [data-surface="inverse"]{
   --qp-ring-focus:var(--qp-ring-focus-inverse);
+  /* Status on the dark green (the lead block, ui/Lead, taste review
+     2026-10-26): the light theme's 700/800 inks are dark on dark there, so an
+     inverse surface takes the dark theme's 300 inks, and its tints are mixed
+     over the inverse surface itself. A status colour then reads wherever it
+     lands, in either theme. */
+  --qp-color-status-success:var(--qp-success-300);
+  --qp-color-status-success-surface:color-mix(in srgb, var(--qp-success-500) 18%, var(--qp-color-surface-inverse));
+  --qp-color-status-warning:var(--qp-warning-300);
+  --qp-color-status-warning-surface:color-mix(in srgb, var(--qp-warning-500) 18%, var(--qp-color-surface-inverse));
+  --qp-color-status-error:var(--qp-danger-300);
+  --qp-color-status-error-surface:color-mix(in srgb, var(--qp-danger-500) 18%, var(--qp-color-surface-inverse));
+  --qp-color-status-info:var(--qp-info-300);
+  --qp-color-status-info-surface:color-mix(in srgb, var(--qp-info-500) 18%, var(--qp-color-surface-inverse));
 }
 /* Reduced motion is gentler, not frozen: an overlay still fades and a colour
    still changes, but nothing scales, slides or presses in. Movement is taken

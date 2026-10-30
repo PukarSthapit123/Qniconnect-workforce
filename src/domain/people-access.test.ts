@@ -1,4 +1,4 @@
-/* People & access (spec D12, N19): the Workforce records and the portal
+/* Setup · Employees (spec D12, N19): the Workforce records and the portal
    logins, joined by employee number in the browser only, and the portal
    user rules of docs/superpowers/inventory/admin.md (USERS) as pure
    functions. */

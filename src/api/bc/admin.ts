@@ -42,7 +42,8 @@ const filterQuery = () => { const r = bcContext.registrationId(); return r ? { $
 export interface OverviewData {
   users: BcPortalUser[];
   environments: AdminEnvironment[];
-  auth: { status: string | null; expiresAt: string | null };
+  /* issuedAt is read from the same status answer (AUTHZ.C1), for the overview's term meter (Ruling Q20) */
+  auth: { status: string | null; issuedAt: string | null; expiresAt: string | null };
   tenant: { name: string; id: string; registrationDate: string | null };
 }
 async function quietly<T>(what: string, call: () => Promise<T>, none: T): Promise<T> {
@@ -69,7 +70,7 @@ export async function loadOverview(env: BcEnvironment | null): Promise<OverviewD
   const registration = await quietly('tenant info', () => bcApi(portalRegistration, { headerValues }), null);
   return {
     users, environments,
-    auth: { status: status?.status || null, expiresAt: status?.expiresAt || null },
+    auth: { status: status?.status || null, issuedAt: status?.issuedAt || null, expiresAt: status?.expiresAt || null },
     tenant: {
       name: registration?.companyName || env?.name || 'Unknown',
       id: registration?.id || env?.id || 'Unknown',

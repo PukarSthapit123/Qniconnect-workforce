@@ -69,7 +69,8 @@ test('docs: loading first, then the payslips, the tax documents, the security no
 test('Workforce documents, unchanged: my seven, no Open action, and the source of each', async () => {
   await open();
   const card = await screen.findByTestId(tid.docs.card);
-  expect(screen.getByText('My work · Documents · Amara Okafor')).toBeInTheDocument();
+  /* whose documents: the line under the title */
+  expect(screen.getByRole('heading', { level: 1 }).nextElementSibling).toHaveTextContent(/^Amara Okafor$/);
   expect(within(card).getAllByTestId(/^docs-row-/)).toHaveLength(7);
   expect(within(card).getByTestId(tid.docs.row('doc_CP-1042_3'))).toHaveTextContent('DBS certificate');
   expect(within(card).getByTestId(tid.docs.row('doc_CP-1042_3'))).toHaveTextContent('Compliance · 31/03/2024 · HRIS');
@@ -151,6 +152,11 @@ describe('the payslips', () => {
     expect(within(screen.getByTestId(tid.docs.payslips)).getAllByRole('columnheader').map(h => h.textContent))
       .toEqual(['Period', 'Pay date', 'Gross pay', 'Tax', 'Net pay', 'Actions']);
     const cells = (row: number) => within(screen.getByTestId(tid.docs.payslip(row))).getAllByRole('cell').map(c => c.textContent).slice(0, 5);
+    /* the amounts start hidden, the same four dots whatever the figure (ui/PayMask), until the eye shows them */
+    expect(cells(0)).toEqual(['May 2026', '29/05/2026', '£••••hidden', '£••••hidden', '£••••hidden']);
+    expect(screen.getByTestId(tid.docs.mask)).toHaveAttribute('aria-pressed', 'false');
+    await userEvent.click(screen.getByTestId(tid.docs.mask));
+    expect(screen.getByTestId(tid.docs.mask)).toHaveAttribute('aria-pressed', 'true');
     expect(cells(0)).toEqual(['May 2026', '29/05/2026', '£2,345.50', '£0.00', '£2,000.00']);
     expect(cells(1)).toEqual(['April 2026', '28/04/2026', '£0.00', '£12.30', '£0.00']);
     expect(screen.getByTestId(tid.docs.payslipView(0))).toHaveAccessibleName('View payslip for May 2026');

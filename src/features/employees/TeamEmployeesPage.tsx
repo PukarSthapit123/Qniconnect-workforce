@@ -8,7 +8,7 @@ import { EmployeesWorkspace } from './EmployeesWorkspace';
    awaiting them above, as the prototype puts them. */
 export function TeamEmployeesPage() {
   const where = useCurrentSession()?.account.locationName, caps = useCaps();
-  return <EmployeesWorkspace variant="team" view="temployees" crumb="My team · Employees"
-    tip={where ? `The employees at ${where}.` : 'The employees at your location.'}
+  return <EmployeesWorkspace variant="team" view="temployees"
+    tip={where ? `The employees at ${where}.` : 'The employees at your site.'}
     above={caps.has('profile_appr') ? <ProfileQueue stage="manager" /> : undefined} />;
 }

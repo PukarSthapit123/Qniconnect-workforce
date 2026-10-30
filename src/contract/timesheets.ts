@@ -85,7 +85,8 @@ export const Clock = z.object({ date: IsoDate, time: z.string() });
 /* A clocked day's marks (module 2b): a forgotten clock closed later (D6). */
 export const ClockMark = z.object({ closedLate: z.boolean() });
 /* One of the tenant's open projects with its own tasks: the Project and Job task options (fieldOpts). */
-export const OpenProject = z.object({ code: z.string(), name: z.string(), tasks: z.array(z.string()) });
+/* costCentre: the default the week grid fills a row's cost centre with when the project is chosen; '' for none */
+export const OpenProject = z.object({ code: z.string(), name: z.string(), tasks: z.array(z.string()), costCentre: z.string() });
 /* Everything the form needs to render this employee's capture and to run the
    same checks the server runs: the rules, the clock, and the field inputs to
    fieldVisible, weekModel and missingMandatory. Read from the target employee,
@@ -95,7 +96,7 @@ export const CaptureSetup = z.object({
   weekGrid: WeekGrid, weekLayout: WeekLayout, fields: z.array(TimesheetField), type: TypeCapture.nullable(),
   modules: z.record(z.string(), z.boolean()), flags: z.array(z.string()), capabilities: z.array(z.string()),
   fieldDefaults: z.record(z.string(), FieldDefault), allowances: z.array(AllowanceDef), payCodes: z.array(PayCode),
-  /* the employee type's entry mode: a grid type opens My timesheet on the week while WEEKLY is on (defaultTsView) */
+  /* the work pattern's entry mode: a grid type opens My timesheet on the week while WEEKLY is on (defaultTsView) */
   mode: z.enum(['form', 'grid', 'clock']),
   /* the tenant's open projects; a Project or Job task value outside them is refused (TS_INVALID) */
   projects: z.array(OpenProject),
@@ -114,7 +115,7 @@ export const EarlierWeek = z.object({
   weekStart: IsoDate, label: z.string(), minutes: z.number().int().nonnegative(), status: z.enum(['ready', 'submitted']),
   locked: z.boolean(), lockNote: z.string(),
 });
-export const TimesheetEmployee = z.object({ code: z.string(), name: z.string(), employeeType: z.string(), typeName: z.string(), location: z.string(), manager: z.string(),
+export const TimesheetEmployee = z.object({ code: z.string(), name: z.string(), workPattern: z.string(), typeName: z.string(), location: z.string(), manager: z.string(),
   /* the week's contracted line: 0 for bank and zero-hours colleagues */
   contractedHours: z.number().nonnegative() });
 export const TimesheetWeek = z.object({
@@ -243,7 +244,7 @@ export const bulkApproveTimesheets = defineEndpoint({ method: 'POST', path: '/ap
   response: BulkApproved, errors: [403, 409],
   summary: 'Approve the listed days, each at its current layer, checked against the checksum of what the approver was shown. Any change since refuses the whole batch (QUEUE_CHANGED). A day the approver may not decide at its current layer comes back held with the reason.' });
 export const getTimesheetConfig = defineEndpoint({ method: 'GET', path: '/api/v1/timesheet-config', response: TimesheetSetup, capability: 'mod_cfg',
-  summary: 'Timesheet setup: capture rules, fields per employee type, allowances and pay rules per type, overtime, weekly layout' });
+  summary: 'Timesheet setup: capture rules, fields per work pattern, allowances and pay rules per type, overtime, weekly layout' });
 export const updateTimesheetConfig = defineEndpoint({ method: 'PATCH', path: '/api/v1/timesheet-config', request: UpdateTimesheetConfig,
   response: mutation(TimesheetConfig), capability: 'mod_cfg', versioned: true,
   summary: 'Save Timesheet setup (If-Match). It applies to the next save or submission.' });

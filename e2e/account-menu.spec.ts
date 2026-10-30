@@ -40,8 +40,8 @@ test('SV While viewing as someone, a change is refused and the store is unchange
   const manager = accounts.find(a => a.userType === 'manager');
   if (!manager) throw new Error('no seeded manager');
   const before = (await api.get('/api/v1/user-types')).body as { id: string; version: number }[];
-  const employeeType = before.find(t => t.id === 'employee');
-  if (!employeeType) throw new Error('no employee user type');
+  const employeeRole = before.find(t => t.id === 'employee');
+  if (!employeeRole) throw new Error('no employee access role');
   expect((await api.send('POST', '/api/v1/session/view-as', { employeeCode: manager.employeeCode })).status).toBe(200);
   const refused = await page.evaluate(async version => {
     const raw = sessionStorage.getItem('qniconnect.stubAccount');
@@ -49,7 +49,7 @@ test('SV While viewing as someone, a change is refused and the store is unchange
     const r = await fetch('/api/v1/user-types/employee/capabilities/proxy', { method: 'PUT',
       headers: { 'Content-Type': 'application/json', 'X-Dev-Account': email, 'If-Match': String(version) }, body: JSON.stringify({ granted: true }) });
     return { status: r.status, body: await r.json() as { code: string; next: string } };
-  }, employeeType.version);
+  }, employeeRole.version);
   expect(refused.status).toBe(403);
   expect(refused.body).toMatchObject({ code: 'viewing-as', next: expect.stringContaining('Return to your own account') });
   expect((await api.send('DELETE', '/api/v1/session/view-as')).status).toBe(200);

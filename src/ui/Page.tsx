@@ -15,24 +15,28 @@ export function Page({ testId, narrow, className, children }: { testId: string; 
     </section>);
 }
 
-/* The page head: the prototype's aHead (v15:7963-7975, .crumb and .pagehead
-   at 364 and 394-395). A crumb in 12px muted ink naming the route, "Area ·
-   Page", 5px above; the title at 24px/600 with an optional `i` tip beside it;
-   the page's actions on the right, 8px apart; 16px under the whole head.
-   There is no lede paragraph: what would have been one goes in the tip
-   (170 characters at most) or behind `?`. The crumb is left out where it
-   would only repeat the title. */
-export function PageHead({ title, crumb, tip, tipTestId, actions }: {
-  title: string; crumb?: string; tip?: string; tipTestId?: string; actions?: ReactNode;
+/* The page head: the prototype's aHead (v15:7963-7975, .pagehead at
+   394-395). The title at 24px/600 with an optional `i` tip beside it; the
+   page's actions on the right, 8px apart; 16px under the whole head. There
+   is no lede paragraph: what would have been one goes in the tip (170
+   characters at most) or behind `?`.
+   The page says what it is, not where it is (taste review 2026-10-26, a
+   deliberate deviation from the prototype's .crumb at v15:364): the top
+   bar's area and the tab strip already say where, and the crumb repeated
+   them, so a page said "Setup" or its own name three times. `context` is
+   one line under the title for facts nothing else on screen says (the week,
+   the location, whose documents), in the secondary ink. */
+export function PageHead({ title, context, tip, tipTestId, actions }: {
+  title: string; context?: ReactNode; tip?: string; tipTestId?: string; actions?: ReactNode;
 }) {
   return (
-    <>
-      {crumb && <div className="mb-[5px] text-xs text-text-muted">{crumb}</div>}
-      <div className="mb-lg flex flex-wrap items-start gap-md max-md:gap-y-[10px]">
-        <div><h1>{title}{tip && tipTestId && <Tip testId={tipTestId} text={tip} />}</h1></div>
-        {actions && <div className="ml-auto flex flex-wrap items-center gap-sm">{actions}</div>}
+    <div className="mb-lg flex flex-wrap items-start gap-md max-md:gap-y-[10px]">
+      <div className="min-w-0">
+        <h1>{title}{tip && tipTestId && <Tip testId={tipTestId} text={tip} />}</h1>
+        {context && <div className="mt-[2px] text-sm text-text-secondary">{context}</div>}
       </div>
-    </>);
+      {actions && <div className="ml-auto flex flex-wrap items-center gap-sm">{actions}</div>}
+    </div>);
 }
 
 /* A long settings page's Save and Cancel, as a dialog's .mf holds its

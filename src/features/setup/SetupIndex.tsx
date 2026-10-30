@@ -2,9 +2,12 @@ import type { ReactNode } from 'react';
 import { Blocks, Building, Plug, Server, ShieldCheck, Users, LayoutGrid } from 'lucide-react';
 import type { NavTab } from '@/domain/nav';
 import { tid } from '@/testids';
-import { Caution, IconTile, NavLink, Page, PageHead } from '@/ui';
+import { Card, CardHead, Caution, IconTile, NavLink, Page, PageHead } from '@/ui';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/ui/shadcn/tooltip';
 import { useShellData, ShellLoading, ShellError } from '@/shell/shellData';
+import { useAudit } from '@/api/audit';
+import { formatDateTime } from '@/lib/format';
+import { detail, whoLabel } from '@/features/audit/entry';
 
 interface Section { key: string; label: string; description: string; pages: NavTab[] }
 
@@ -70,5 +73,38 @@ export function SetupIndex() {
           })}
         </div>
       </TooltipProvider>
+      {data.nav.some(g => g.tabs.some(t => t.view === 'iaudit')) && <RecentChanges />}
     </Page>);
+}
+
+const RECENT = 5;
+/* Recent changes (taste review 2026-10-26, Phase 2): the last five entries of
+   the audit log, under the sections, so the index answers "what changed
+   lately?" as well as "where do I change X?". Shown only to someone who can
+   open the audit log (its own capability), in the log's own words
+   (features/audit/entry.ts), and read with the log's unfiltered query, so
+   opening the log after it is instant. */
+function RecentChanges() {
+  const audit = useAudit({});
+  const items = audit.data?.items.slice(0, RECENT) ?? [];
+  return (
+    <Card testId={tid.setup.recent} className="mt-xl">
+      <CardHead title="Recent changes" actions={<NavLink to="/setup/iaudit" testId={tid.setup.recentAll}
+        className="text-xs font-semibold text-brand underline dark:text-brand-accent max-md:inline-flex max-md:min-h-touch max-md:items-center">View audit log</NavLink>} />
+      {audit.isPending && <p className="text-sm text-text-secondary">Loading the latest changes&hellip;</p>}
+      {audit.isError && <p data-testid={tid.setup.recentError} role="alert" className="text-sm text-err">
+        The latest changes could not be loaded. The audit log has them all.</p>}
+      {audit.isSuccess && items.length === 0 && <p data-testid={tid.setup.recentEmpty} className="text-sm text-text-muted">
+        Nothing has changed yet. Every change anyone makes in setup appears here and in the audit log.</p>}
+      {items.length > 0 && (
+        <ul className="flex flex-col">
+          {items.map(e => (
+            <li key={e.id} data-testid={tid.setup.recentRow(e.id)} className="flex flex-wrap items-baseline justify-between gap-x-lg gap-y-[2px] border-b py-sm text-sm last:border-b-0">
+              {/* a 16rem base lets who and when wrap under the entry on a phone, rather than squeezing it into a column */}
+              <span className="min-w-0 flex-1 basis-[16rem]"><b className="font-semibold">{e.act}</b>
+                {detail(e) && <span className="block text-xs text-text-muted [overflow-wrap:anywhere]">{detail(e)}</span>}</span>
+              <span className="shrink-0 text-xs text-text-muted tabular-nums">{whoLabel(e.who)}<span aria-hidden="true"> · </span>{formatDateTime(e.at)}</span>
+            </li>))}
+        </ul>)}
+    </Card>);
 }

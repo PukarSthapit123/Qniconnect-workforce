@@ -45,7 +45,7 @@ test('the @theme block aliases --max-width-{xs..3xl} to the container scale, so 
    none is renamed in this task. Download file names are copy and say qniconnect. */
 const BRAND_ALLOWED = new Set([
   'qnipay.theme', 'qnipay.app.store',                   // storage keys
-  'qnipay.state', 'qnipay.template',                    // wire-format kind tags in saved files
+  'qnipay.state', 'qnipay.template', 'qnipay.setup-preset',                    // wire-format kind tags in saved files
   './seed/qnipay.json', 'qnipay',                       // the seed's file name and tenant id
   'https://qnipay.com/legal/',                          // QniConnect's Privacy and Terms page: a link target, never shown (Task 21)
   'support@qnipay.com',                                 // the sign-in page's contact address (Ruling Q18): a contact, not product naming

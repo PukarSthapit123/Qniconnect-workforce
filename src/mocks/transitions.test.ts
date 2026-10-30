@@ -82,10 +82,10 @@ test('a stale version is refused with 412', async () => {
   expect(r.status).toBe(412);
   expect(snapshot(...WRITES)).toEqual(before);
 });
-test('a manager cannot move someone at another location', async () => {
+test('a manager cannot move someone at another site', async () => {
   const mine = String(employeeOf(accountOf('manager').employeeCode).location);
   const other = Object.values(store.coll<{ code: string; location: string; state: string }>('employees')).find(p => p.location !== mine && p.state === 'active');
-  if (!other) throw new Error('the seed has nobody active outside the manager\'s location');
+  if (!other) throw new Error('the seed has nobody active outside the manager\'s site');
   const r = await move(other.code, 'suspended', 'x', 'manager');
   expect(r.status).toBe(403);
   expect(Refusal.parse(r.body).code).toBe('scope');

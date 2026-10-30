@@ -7227,876 +7227,6 @@
         }
       }
     },
-    "/api/v1/employee-types/{id}": {
-      "delete": {
-        "summary": "Remove an employee type nobody holds (If-Match). 409 with usedBy otherwise.",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "x-capability": "type_cfg",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "If-Match",
-            "in": "header",
-            "required": true,
-            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
-            "schema": {
-              "type": "string",
-              "pattern": "^[0-9]+$"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "auditId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "auditId"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The record does not exist",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "The change is refused because of the state of the data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "412": {
-            "description": "The record changed since it was read (If-Match is stale)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "The request is not valid; field names the part to correct",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "428": {
-            "description": "If-Match is missing",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "summary": "Edit an employee type (If-Match). The code is immutable.",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "x-capability": "type_cfg",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "If-Match",
-            "in": "header",
-            "required": true,
-            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
-            "schema": {
-              "type": "string",
-              "pattern": "^[0-9]+$"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string"
-                  },
-                  "category": {
-                    "type": "string",
-                    "enum": [
-                      "Contracted",
-                      "Bank",
-                      "Agency",
-                      "Salaried"
-                    ]
-                  },
-                  "mode": {
-                    "type": "string",
-                    "enum": [
-                      "form",
-                      "grid",
-                      "clock"
-                    ]
-                  },
-                  "uom": {
-                    "type": "string",
-                    "enum": [
-                      "hour",
-                      "day"
-                    ]
-                  },
-                  "capabilities": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "vehicle",
-                        "site",
-                        "project",
-                        "shift"
-                      ]
-                    }
-                  },
-                  "code": {
-                    "not": {}
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "record": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "version": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "updatedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "Contracted",
-                            "Bank",
-                            "Agency",
-                            "Salaried"
-                          ]
-                        },
-                        "mode": {
-                          "type": "string",
-                          "enum": [
-                            "form",
-                            "grid",
-                            "clock"
-                          ]
-                        },
-                        "uom": {
-                          "type": "string",
-                          "enum": [
-                            "hour",
-                            "day"
-                          ]
-                        },
-                        "capabilities": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "enum": [
-                              "vehicle",
-                              "site",
-                              "project",
-                              "shift"
-                            ]
-                          }
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "version",
-                        "updatedAt",
-                        "code",
-                        "name",
-                        "category",
-                        "mode",
-                        "uom",
-                        "capabilities"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "auditId": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "changed": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "record",
-                    "auditId",
-                    "changed"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The record does not exist",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "412": {
-            "description": "The record changed since it was read (If-Match is stale)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "The request is not valid; field names the part to correct",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "428": {
-            "description": "If-Match is missing",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/employee-types/library": {
-      "get": {
-        "summary": "The archetypes a new type can start from, and the capabilities a type can have",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "x-capability": "type_cfg",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "archetypes": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "key": {
-                            "type": "string"
-                          },
-                          "name": {
-                            "type": "string"
-                          },
-                          "mode": {
-                            "type": "string",
-                            "enum": [
-                              "form",
-                              "grid",
-                              "clock"
-                            ]
-                          },
-                          "uom": {
-                            "type": "string",
-                            "enum": [
-                              "hour",
-                              "day"
-                            ]
-                          },
-                          "capabilities": {
-                            "type": "array",
-                            "items": {
-                              "type": "string",
-                              "enum": [
-                                "vehicle",
-                                "site",
-                                "project",
-                                "shift"
-                              ]
-                            }
-                          }
-                        },
-                        "required": [
-                          "key",
-                          "name",
-                          "mode",
-                          "uom",
-                          "capabilities"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "capabilities": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "code": {
-                            "type": "string",
-                            "enum": [
-                              "vehicle",
-                              "site",
-                              "project",
-                              "shift"
-                            ]
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "desc": {
-                            "type": "string"
-                          }
-                        },
-                        "required": [
-                          "code",
-                          "label",
-                          "desc"
-                        ],
-                        "additionalProperties": false
-                      }
-                    }
-                  },
-                  "required": [
-                    "archetypes",
-                    "capabilities"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/employee-types": {
-      "get": {
-        "summary": "Employee types, each with how many employees hold it",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "version": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 9007199254740991
-                      },
-                      "updatedAt": {
-                        "type": "string",
-                        "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                      },
-                      "code": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "category": {
-                        "type": "string",
-                        "enum": [
-                          "Contracted",
-                          "Bank",
-                          "Agency",
-                          "Salaried"
-                        ]
-                      },
-                      "mode": {
-                        "type": "string",
-                        "enum": [
-                          "form",
-                          "grid",
-                          "clock"
-                        ]
-                      },
-                      "uom": {
-                        "type": "string",
-                        "enum": [
-                          "hour",
-                          "day"
-                        ]
-                      },
-                      "capabilities": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "vehicle",
-                            "site",
-                            "project",
-                            "shift"
-                          ]
-                        }
-                      },
-                      "inUse": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 9007199254740991
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "version",
-                      "updatedAt",
-                      "code",
-                      "name",
-                      "category",
-                      "mode",
-                      "uom",
-                      "capabilities",
-                      "inUse"
-                    ],
-                    "additionalProperties": false
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create an employee type. The code is unique.",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "x-capability": "type_cfg",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "type": "object",
-                "properties": {
-                  "code": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "category": {
-                    "type": "string",
-                    "enum": [
-                      "Contracted",
-                      "Bank",
-                      "Agency",
-                      "Salaried"
-                    ]
-                  },
-                  "mode": {
-                    "type": "string",
-                    "enum": [
-                      "form",
-                      "grid",
-                      "clock"
-                    ]
-                  },
-                  "uom": {
-                    "type": "string",
-                    "enum": [
-                      "hour",
-                      "day"
-                    ]
-                  },
-                  "capabilities": {
-                    "type": "array",
-                    "items": {
-                      "type": "string",
-                      "enum": [
-                        "vehicle",
-                        "site",
-                        "project",
-                        "shift"
-                      ]
-                    }
-                  },
-                  "startedFrom": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "code",
-                  "name",
-                  "category",
-                  "mode",
-                  "uom",
-                  "capabilities",
-                  "startedFrom"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "record": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "version": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "updatedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "category": {
-                          "type": "string",
-                          "enum": [
-                            "Contracted",
-                            "Bank",
-                            "Agency",
-                            "Salaried"
-                          ]
-                        },
-                        "mode": {
-                          "type": "string",
-                          "enum": [
-                            "form",
-                            "grid",
-                            "clock"
-                          ]
-                        },
-                        "uom": {
-                          "type": "string",
-                          "enum": [
-                            "hour",
-                            "day"
-                          ]
-                        },
-                        "capabilities": {
-                          "type": "array",
-                          "items": {
-                            "type": "string",
-                            "enum": [
-                              "vehicle",
-                              "site",
-                              "project",
-                              "shift"
-                            ]
-                          }
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "version",
-                        "updatedAt",
-                        "code",
-                        "name",
-                        "category",
-                        "mode",
-                        "uom",
-                        "capabilities"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "auditId": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "record",
-                    "auditId"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "The request is not valid; field names the part to correct",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/employees/{id}/history": {
       "get": {
         "summary": "Field-level history of one employee, newest first",
@@ -8331,25 +7461,43 @@
                         "name": {
                           "type": "string"
                         },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "middleName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "knownAs": {
+                          "type": "string"
+                        },
                         "email": {
                           "type": "string"
                         },
                         "phone": {
                           "type": "string"
                         },
-                        "jobProfile": {
+                        "position": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "category": {
+                        "employmentType": {
                           "type": "string"
                         },
                         "location": {
                           "type": "string"
                         },
                         "department": {
+                          "type": "string"
+                        },
+                        "grade": {
+                          "type": "string"
+                        },
+                        "level": {
                           "type": "string"
                         },
                         "manager": {
@@ -8386,7 +7534,10 @@
                         "address": {
                           "type": "string"
                         },
-                        "emergencyName": {
+                        "emergencyFirstName": {
+                          "type": "string"
+                        },
+                        "emergencyLastName": {
                           "type": "string"
                         },
                         "emergencyPhone": {
@@ -8445,13 +7596,19 @@
                         "updatedAt",
                         "code",
                         "name",
+                        "firstName",
+                        "middleName",
+                        "lastName",
+                        "knownAs",
                         "email",
                         "phone",
-                        "jobProfile",
-                        "employeeType",
-                        "category",
+                        "position",
+                        "workPattern",
+                        "employmentType",
                         "location",
                         "department",
+                        "grade",
+                        "level",
                         "manager",
                         "contractedHours",
                         "maxHours",
@@ -8460,7 +7617,8 @@
                         "cis",
                         "start",
                         "address",
-                        "emergencyName",
+                        "emergencyFirstName",
+                        "emergencyLastName",
                         "emergencyPhone",
                         "bankAccount",
                         "bankSortCode",
@@ -8617,25 +7775,43 @@
                     "name": {
                       "type": "string"
                     },
+                    "firstName": {
+                      "type": "string"
+                    },
+                    "middleName": {
+                      "type": "string"
+                    },
+                    "lastName": {
+                      "type": "string"
+                    },
+                    "knownAs": {
+                      "type": "string"
+                    },
                     "email": {
                       "type": "string"
                     },
                     "phone": {
                       "type": "string"
                     },
-                    "jobProfile": {
+                    "position": {
                       "type": "string"
                     },
-                    "employeeType": {
+                    "workPattern": {
                       "type": "string"
                     },
-                    "category": {
+                    "employmentType": {
                       "type": "string"
                     },
                     "location": {
                       "type": "string"
                     },
                     "department": {
+                      "type": "string"
+                    },
+                    "grade": {
+                      "type": "string"
+                    },
+                    "level": {
                       "type": "string"
                     },
                     "manager": {
@@ -8672,7 +7848,10 @@
                     "address": {
                       "type": "string"
                     },
-                    "emergencyName": {
+                    "emergencyFirstName": {
+                      "type": "string"
+                    },
+                    "emergencyLastName": {
                       "type": "string"
                     },
                     "emergencyPhone": {
@@ -8731,13 +7910,19 @@
                     "updatedAt",
                     "code",
                     "name",
+                    "firstName",
+                    "middleName",
+                    "lastName",
+                    "knownAs",
                     "email",
                     "phone",
-                    "jobProfile",
-                    "employeeType",
-                    "category",
+                    "position",
+                    "workPattern",
+                    "employmentType",
                     "location",
                     "department",
+                    "grade",
+                    "level",
                     "manager",
                     "contractedHours",
                     "maxHours",
@@ -8746,7 +7931,8 @@
                     "cis",
                     "start",
                     "address",
-                    "emergencyName",
+                    "emergencyFirstName",
+                    "emergencyLastName",
                     "emergencyPhone",
                     "bankAccount",
                     "bankSortCode",
@@ -8849,7 +8035,16 @@
                 "$schema": "https://json-schema.org/draft/2020-12/schema",
                 "type": "object",
                 "properties": {
-                  "name": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "middleName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "knownAs": {
                     "type": "string"
                   },
                   "email": {
@@ -8858,19 +8053,25 @@
                   "phone": {
                     "type": "string"
                   },
-                  "jobProfile": {
+                  "position": {
                     "type": "string"
                   },
-                  "employeeType": {
+                  "workPattern": {
                     "type": "string"
                   },
-                  "category": {
+                  "employmentType": {
                     "type": "string"
                   },
                   "location": {
                     "type": "string"
                   },
                   "department": {
+                    "type": "string"
+                  },
+                  "grade": {
+                    "type": "string"
+                  },
+                  "level": {
                     "type": "string"
                   },
                   "manager": {
@@ -8954,25 +8155,43 @@
                         "name": {
                           "type": "string"
                         },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "middleName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "knownAs": {
+                          "type": "string"
+                        },
                         "email": {
                           "type": "string"
                         },
                         "phone": {
                           "type": "string"
                         },
-                        "jobProfile": {
+                        "position": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "category": {
+                        "employmentType": {
                           "type": "string"
                         },
                         "location": {
                           "type": "string"
                         },
                         "department": {
+                          "type": "string"
+                        },
+                        "grade": {
+                          "type": "string"
+                        },
+                        "level": {
                           "type": "string"
                         },
                         "manager": {
@@ -9009,7 +8228,10 @@
                         "address": {
                           "type": "string"
                         },
-                        "emergencyName": {
+                        "emergencyFirstName": {
+                          "type": "string"
+                        },
+                        "emergencyLastName": {
                           "type": "string"
                         },
                         "emergencyPhone": {
@@ -9068,13 +8290,19 @@
                         "updatedAt",
                         "code",
                         "name",
+                        "firstName",
+                        "middleName",
+                        "lastName",
+                        "knownAs",
                         "email",
                         "phone",
-                        "jobProfile",
-                        "employeeType",
-                        "category",
+                        "position",
+                        "workPattern",
+                        "employmentType",
                         "location",
                         "department",
+                        "grade",
+                        "level",
                         "manager",
                         "contractedHours",
                         "maxHours",
@@ -9083,7 +8311,8 @@
                         "cis",
                         "start",
                         "address",
-                        "emergencyName",
+                        "emergencyFirstName",
+                        "emergencyLastName",
                         "emergencyPhone",
                         "bankAccount",
                         "bankSortCode",
@@ -9264,7 +8493,7 @@
     },
     "/api/v1/employees": {
       "get": {
-        "summary": "Employees the caller may see: everyone with master_data, otherwise their own location with team_employees. Query: state (here, all or a state), q.",
+        "summary": "Employees the caller may see: everyone with master_data, otherwise their own site with team_employees. Query: state (here, all or a state), q.",
         "security": [
           {
             "bearer": []
@@ -9340,25 +8569,43 @@
                       "name": {
                         "type": "string"
                       },
+                      "firstName": {
+                        "type": "string"
+                      },
+                      "middleName": {
+                        "type": "string"
+                      },
+                      "lastName": {
+                        "type": "string"
+                      },
+                      "knownAs": {
+                        "type": "string"
+                      },
                       "email": {
                         "type": "string"
                       },
                       "phone": {
                         "type": "string"
                       },
-                      "jobProfile": {
+                      "position": {
                         "type": "string"
                       },
-                      "employeeType": {
+                      "workPattern": {
                         "type": "string"
                       },
-                      "category": {
+                      "employmentType": {
                         "type": "string"
                       },
                       "location": {
                         "type": "string"
                       },
                       "department": {
+                        "type": "string"
+                      },
+                      "grade": {
+                        "type": "string"
+                      },
+                      "level": {
                         "type": "string"
                       },
                       "manager": {
@@ -9395,7 +8642,10 @@
                       "address": {
                         "type": "string"
                       },
-                      "emergencyName": {
+                      "emergencyFirstName": {
+                        "type": "string"
+                      },
+                      "emergencyLastName": {
                         "type": "string"
                       },
                       "emergencyPhone": {
@@ -9454,13 +8704,19 @@
                       "updatedAt",
                       "code",
                       "name",
+                      "firstName",
+                      "middleName",
+                      "lastName",
+                      "knownAs",
                       "email",
                       "phone",
-                      "jobProfile",
-                      "employeeType",
-                      "category",
+                      "position",
+                      "workPattern",
+                      "employmentType",
                       "location",
                       "department",
+                      "grade",
+                      "level",
                       "manager",
                       "contractedHours",
                       "maxHours",
@@ -9469,7 +8725,8 @@
                       "cis",
                       "start",
                       "address",
-                      "emergencyName",
+                      "emergencyFirstName",
+                      "emergencyLastName",
                       "emergencyPhone",
                       "bankAccount",
                       "bankSortCode",
@@ -9526,7 +8783,7 @@
         }
       },
       "post": {
-        "summary": "Create an employee, and their account when a work email is given. A non-employee user type needs perm_cfg.",
+        "summary": "Create an employee, and their account when a work email is given. A non-employee access role needs perm_cfg.",
         "security": [
           {
             "bearer": []
@@ -9544,7 +8801,16 @@
                   "code": {
                     "type": "string"
                   },
-                  "name": {
+                  "firstName": {
+                    "type": "string"
+                  },
+                  "middleName": {
+                    "type": "string"
+                  },
+                  "lastName": {
+                    "type": "string"
+                  },
+                  "knownAs": {
                     "type": "string"
                   },
                   "email": {
@@ -9553,19 +8819,25 @@
                   "phone": {
                     "type": "string"
                   },
-                  "jobProfile": {
+                  "position": {
                     "type": "string"
                   },
-                  "employeeType": {
+                  "workPattern": {
                     "type": "string"
                   },
-                  "category": {
+                  "employmentType": {
                     "type": "string"
                   },
                   "location": {
                     "type": "string"
                   },
                   "department": {
+                    "type": "string"
+                  },
+                  "grade": {
+                    "type": "string"
+                  },
+                  "level": {
                     "type": "string"
                   },
                   "manager": {
@@ -9618,14 +8890,19 @@
                 },
                 "required": [
                   "code",
-                  "name",
+                  "firstName",
+                  "middleName",
+                  "lastName",
+                  "knownAs",
                   "email",
                   "phone",
-                  "jobProfile",
-                  "employeeType",
-                  "category",
+                  "position",
+                  "workPattern",
+                  "employmentType",
                   "location",
                   "department",
+                  "grade",
+                  "level",
                   "manager",
                   "contractedHours",
                   "maxHours",
@@ -9671,25 +8948,43 @@
                         "name": {
                           "type": "string"
                         },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "middleName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "knownAs": {
+                          "type": "string"
+                        },
                         "email": {
                           "type": "string"
                         },
                         "phone": {
                           "type": "string"
                         },
-                        "jobProfile": {
+                        "position": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "category": {
+                        "employmentType": {
                           "type": "string"
                         },
                         "location": {
                           "type": "string"
                         },
                         "department": {
+                          "type": "string"
+                        },
+                        "grade": {
+                          "type": "string"
+                        },
+                        "level": {
                           "type": "string"
                         },
                         "manager": {
@@ -9726,7 +9021,10 @@
                         "address": {
                           "type": "string"
                         },
-                        "emergencyName": {
+                        "emergencyFirstName": {
+                          "type": "string"
+                        },
+                        "emergencyLastName": {
                           "type": "string"
                         },
                         "emergencyPhone": {
@@ -9785,13 +9083,19 @@
                         "updatedAt",
                         "code",
                         "name",
+                        "firstName",
+                        "middleName",
+                        "lastName",
+                        "knownAs",
                         "email",
                         "phone",
-                        "jobProfile",
-                        "employeeType",
-                        "category",
+                        "position",
+                        "workPattern",
+                        "employmentType",
                         "location",
                         "department",
+                        "grade",
+                        "level",
                         "manager",
                         "contractedHours",
                         "maxHours",
@@ -9800,7 +9104,8 @@
                         "cis",
                         "start",
                         "address",
-                        "emergencyName",
+                        "emergencyFirstName",
+                        "emergencyLastName",
                         "emergencyPhone",
                         "bankAccount",
                         "bankSortCode",
@@ -10345,559 +9650,9 @@
         }
       }
     },
-    "/api/v1/job-profiles/{id}": {
-      "delete": {
-        "summary": "Remove a job profile (If-Match). 409 with usedBy while anything uses it.",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "x-capability": "master_data",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "If-Match",
-            "in": "header",
-            "required": true,
-            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
-            "schema": {
-              "type": "string",
-              "pattern": "^[0-9]+$"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "auditId": {
-                      "type": "string"
-                    }
-                  },
-                  "required": [
-                    "auditId"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The record does not exist",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "The change is refused because of the state of the data",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "412": {
-            "description": "The record changed since it was read (If-Match is stale)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "The request is not valid; field names the part to correct",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "428": {
-            "description": "If-Match is missing",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      },
-      "patch": {
-        "summary": "Edit a job profile (If-Match). The code is immutable.",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "x-capability": "master_data",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "required": true,
-            "schema": {
-              "$schema": "https://json-schema.org/draft/2020-12/schema",
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          {
-            "name": "If-Match",
-            "in": "header",
-            "required": true,
-            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
-            "schema": {
-              "type": "string",
-              "pattern": "^[0-9]+$"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "type": "object",
-                "properties": {
-                  "code": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "night": {
-                    "type": "boolean"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "record": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "version": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "updatedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "night": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "version",
-                        "updatedAt",
-                        "code",
-                        "name",
-                        "night"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "auditId": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    },
-                    "changed": {
-                      "type": "array",
-                      "items": {
-                        "type": "string"
-                      }
-                    }
-                  },
-                  "required": [
-                    "record",
-                    "auditId",
-                    "changed"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "The record does not exist",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "412": {
-            "description": "The record changed since it was read (If-Match is stale)",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "The request is not valid; field names the part to correct",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "428": {
-            "description": "If-Match is missing",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/job-profiles": {
-      "get": {
-        "summary": "Every job profile, with how many records use it",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "array",
-                  "items": {
-                    "type": "object",
-                    "properties": {
-                      "id": {
-                        "type": "string"
-                      },
-                      "version": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 9007199254740991
-                      },
-                      "updatedAt": {
-                        "type": "string",
-                        "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                      },
-                      "code": {
-                        "type": "string"
-                      },
-                      "name": {
-                        "type": "string"
-                      },
-                      "night": {
-                        "type": "boolean"
-                      },
-                      "inUse": {
-                        "type": "integer",
-                        "minimum": 0,
-                        "maximum": 9007199254740991
-                      }
-                    },
-                    "required": [
-                      "id",
-                      "version",
-                      "updatedAt",
-                      "code",
-                      "name",
-                      "night",
-                      "inUse"
-                    ],
-                    "additionalProperties": false
-                  }
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      },
-      "post": {
-        "summary": "Create a job profile. The code is unique.",
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "x-capability": "master_data",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$schema": "https://json-schema.org/draft/2020-12/schema",
-                "type": "object",
-                "properties": {
-                  "code": {
-                    "type": "string"
-                  },
-                  "name": {
-                    "type": "string"
-                  },
-                  "night": {
-                    "type": "boolean"
-                  }
-                },
-                "required": [
-                  "code",
-                  "name",
-                  "night"
-                ]
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$schema": "https://json-schema.org/draft/2020-12/schema",
-                  "type": "object",
-                  "properties": {
-                    "record": {
-                      "type": "object",
-                      "properties": {
-                        "id": {
-                          "type": "string"
-                        },
-                        "version": {
-                          "type": "integer",
-                          "minimum": 0,
-                          "maximum": 9007199254740991
-                        },
-                        "updatedAt": {
-                          "type": "string",
-                          "format": "date-time",
-                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
-                        },
-                        "code": {
-                          "type": "string"
-                        },
-                        "name": {
-                          "type": "string"
-                        },
-                        "night": {
-                          "type": "boolean"
-                        }
-                      },
-                      "required": [
-                        "id",
-                        "version",
-                        "updatedAt",
-                        "code",
-                        "name",
-                        "night"
-                      ],
-                      "additionalProperties": false
-                    },
-                    "auditId": {
-                      "type": [
-                        "string",
-                        "null"
-                      ]
-                    }
-                  },
-                  "required": [
-                    "record",
-                    "auditId"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Signed out: no token, or one that names no account",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "The request is not valid; field names the part to correct",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Any other refusal or failure",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/Refusal"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/v1/locations/{id}": {
       "delete": {
-        "summary": "Remove a location (If-Match). 409 with usedBy while anything uses it.",
+        "summary": "Remove a site (If-Match). 409 with usedBy while anything uses it.",
         "security": [
           {
             "bearer": []
@@ -11030,7 +9785,7 @@
         }
       },
       "patch": {
-        "summary": "Edit a location (If-Match). The code is immutable.",
+        "summary": "Edit a site (If-Match). The code is immutable.",
         "security": [
           {
             "bearer": []
@@ -11259,7 +10014,7 @@
     },
     "/api/v1/locations": {
       "get": {
-        "summary": "Every location, with how many records use it",
+        "summary": "Every site, with how many records use it",
         "security": [
           {
             "bearer": []
@@ -11362,7 +10117,7 @@
         }
       },
       "post": {
-        "summary": "Create a location. The code is unique.",
+        "summary": "Create a site. The code is unique.",
         "security": [
           {
             "bearer": []
@@ -11652,7 +10407,7 @@
     },
     "/api/v1/notifications/matrix": {
       "get": {
-        "summary": "Who is told of each event, per user type and channel, for the events this tenant can raise",
+        "summary": "Who is told of each event, per access role and channel, for the events this tenant can raise",
         "security": [
           {
             "bearer": []
@@ -12315,7 +11070,7 @@
     },
     "/api/v1/onboarding/cases/{id}/portal-invite": {
       "post": {
-        "summary": "Record a portal invite for an employee who has started (If-Match: the case). No portal login is created yet: that is added on People & access until onboarding is connected to the portal.",
+        "summary": "Record a portal invite for an employee who has started (If-Match: the case). No portal login is created yet: that is added on Setup · Employees until onboarding is connected to the portal.",
         "security": [
           {
             "bearer": []
@@ -12541,7 +11296,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -12552,7 +11310,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -13226,7 +11985,7 @@
                             "minimum": 0,
                             "maximum": 9007199254740991
                           },
-                          "jobProfiles": {
+                          "positions": {
                             "type": "array",
                             "items": {
                               "type": "object",
@@ -13255,13 +12014,13 @@
                           "id",
                           "name",
                           "version",
-                          "jobProfiles",
+                          "positions",
                           "starters"
                         ],
                         "additionalProperties": false
                       }
                     },
-                    "jobProfiles": {
+                    "positions": {
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -13289,7 +12048,7 @@
                     "verifiers",
                     "inProgress",
                     "templates",
-                    "jobProfiles"
+                    "positions"
                   ],
                   "additionalProperties": false
                 }
@@ -14815,7 +13574,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -14826,7 +13588,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -15380,7 +14143,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -15391,7 +14157,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -15926,7 +14693,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -15937,7 +14707,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -16346,9 +15117,13 @@
                     "items": {
                       "type": "object",
                       "properties": {
-                        "nm": {
+                        "fn": {
                           "type": "string",
-                          "maxLength": 120
+                          "maxLength": 30
+                        },
+                        "ln": {
+                          "type": "string",
+                          "maxLength": 30
                         },
                         "rel": {
                           "type": "string",
@@ -16618,7 +15393,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -16629,7 +15407,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -17177,7 +15956,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -17188,7 +15970,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -17569,10 +16352,10 @@
                         "locationName": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "employeeTypeName": {
+                        "workPatternName": {
                           "type": "string"
                         },
                         "manager": {
@@ -17592,8 +16375,8 @@
                         "stateGlyph",
                         "location",
                         "locationName",
-                        "employeeType",
-                        "employeeTypeName",
+                        "workPattern",
+                        "workPatternName",
                         "manager"
                       ],
                       "additionalProperties": false
@@ -17805,7 +16588,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -17816,7 +16602,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -19784,7 +18571,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -19795,7 +18585,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -20340,7 +19131,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -20351,7 +19145,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -20886,7 +19681,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -20897,7 +19695,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -21129,25 +19928,43 @@
                         "name": {
                           "type": "string"
                         },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "middleName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "knownAs": {
+                          "type": "string"
+                        },
                         "email": {
                           "type": "string"
                         },
                         "phone": {
                           "type": "string"
                         },
-                        "jobProfile": {
+                        "position": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "category": {
+                        "employmentType": {
                           "type": "string"
                         },
                         "location": {
                           "type": "string"
                         },
                         "department": {
+                          "type": "string"
+                        },
+                        "grade": {
+                          "type": "string"
+                        },
+                        "level": {
                           "type": "string"
                         },
                         "manager": {
@@ -21184,7 +20001,10 @@
                         "address": {
                           "type": "string"
                         },
-                        "emergencyName": {
+                        "emergencyFirstName": {
+                          "type": "string"
+                        },
+                        "emergencyLastName": {
                           "type": "string"
                         },
                         "emergencyPhone": {
@@ -21243,13 +20063,19 @@
                         "updatedAt",
                         "code",
                         "name",
+                        "firstName",
+                        "middleName",
+                        "lastName",
+                        "knownAs",
                         "email",
                         "phone",
-                        "jobProfile",
-                        "employeeType",
-                        "category",
+                        "position",
+                        "workPattern",
+                        "employmentType",
                         "location",
                         "department",
+                        "grade",
+                        "level",
                         "manager",
                         "contractedHours",
                         "maxHours",
@@ -21258,7 +20084,8 @@
                         "cis",
                         "start",
                         "address",
-                        "emergencyName",
+                        "emergencyFirstName",
+                        "emergencyLastName",
                         "emergencyPhone",
                         "bankAccount",
                         "bankSortCode",
@@ -21591,7 +20418,10 @@
                               "items": {
                                 "type": "object",
                                 "properties": {
-                                  "nm": {
+                                  "fn": {
+                                    "type": "string"
+                                  },
+                                  "ln": {
                                     "type": "string"
                                   },
                                   "rel": {
@@ -21602,7 +20432,8 @@
                                   }
                                 },
                                 "required": [
-                                  "nm",
+                                  "fn",
+                                  "ln",
                                   "rel",
                                   "ph"
                                 ],
@@ -21834,25 +20665,43 @@
                         "name": {
                           "type": "string"
                         },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "middleName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "knownAs": {
+                          "type": "string"
+                        },
                         "email": {
                           "type": "string"
                         },
                         "phone": {
                           "type": "string"
                         },
-                        "jobProfile": {
+                        "position": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "category": {
+                        "employmentType": {
                           "type": "string"
                         },
                         "location": {
                           "type": "string"
                         },
                         "department": {
+                          "type": "string"
+                        },
+                        "grade": {
+                          "type": "string"
+                        },
+                        "level": {
                           "type": "string"
                         },
                         "manager": {
@@ -21889,7 +20738,10 @@
                         "address": {
                           "type": "string"
                         },
-                        "emergencyName": {
+                        "emergencyFirstName": {
+                          "type": "string"
+                        },
+                        "emergencyLastName": {
                           "type": "string"
                         },
                         "emergencyPhone": {
@@ -21948,13 +20800,19 @@
                         "updatedAt",
                         "code",
                         "name",
+                        "firstName",
+                        "middleName",
+                        "lastName",
+                        "knownAs",
                         "email",
                         "phone",
-                        "jobProfile",
-                        "employeeType",
-                        "category",
+                        "position",
+                        "workPattern",
+                        "employmentType",
                         "location",
                         "department",
+                        "grade",
+                        "level",
                         "manager",
                         "contractedHours",
                         "maxHours",
@@ -21963,7 +20821,8 @@
                         "cis",
                         "start",
                         "address",
-                        "emergencyName",
+                        "emergencyFirstName",
+                        "emergencyLastName",
                         "emergencyPhone",
                         "bankAccount",
                         "bankSortCode",
@@ -22162,10 +21021,10 @@
                         "locationName": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "employeeTypeName": {
+                        "workPatternName": {
                           "type": "string"
                         },
                         "manager": {
@@ -22185,8 +21044,8 @@
                         "stateGlyph",
                         "location",
                         "locationName",
-                        "employeeType",
-                        "employeeTypeName",
+                        "workPattern",
+                        "workPatternName",
                         "manager"
                       ],
                       "additionalProperties": false
@@ -22595,7 +21454,7 @@
     },
     "/api/v1/onboarding/team": {
       "get": {
-        "summary": "New starters at my location (every location with Configure onboarding): progress, state, what blocks the start, and documents waiting on a check",
+        "summary": "New starters at my site (every site with Configure onboarding): progress, state, what blocks the start, and documents waiting on a check",
         "security": [
           {
             "bearer": []
@@ -22680,10 +21539,10 @@
                               "locationName": {
                                 "type": "string"
                               },
-                              "employeeType": {
+                              "workPattern": {
                                 "type": "string"
                               },
-                              "employeeTypeName": {
+                              "workPatternName": {
                                 "type": "string"
                               },
                               "manager": {
@@ -22703,8 +21562,8 @@
                               "stateGlyph",
                               "location",
                               "locationName",
-                              "employeeType",
-                              "employeeTypeName",
+                              "workPattern",
+                              "workPatternName",
                               "manager"
                             ],
                             "additionalProperties": false
@@ -22906,10 +21765,10 @@
                               "locationName": {
                                 "type": "string"
                               },
-                              "employeeType": {
+                              "workPattern": {
                                 "type": "string"
                               },
-                              "employeeTypeName": {
+                              "workPatternName": {
                                 "type": "string"
                               },
                               "manager": {
@@ -22929,8 +21788,8 @@
                               "stateGlyph",
                               "location",
                               "locationName",
-                              "employeeType",
-                              "employeeTypeName",
+                              "workPattern",
+                              "workPatternName",
                               "manager"
                             ],
                             "additionalProperties": false
@@ -23127,7 +21986,7 @@
     },
     "/api/v1/onboarding/templates/{id}": {
       "delete": {
-        "summary": "Delete an onboarding template (If-Match). Its job profiles use the Default template from now on. One audit row.",
+        "summary": "Delete an onboarding template (If-Match). Its positions use the Default template from now on. One audit row.",
         "security": [
           {
             "bearer": []
@@ -23258,7 +22117,7 @@
         }
       },
       "get": {
-        "summary": "One onboarding template whole: its name, job profiles, step switches, document switches and policies. Every document in the shared list has a row.",
+        "summary": "One onboarding template whole: its name, positions, step switches, document switches and policies. Every document in the shared list has a row.",
         "security": [
           {
             "bearer": []
@@ -23303,7 +22162,7 @@
                       "type": "string",
                       "maxLength": 60
                     },
-                    "jobProfiles": {
+                    "positions": {
                       "maxItems": 1000,
                       "type": "array",
                       "items": {
@@ -23383,7 +22242,7 @@
                     "version",
                     "updatedAt",
                     "name",
-                    "jobProfiles",
+                    "positions",
                     "steps",
                     "documents",
                     "policies"
@@ -23446,7 +22305,7 @@
         }
       },
       "put": {
-        "summary": "Save an onboarding template whole (If-Match): its name, job profiles, step switches, document switches and policies. A job profile another template holds is refused. One audit row.",
+        "summary": "Save an onboarding template whole (If-Match): its name, positions, step switches, document switches and policies. A position another template holds is refused. One audit row.",
         "security": [
           {
             "bearer": []
@@ -23487,7 +22346,7 @@
                     "type": "string",
                     "maxLength": 80
                   },
-                  "jobProfiles": {
+                  "positions": {
                     "maxItems": 1000,
                     "type": "array",
                     "items": {
@@ -23562,7 +22421,7 @@
                 },
                 "required": [
                   "name",
-                  "jobProfiles",
+                  "positions",
                   "steps",
                   "documents",
                   "policies"
@@ -23601,7 +22460,7 @@
                           "type": "string",
                           "maxLength": 60
                         },
-                        "jobProfiles": {
+                        "positions": {
                           "maxItems": 1000,
                           "type": "array",
                           "items": {
@@ -23681,7 +22540,7 @@
                         "version",
                         "updatedAt",
                         "name",
-                        "jobProfiles",
+                        "positions",
                         "steps",
                         "documents",
                         "policies"
@@ -23793,7 +22652,7 @@
     },
     "/api/v1/onboarding/templates": {
       "post": {
-        "summary": "Create an onboarding template as a copy of the Default one, or of another template with copyFrom. It has no job profiles until it is saved with some. A name is needed and no two share one. One audit row.",
+        "summary": "Create an onboarding template as a copy of the Default one, or of another template with copyFrom. It has no positions until it is saved with some. A name is needed and no two share one. One audit row.",
         "security": [
           {
             "bearer": []
@@ -23854,7 +22713,7 @@
                           "type": "string",
                           "maxLength": 60
                         },
-                        "jobProfiles": {
+                        "positions": {
                           "maxItems": 1000,
                           "type": "array",
                           "items": {
@@ -23934,7 +22793,7 @@
                         "version",
                         "updatedAt",
                         "name",
-                        "jobProfiles",
+                        "positions",
                         "steps",
                         "documents",
                         "policies"
@@ -24026,7 +22885,7 @@
     },
     "/api/v1/pay-codes/{id}": {
       "delete": {
-        "summary": "Remove a pay code (If-Match). 409 with usedBy while an employee type, a capture field or a timesheet day uses it. One audit row.",
+        "summary": "Remove a pay code (If-Match). 409 with usedBy while a work pattern, a capture field or a timesheet day uses it. One audit row.",
         "security": [
           {
             "bearer": []
@@ -24785,6 +23644,680 @@
         }
       }
     },
+    "/api/v1/pay-grades": {
+      "get": {
+        "summary": "Payroll's pay grades, by code. Read only.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/pay-levels": {
+      "get": {
+        "summary": "Payroll's pay levels, by code, in rank order. Read only; never the salary.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "rank": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "code",
+                      "name",
+                      "rank"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions/{id}": {
+      "delete": {
+        "summary": "Remove a position (If-Match). 409 with usedBy while anything uses it.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-capability": "master_data",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "auditId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "auditId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The record does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The change is refused because of the state of the data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "The record changed since it was read (If-Match is stale)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request is not valid; field names the part to correct",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Edit a position (If-Match). The code is immutable.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-capability": "master_data",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "night": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "record": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "night": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "updatedAt",
+                        "code",
+                        "name",
+                        "night"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "auditId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "changed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "auditId",
+                    "changed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The record does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "The record changed since it was read (If-Match is stale)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request is not valid; field names the part to correct",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/positions": {
+      "get": {
+        "summary": "Every position, with how many records use it",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "night": {
+                        "type": "boolean"
+                      },
+                      "inUse": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "updatedAt",
+                      "code",
+                      "name",
+                      "night",
+                      "inUse"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a position. The code is unique.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-capability": "master_data",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "night": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "code",
+                  "name",
+                  "night"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "record": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "night": {
+                          "type": "boolean"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "updatedAt",
+                        "code",
+                        "name",
+                        "night"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "auditId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "auditId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request is not valid; field names the part to correct",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/profile-changes/{id}/decision": {
       "post": {
         "summary": "Approve or decline one change (If-Match). The stage needs profile_appr or bank_verify. The last approval on its route writes it to the record.",
@@ -24878,7 +24411,8 @@
                           "enum": [
                             "phone",
                             "address",
-                            "emergencyName",
+                            "emergencyFirstName",
+                            "emergencyLastName",
                             "emergencyPhone",
                             "bankAccount",
                             "bankSortCode"
@@ -25020,25 +24554,43 @@
                             "name": {
                               "type": "string"
                             },
+                            "firstName": {
+                              "type": "string"
+                            },
+                            "middleName": {
+                              "type": "string"
+                            },
+                            "lastName": {
+                              "type": "string"
+                            },
+                            "knownAs": {
+                              "type": "string"
+                            },
                             "email": {
                               "type": "string"
                             },
                             "phone": {
                               "type": "string"
                             },
-                            "jobProfile": {
+                            "position": {
                               "type": "string"
                             },
-                            "employeeType": {
+                            "workPattern": {
                               "type": "string"
                             },
-                            "category": {
+                            "employmentType": {
                               "type": "string"
                             },
                             "location": {
                               "type": "string"
                             },
                             "department": {
+                              "type": "string"
+                            },
+                            "grade": {
+                              "type": "string"
+                            },
+                            "level": {
                               "type": "string"
                             },
                             "manager": {
@@ -25075,7 +24627,10 @@
                             "address": {
                               "type": "string"
                             },
-                            "emergencyName": {
+                            "emergencyFirstName": {
+                              "type": "string"
+                            },
+                            "emergencyLastName": {
                               "type": "string"
                             },
                             "emergencyPhone": {
@@ -25134,13 +24689,19 @@
                             "updatedAt",
                             "code",
                             "name",
+                            "firstName",
+                            "middleName",
+                            "lastName",
+                            "knownAs",
                             "email",
                             "phone",
-                            "jobProfile",
-                            "employeeType",
-                            "category",
+                            "position",
+                            "workPattern",
+                            "employmentType",
                             "location",
                             "department",
+                            "grade",
+                            "level",
                             "manager",
                             "contractedHours",
                             "maxHours",
@@ -25149,7 +24710,8 @@
                             "cis",
                             "start",
                             "address",
-                            "emergencyName",
+                            "emergencyFirstName",
+                            "emergencyLastName",
                             "emergencyPhone",
                             "bankAccount",
                             "bankSortCode",
@@ -25304,7 +24866,8 @@
                         "enum": [
                           "phone",
                           "address",
-                          "emergencyName",
+                          "emergencyFirstName",
+                          "emergencyLastName",
                           "emergencyPhone",
                           "bankAccount",
                           "bankSortCode"
@@ -25484,7 +25047,8 @@
                           "enum": [
                             "phone",
                             "address",
-                            "emergencyName",
+                            "emergencyFirstName",
+                            "emergencyLastName",
                             "emergencyPhone",
                             "bankAccount",
                             "bankSortCode"
@@ -25550,7 +25114,8 @@
                             "enum": [
                               "phone",
                               "address",
-                              "emergencyName",
+                              "emergencyFirstName",
+                              "emergencyLastName",
                               "emergencyPhone",
                               "bankAccount",
                               "bankSortCode"
@@ -25775,25 +25340,43 @@
                         "name": {
                           "type": "string"
                         },
+                        "firstName": {
+                          "type": "string"
+                        },
+                        "middleName": {
+                          "type": "string"
+                        },
+                        "lastName": {
+                          "type": "string"
+                        },
+                        "knownAs": {
+                          "type": "string"
+                        },
                         "email": {
                           "type": "string"
                         },
                         "phone": {
                           "type": "string"
                         },
-                        "jobProfile": {
+                        "position": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
-                        "category": {
+                        "employmentType": {
                           "type": "string"
                         },
                         "location": {
                           "type": "string"
                         },
                         "department": {
+                          "type": "string"
+                        },
+                        "grade": {
+                          "type": "string"
+                        },
+                        "level": {
                           "type": "string"
                         },
                         "manager": {
@@ -25830,7 +25413,10 @@
                         "address": {
                           "type": "string"
                         },
-                        "emergencyName": {
+                        "emergencyFirstName": {
+                          "type": "string"
+                        },
+                        "emergencyLastName": {
                           "type": "string"
                         },
                         "emergencyPhone": {
@@ -25889,13 +25475,19 @@
                         "updatedAt",
                         "code",
                         "name",
+                        "firstName",
+                        "middleName",
+                        "lastName",
+                        "knownAs",
                         "email",
                         "phone",
-                        "jobProfile",
-                        "employeeType",
-                        "category",
+                        "position",
+                        "workPattern",
+                        "employmentType",
                         "location",
                         "department",
+                        "grade",
+                        "level",
                         "manager",
                         "contractedHours",
                         "maxHours",
@@ -25904,7 +25496,8 @@
                         "cis",
                         "start",
                         "address",
-                        "emergencyName",
+                        "emergencyFirstName",
+                        "emergencyLastName",
                         "emergencyPhone",
                         "bankAccount",
                         "bankSortCode",
@@ -25924,7 +25517,8 @@
                             "enum": [
                               "phone",
                               "address",
-                              "emergencyName",
+                              "emergencyFirstName",
+                              "emergencyLastName",
                               "emergencyPhone",
                               "bankAccount",
                               "bankSortCode"
@@ -25986,7 +25580,8 @@
                             "enum": [
                               "phone",
                               "address",
-                              "emergencyName",
+                              "emergencyFirstName",
+                              "emergencyLastName",
                               "emergencyPhone",
                               "bankAccount",
                               "bankSortCode"
@@ -26665,6 +26260,12 @@
                         "type": "integer",
                         "minimum": 0,
                         "maximum": 9007199254740991
+                      },
+                      "tasks": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
                       }
                     },
                     "required": [
@@ -26682,7 +26283,8 @@
                       "budgetHours",
                       "billable",
                       "location",
-                      "inUse"
+                      "inUse",
+                      "tasks"
                     ],
                     "additionalProperties": false
                   }
@@ -27515,9 +27117,9 @@
         }
       }
     },
-    "/api/v1/templates/{key}/apply": {
+    "/api/v1/setup-presets/{key}/apply": {
       "post": {
-        "summary": "Apply a template (If-Match: the tenant's version). Sets configuration and adds structure whose codes are new; never deletes or overwrites employees or structure, never renames the organisation. One audit row.",
+        "summary": "Apply a setup preset (If-Match: the tenant's version). Sets configuration and adds structure whose codes are new; never deletes or overwrites employees or structure, never renames the organisation. One audit row.",
         "security": [
           {
             "bearer": []
@@ -27575,7 +27177,7 @@
                         "name": {
                           "type": "string"
                         },
-                        "template": {
+                        "preset": {
                           "type": "string"
                         },
                         "modules": {
@@ -27785,7 +27387,7 @@
                         "version",
                         "updatedAt",
                         "name",
-                        "template",
+                        "preset",
                         "modules",
                         "flags",
                         "company",
@@ -28021,9 +27623,9 @@
         }
       }
     },
-    "/api/v1/templates/{key}/export": {
+    "/api/v1/setup-presets/{key}/export": {
       "get": {
-        "summary": "A template as a file to keep or hand over",
+        "summary": "A setup preset as a file to keep or hand over",
         "security": [
           {
             "bearer": []
@@ -28054,7 +27656,7 @@
                   "properties": {
                     "kind": {
                       "type": "string",
-                      "const": "qnipay.template"
+                      "const": "qnipay.setup-preset"
                     },
                     "v": {
                       "type": "number",
@@ -28063,7 +27665,7 @@
                     "key": {
                       "type": "string"
                     },
-                    "template": {
+                    "preset": {
                       "type": "object",
                       "properties": {
                         "name": {
@@ -28142,7 +27744,7 @@
                             "maxLength": 60
                           }
                         },
-                        "employeeTypes": {
+                        "workPatterns": {
                           "maxItems": 50,
                           "type": "array",
                           "items": {
@@ -28157,7 +27759,7 @@
                                 "minLength": 1,
                                 "maxLength": 60
                               },
-                              "category": {
+                              "employmentType": {
                                 "type": "string",
                                 "enum": [
                                   "Contracted",
@@ -28181,7 +27783,7 @@
                                   "day"
                                 ]
                               },
-                              "capabilities": {
+                              "fieldGroups": {
                                 "maxItems": 4,
                                 "type": "array",
                                 "items": {
@@ -28198,10 +27800,10 @@
                             "required": [
                               "code",
                               "name",
-                              "category",
+                              "employmentType",
                               "mode",
                               "uom",
-                              "capabilities"
+                              "fieldGroups"
                             ],
                             "additionalProperties": false
                           }
@@ -28379,7 +27981,7 @@
                                 "additionalProperties": false
                               }
                             },
-                            "jobProfiles": {
+                            "positions": {
                               "maxItems": 200,
                               "type": "array",
                               "items": {
@@ -28406,7 +28008,7 @@
                                 "additionalProperties": false
                               }
                             },
-                            "contracts": {
+                            "projects": {
                               "maxItems": 500,
                               "type": "array",
                               "items": {
@@ -28656,7 +28258,7 @@
                                     "minLength": 1,
                                     "maxLength": 60
                                   },
-                                  "jobProfiles": {
+                                  "positions": {
                                     "maxItems": 1000,
                                     "type": "array",
                                     "items": {
@@ -28733,7 +28335,7 @@
                                 },
                                 "required": [
                                   "name",
-                                  "jobProfiles",
+                                  "positions",
                                   "steps",
                                   "documents",
                                   "policies"
@@ -28831,7 +28433,7 @@
                         "flags",
                         "extras",
                         "labels",
-                        "employeeTypes"
+                        "workPatterns"
                       ],
                       "additionalProperties": false
                     }
@@ -28840,7 +28442,7 @@
                     "kind",
                     "v",
                     "key",
-                    "template"
+                    "preset"
                   ],
                   "additionalProperties": false
                 }
@@ -28900,9 +28502,9 @@
         }
       }
     },
-    "/api/v1/templates/{key}/plan": {
+    "/api/v1/setup-presets/{key}/plan": {
       "get": {
-        "summary": "What applying a template would change, add and leave alone, read before it is applied",
+        "summary": "What applying a setup preset would change, add and leave alone, read before it is applied",
         "security": [
           {
             "bearer": []
@@ -29100,9 +28702,9 @@
         }
       }
     },
-    "/api/v1/templates/{key}": {
+    "/api/v1/setup-presets/{key}": {
       "delete": {
-        "summary": "Remove a template saved here (If-Match). A shipped one is SHIPPED; the one this tenant runs on is IN_USE.",
+        "summary": "Remove a setup preset saved here (If-Match). A shipped one is SHIPPED; the one this tenant runs on is IN_USE.",
         "security": [
           {
             "bearer": []
@@ -29236,9 +28838,9 @@
         }
       }
     },
-    "/api/v1/templates/import": {
+    "/api/v1/setup-presets/import": {
       "post": {
-        "summary": "Import a template file. Never replaces one: a name already here is NAME_TAKEN. Keys a template may not hold, money among them, are left out and listed.",
+        "summary": "Import a setup preset file. Never replaces one: a name already here is NAME_TAKEN. Keys a preset may not hold, money among them, are left out and listed.",
         "security": [
           {
             "bearer": []
@@ -29443,9 +29045,9 @@
         }
       }
     },
-    "/api/v1/templates": {
+    "/api/v1/setup-presets": {
       "get": {
-        "summary": "Every template: the shipped ones, then those saved or imported here, with the one this tenant runs on marked",
+        "summary": "Every setup preset: the shipped ones, then those saved or imported here, with the one this tenant runs on marked",
         "security": [
           {
             "bearer": []
@@ -29461,7 +29063,7 @@
                   "$schema": "https://json-schema.org/draft/2020-12/schema",
                   "type": "object",
                   "properties": {
-                    "templates": {
+                    "presets": {
                       "type": "array",
                       "items": {
                         "type": "object",
@@ -29564,7 +29166,7 @@
                     }
                   },
                   "required": [
-                    "templates",
+                    "presets",
                     "inUse"
                   ],
                   "additionalProperties": false
@@ -29605,7 +29207,7 @@
         }
       },
       "post": {
-        "summary": "Save this tenant as a template: configuration only, or with its structure too (that needs Master data). Never its employees. A name a template already has is NAME_TAKEN.",
+        "summary": "Save this tenant as a setup preset: configuration only, or with its structure too (that needs Master data). Never its employees. A name a preset already has is NAME_TAKEN.",
         "security": [
           {
             "bearer": []
@@ -29913,7 +29515,7 @@
                         "name": {
                           "type": "string"
                         },
-                        "template": {
+                        "preset": {
                           "type": "string"
                         },
                         "modules": {
@@ -30123,7 +29725,7 @@
                         "version",
                         "updatedAt",
                         "name",
-                        "template",
+                        "preset",
                         "modules",
                         "flags",
                         "company",
@@ -30321,7 +29923,7 @@
                         "name": {
                           "type": "string"
                         },
-                        "template": {
+                        "preset": {
                           "type": "string"
                         },
                         "modules": {
@@ -30531,7 +30133,7 @@
                         "version",
                         "updatedAt",
                         "name",
-                        "template",
+                        "preset",
                         "modules",
                         "flags",
                         "company",
@@ -30906,7 +30508,7 @@
                         "name": {
                           "type": "string"
                         },
-                        "template": {
+                        "preset": {
                           "type": "string"
                         },
                         "modules": {
@@ -31116,7 +30718,7 @@
                         "version",
                         "updatedAt",
                         "name",
-                        "template",
+                        "preset",
                         "modules",
                         "flags",
                         "company",
@@ -31223,7 +30825,7 @@
     },
     "/api/v1/tenant": {
       "get": {
-        "summary": "The tenant: name, template, modules and flags with their extras, company details, financial year, week start, bank holidays and what a switch would restore",
+        "summary": "The tenant: name, setup preset, modules and flags with their extras, company details, financial year, week start, bank holidays and what a switch would restore",
         "security": [
           {
             "bearer": []
@@ -31254,7 +30856,7 @@
                     "name": {
                       "type": "string"
                     },
-                    "template": {
+                    "preset": {
                       "type": "string"
                     },
                     "modules": {
@@ -31464,7 +31066,7 @@
                     "version",
                     "updatedAt",
                     "name",
-                    "template",
+                    "preset",
                     "modules",
                     "flags",
                     "company",
@@ -31518,7 +31120,7 @@
     },
     "/api/v1/timesheet-config": {
       "get": {
-        "summary": "Timesheet setup: capture rules, fields per employee type, allowances and pay rules per type, overtime, weekly layout",
+        "summary": "Timesheet setup: capture rules, fields per work pattern, allowances and pay rules per type, overtime, weekly layout",
         "security": [
           {
             "bearer": []
@@ -34958,7 +34560,7 @@
                         "name": {
                           "type": "string"
                         },
-                        "employeeType": {
+                        "workPattern": {
                           "type": "string"
                         },
                         "typeName": {
@@ -34978,7 +34580,7 @@
                       "required": [
                         "code",
                         "name",
-                        "employeeType",
+                        "workPattern",
                         "typeName",
                         "location",
                         "manager",
@@ -35751,12 +35353,16 @@
                                 "items": {
                                   "type": "string"
                                 }
+                              },
+                              "costCentre": {
+                                "type": "string"
                               }
                             },
                             "required": [
                               "code",
                               "name",
-                              "tasks"
+                              "tasks",
+                              "costCentre"
                             ],
                             "additionalProperties": false
                           }
@@ -36111,7 +35717,7 @@
     },
     "/api/v1/user-types/{id}": {
       "patch": {
-        "summary": "Rename a user type (If-Match). Names are required, at most 24 characters and unique ignoring case; the capabilities do not change.",
+        "summary": "Rename a access role (If-Match). Names are required, at most 24 characters and unique ignoring case; the capabilities do not change.",
         "security": [
           {
             "bearer": []
@@ -36929,6 +36535,876 @@
           },
           "403": {
             "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-patterns/{id}": {
+      "delete": {
+        "summary": "Remove a work pattern nobody holds (If-Match). 409 with usedBy otherwise.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-capability": "type_cfg",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "auditId": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "auditId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The record does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "The change is refused because of the state of the data",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "The record changed since it was read (If-Match is stale)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request is not valid; field names the part to correct",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Edit a work pattern (If-Match). The code is immutable.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-capability": "type_cfg",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": true,
+            "description": "The version of the record the change is based on, as a bare whole number such as 3 (no quotes, no W/ prefix)",
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9]+$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "employmentType": {
+                    "type": "string",
+                    "enum": [
+                      "Contracted",
+                      "Bank",
+                      "Agency",
+                      "Salaried"
+                    ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "form",
+                      "grid",
+                      "clock"
+                    ]
+                  },
+                  "uom": {
+                    "type": "string",
+                    "enum": [
+                      "hour",
+                      "day"
+                    ]
+                  },
+                  "fieldGroups": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "vehicle",
+                        "site",
+                        "project",
+                        "shift"
+                      ]
+                    }
+                  },
+                  "code": {
+                    "not": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "record": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "employmentType": {
+                          "type": "string",
+                          "enum": [
+                            "Contracted",
+                            "Bank",
+                            "Agency",
+                            "Salaried"
+                          ]
+                        },
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "form",
+                            "grid",
+                            "clock"
+                          ]
+                        },
+                        "uom": {
+                          "type": "string",
+                          "enum": [
+                            "hour",
+                            "day"
+                          ]
+                        },
+                        "fieldGroups": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "vehicle",
+                              "site",
+                              "project",
+                              "shift"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "updatedAt",
+                        "code",
+                        "name",
+                        "employmentType",
+                        "mode",
+                        "uom",
+                        "fieldGroups"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "auditId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    },
+                    "changed": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "auditId",
+                    "changed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "The record does not exist",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "The record changed since it was read (If-Match is stale)",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request is not valid; field names the part to correct",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "428": {
+            "description": "If-Match is missing",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-patterns/library": {
+      "get": {
+        "summary": "The archetypes a new type can start from, and the capabilities a type can have",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-capability": "type_cfg",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "archetypes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "key": {
+                            "type": "string"
+                          },
+                          "name": {
+                            "type": "string"
+                          },
+                          "mode": {
+                            "type": "string",
+                            "enum": [
+                              "form",
+                              "grid",
+                              "clock"
+                            ]
+                          },
+                          "uom": {
+                            "type": "string",
+                            "enum": [
+                              "hour",
+                              "day"
+                            ]
+                          },
+                          "fieldGroups": {
+                            "type": "array",
+                            "items": {
+                              "type": "string",
+                              "enum": [
+                                "vehicle",
+                                "site",
+                                "project",
+                                "shift"
+                              ]
+                            }
+                          }
+                        },
+                        "required": [
+                          "key",
+                          "name",
+                          "mode",
+                          "uom",
+                          "fieldGroups"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "fieldGroups": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "code": {
+                            "type": "string",
+                            "enum": [
+                              "vehicle",
+                              "site",
+                              "project",
+                              "shift"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "desc": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "code",
+                          "label",
+                          "desc"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "archetypes",
+                    "fieldGroups"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/work-patterns": {
+      "get": {
+        "summary": "Work patterns, each with how many employees hold it",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "version": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      },
+                      "updatedAt": {
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                      },
+                      "code": {
+                        "type": "string"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "employmentType": {
+                        "type": "string",
+                        "enum": [
+                          "Contracted",
+                          "Bank",
+                          "Agency",
+                          "Salaried"
+                        ]
+                      },
+                      "mode": {
+                        "type": "string",
+                        "enum": [
+                          "form",
+                          "grid",
+                          "clock"
+                        ]
+                      },
+                      "uom": {
+                        "type": "string",
+                        "enum": [
+                          "hour",
+                          "day"
+                        ]
+                      },
+                      "fieldGroups": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "vehicle",
+                            "site",
+                            "project",
+                            "shift"
+                          ]
+                        }
+                      },
+                      "inUse": {
+                        "type": "integer",
+                        "minimum": 0,
+                        "maximum": 9007199254740991
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "version",
+                      "updatedAt",
+                      "code",
+                      "name",
+                      "employmentType",
+                      "mode",
+                      "uom",
+                      "fieldGroups",
+                      "inUse"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "Any other refusal or failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Create a work pattern. The code is unique.",
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "x-capability": "type_cfg",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$schema": "https://json-schema.org/draft/2020-12/schema",
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "type": "string"
+                  },
+                  "name": {
+                    "type": "string"
+                  },
+                  "employmentType": {
+                    "type": "string",
+                    "enum": [
+                      "Contracted",
+                      "Bank",
+                      "Agency",
+                      "Salaried"
+                    ]
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum": [
+                      "form",
+                      "grid",
+                      "clock"
+                    ]
+                  },
+                  "uom": {
+                    "type": "string",
+                    "enum": [
+                      "hour",
+                      "day"
+                    ]
+                  },
+                  "fieldGroups": {
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "enum": [
+                        "vehicle",
+                        "site",
+                        "project",
+                        "shift"
+                      ]
+                    }
+                  },
+                  "startedFrom": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "code",
+                  "name",
+                  "employmentType",
+                  "mode",
+                  "uom",
+                  "fieldGroups",
+                  "startedFrom"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$schema": "https://json-schema.org/draft/2020-12/schema",
+                  "type": "object",
+                  "properties": {
+                    "record": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string"
+                        },
+                        "version": {
+                          "type": "integer",
+                          "minimum": 0,
+                          "maximum": 9007199254740991
+                        },
+                        "updatedAt": {
+                          "type": "string",
+                          "format": "date-time",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$"
+                        },
+                        "code": {
+                          "type": "string"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "employmentType": {
+                          "type": "string",
+                          "enum": [
+                            "Contracted",
+                            "Bank",
+                            "Agency",
+                            "Salaried"
+                          ]
+                        },
+                        "mode": {
+                          "type": "string",
+                          "enum": [
+                            "form",
+                            "grid",
+                            "clock"
+                          ]
+                        },
+                        "uom": {
+                          "type": "string",
+                          "enum": [
+                            "hour",
+                            "day"
+                          ]
+                        },
+                        "fieldGroups": {
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                            "enum": [
+                              "vehicle",
+                              "site",
+                              "project",
+                              "shift"
+                            ]
+                          }
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "version",
+                        "updatedAt",
+                        "code",
+                        "name",
+                        "employmentType",
+                        "mode",
+                        "uom",
+                        "fieldGroups"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "auditId": {
+                      "type": [
+                        "string",
+                        "null"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "record",
+                    "auditId"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Signed out: no token, or one that names no account",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The session lacks the capability, is viewing as someone else and so cannot make changes, or belongs to a new starter who has not started yet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Refusal"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "The request is not valid; field names the part to correct",
             "content": {
               "application/json": {
                 "schema": {

@@ -3,34 +3,34 @@ import { Building2, CalendarDays, Factory, ShieldCheck, Workflow } from 'lucide-
 import { tid } from '@/testids';
 import { cn } from '@/lib/utils';
 import {
-  AdminCard, Banner, Button, CardNote, ChoiceList, ChoiceRow, ConfirmModal, Field, FieldGrid, FormWarn, Modal, NavLink, Page, PageHead,
+  AdminCard, Button, CardNote, ChoiceList, ChoiceRow, ConfirmModal, Field, FieldGrid, FormWarn, Modal, NavLink, Note, Page, PageHead,
   Row, SettingRow, SettingSelect, SettingText, Small, SubHead, SwitchField, TextInput, toastInfo, toastRefusal,
 } from '@/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/shadcn/table';
 import { ApiError } from '@/api/client';
 import { useTenant, useUpdateTenantSettings, type Tenant, type UpdateTenantSettings } from '@/api/tenant';
 import { useTimesheetConfig } from '@/api/timesheets';
-import { useEmployeeTypes } from '@/api/reference';
+import { useWorkPatterns } from '@/api/reference';
 import {
-  useApplyTemplate, useExportTemplate, useImportTemplate, useRemoveTemplate, useSaveTemplate, useTemplatePlan, useTemplates,
-  type TemplatePlan, type TemplateRow,
-} from '@/api/templates';
+  useApplyPreset, useExportPreset, useImportPreset, useRemovePreset, useSavePreset, usePresetPlan, usePresets,
+  type PresetPlan, type PresetRow,
+} from '@/api/setup-presets';
 import { useCaps } from '@/shell/useCaps';
 import { downloadText } from '@/lib/download';
 import { formatDateTime } from '@/lib/format';
 import { CLOCK_STYLES, DATE_FORMATS } from '@/contract/tenant';
 import { COUNTRY_ZONES, DEFAULT_ZONE, isTimeZone, supportedTimeZones } from '@/domain/time';
 import { MODULES, moduleLive } from '@/domain/modules';
-import { TEMPLATE_SCOPES, scopeLabel, templateFileName, type TemplateScope } from '@/domain/templates';
+import { PRESET_SCOPES, scopeLabel, presetFileName, type PresetScope } from '@/domain/setup-presets';
 
 /* Organisation: the prototype's admOrgAll and admOrg (qnipay-workforce-v15.html:
-   9088-9091, 7989-8039) with templateCards and templateActions (8480-8520)
+   9088-9091, 7989-8039) with presetCards and presetActions (8480-8520)
    above the company profile. Brand & appearance is left out (no theme or
    brand editing in 1c) and so is the currency (no money). Compliance keeps
    its switches; the pay
    period cut-off is Timesheet setup's, shown here and linked to it. Every
    setting saves when it is chosen or left, with the tenant's version and one
-   audit row. Applying a template asks first, showing what it would change,
+   audit row. Applying a preset asks first, showing what it would change,
    add and leave alone (D1). Module 8: the country names its time zone and,
    when the organisation keeps another, offers it. Pay frequency, week ending
    day and first pay date set the pay period; the minimum wage check says plainly that nothing reads it yet. */
@@ -39,13 +39,13 @@ export function OrganisationPage() {
   const tenant = useTenant();
   return (
     <Page testId={tid.page('aorg')}>
-      <PageHead title="Organisation" crumb="Setup · Organisation" tipTestId={tid.head.tip('aorg')}
-        tip="Who this organisation is, the template it runs on, and how pay periods are set" />
+      <PageHead title="Organisation" tipTestId={tid.head.tip('aorg')}
+        tip="Who this organisation is, the preset it runs on, and how pay periods are set" />
       {tenant.data
         ? <>
             <SpineCard />
-            <TemplatesCard tenant={tenant.data} />
-            <TemplateActions />
+            <PresetsCard tenant={tenant.data} />
+            <PresetActions />
             <CompanyCard tenant={tenant.data} />
             <DateTimeCard tenant={tenant.data} />
             <ComplianceCard tenant={tenant.data} />
@@ -58,7 +58,7 @@ export function OrganisationPage() {
 }
 
 /* ------------------------------------------------------------ the spine */
-const SPINE = ['Organisation & template', 'Modules', 'Features', 'Fields', 'Employee types', 'Employees'];
+const SPINE = ['Organisation & preset', 'Modules', 'Features', 'Fields', 'Work patterns', 'Employees'];
 function SpineCard() {
   return (
     <AdminCard testId={tid.aorg.card('spine')} icon={<Workflow />} title="Configuration spine" tipTestId={tid.aorg.tip('spine')}
@@ -70,21 +70,21 @@ function SpineCard() {
           <b className="rounded-pill border bg-surface-card px-[11px] py-[5px] font-[family-name:var(--qp-font-display)] text-sm font-semibold">{s}</b>
         </span>)}
       </div>
-      <Small className="mt-md">Changes apply immediately. There is no draft stage. Employees survive a template change: nobody is moved, and
-        employee types a template does not have stay with the employees who hold them.</Small>
+      <Small className="mt-md">Changes apply immediately. There is no draft stage. Employees survive a preset change: nobody is moved, and
+        work patterns a preset does not have stay with the employees who hold them.</Small>
     </AdminCard>);
 }
 
-/* -------------------------------------------------------- the templates */
-function TemplatesCard({ tenant }: { tenant: Tenant }) {
-  const list = useTemplates(), types = useEmployeeTypes();
-  const [applying, setApplying] = useState<TemplateRow | null>(null);
-  const rows = list.data?.templates ?? [];
+/* -------------------------------------------------------- the presets */
+function PresetsCard({ tenant }: { tenant: Tenant }) {
+  const list = usePresets(), types = useWorkPatterns();
+  const [applying, setApplying] = useState<PresetRow | null>(null);
+  const rows = list.data?.presets ?? [];
   const live = rows.find(t => t.inUse);
   const modulesOn = MODULES.filter(m => moduleLive(tenant.modules, m)).length;
   return (
-    <AdminCard testId={tid.aorg.card('templates')} icon={<Factory />} title="Industry template" tipTestId={tid.aorg.tip('templates')}
-      tip="A template is data, not code: it seeds this tenant and stays editable afterwards.">
+    <AdminCard testId={tid.aorg.card('templates')} icon={<Factory />} title="Setup preset" tipTestId={tid.aorg.tip('templates')}
+      tip="A preset is data, not code: it seeds this tenant and stays editable afterwards.">
       {/* .tplgrid of .tpl (v15:1469-1476). The types and modules lines drop the
           prototype's .85 and .7 opacity, which took the muted ink below AA. */}
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,238px),1fr))] gap-md">
@@ -99,22 +99,22 @@ function TemplatesCard({ tenant }: { tenant: Tenant }) {
             <span className="mt-xs block text-xs leading-[1.45] text-text-muted">{t.modules.join(' · ')}</span>
           </button>))}
       </div>
-      {list.isError && <p role="alert" className="mt-md text-xs text-err">Templates could not be loaded. Reload the page.</p>}
+      {list.isError && <p role="alert" className="mt-md text-xs text-err">Setup presets could not be loaded. Reload the page.</p>}
       <Small testId={tid.aorg.live} className="mt-md">
-        {live ? <><b>{live.name}</b> is applied to <b>{tenant.name}</b>, activating {types.data ? `${types.data.length} employee types and ` : ''}{modulesOn} modules. </>
-          : list.data ? <>The template this tenant started from is no longer here. </> : null}
-        A client is a template plus its own edits, never a separate build.
+        {live ? <><b>{live.name}</b> is applied to <b>{tenant.name}</b>, activating {types.data ? `${types.data.length} work patterns and ` : ''}{modulesOn} modules. </>
+          : list.data ? <>The preset this tenant started from is no longer here. </> : null}
+        A client is a preset plus its own edits, never a separate build.
       </Small>
       {applying && <ApplyDialog row={applying} tenant={tenant} onClose={() => setApplying(null)} />}
     </AdminCard>);
 }
 
-const PLAN_PARTS: readonly [keyof Pick<TemplatePlan, 'changes' | 'added' | 'leftAlone'>, string, string][] = [
+const PLAN_PARTS: readonly [keyof Pick<PresetPlan, 'changes' | 'added' | 'leftAlone'>, string, string][] = [
   ['changes', 'What changes', 'Nothing changes.'], ['added', 'What is added', 'Nothing is added.'], ['leftAlone', 'What is left alone', ''],
 ];
 /* data-tpl (v15:11220-11224), asking first: the plan the server would carry out. */
-function ApplyDialog({ row, tenant, onClose }: { row: TemplateRow; tenant: Tenant; onClose(): void }) {
-  const plan = useTemplatePlan(row.key), apply = useApplyTemplate();
+function ApplyDialog({ row, tenant, onClose }: { row: PresetRow; tenant: Tenant; onClose(): void }) {
+  const plan = usePresetPlan(row.key), apply = useApplyPreset();
   const go = () => apply.mutate({ key: row.key, ifMatch: tenant.version }, {
     onSuccess: out => { onClose(); toastInfo(out.message, `It is live for everyone at ${tenant.name} now.`); },
   });
@@ -123,7 +123,7 @@ function ApplyDialog({ row, tenant, onClose }: { row: TemplateRow; tenant: Tenan
       description="It applies to everyone immediately. There is no draft stage. Employees and the records already here are never deleted or overwritten."
       footer={<>
         <Button testId={tid.aorg.applyCancel} kind="ghost" onClick={onClose}>Keep it as it is</Button>
-        <Button testId={tid.aorg.apply} kind="primary" disabled={!plan.data} pending={apply.anyPending} onClick={go}>Apply template</Button>
+        <Button testId={tid.aorg.apply} kind="primary" disabled={!plan.data} pending={apply.anyPending} onClick={go}>Apply preset</Button>
       </>}>
       {plan.data
         ? PLAN_PARTS.map(([part, title, none]) => (plan.data[part].length || none) && (
@@ -134,18 +134,18 @@ function ApplyDialog({ row, tenant, onClose }: { row: TemplateRow; tenant: Tenan
               : <Small className="mb-md">{none}</Small>}
           </section>))
         : plan.isError
-          ? <p data-testid={tid.aorg.planError} role="alert" className="text-sm text-err">What this template would change could not be read. Close this and try again.</p>
+          ? <p data-testid={tid.aorg.planError} role="alert" className="text-sm text-err">What this preset would change could not be read. Close this and try again.</p>
           : <p data-testid={tid.aorg.planLoading} className="text-sm text-text-secondary">Reading what it would change&hellip;</p>}
     </Modal>);
 }
 
-/* templateActions (v15:8480-8500): save, import, and the templates saved here. */
-function TemplateActions() {
-  const list = useTemplates(), imp = useImportTemplate(), remove = useRemoveTemplate(), exp = useExportTemplate();
+/* presetActions (v15:8480-8500): save, import, and the presets saved here. */
+function PresetActions() {
+  const list = usePresets(), imp = useImportPreset(), remove = useRemovePreset(), exp = useExportPreset();
   const [saving, setSaving] = useState(false);
-  const [removing, setRemoving] = useState<TemplateRow | null>(null);
+  const [removing, setRemoving] = useState<PresetRow | null>(null);
   const file = useRef<HTMLInputElement>(null);
-  const mine = (list.data?.templates ?? []).filter(t => t.source !== 'shipped');
+  const mine = (list.data?.presets ?? []).filter(t => t.source !== 'shipped');
 
   const onFile = async (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -157,12 +157,12 @@ function TemplateActions() {
       return;
     }
     imp.mutate({ text }, { onSuccess: out => toastInfo(`${out.record.name} imported. Choose it to apply it.`,
-      out.ignored.length ? `Left out, because a template does not hold them: ${out.ignored.join(', ')}.` : undefined) });
+      out.ignored.length ? `Left out, because a preset does not hold them: ${out.ignored.join(', ')}.` : undefined) });
   };
-  const download = async (t: TemplateRow) => {
+  const download = async (t: PresetRow) => {
     try {
       const f = await exp.run(t.key);
-      if (downloadText(templateFileName(t.key), JSON.stringify(f, null, 1), 'application/json')) toastInfo(`${t.name} exported.`, 'Import it elsewhere to reuse this setup.');
+      if (downloadText(presetFileName(t.key), JSON.stringify(f, null, 1), 'application/json')) toastInfo(`${t.name} exported.`, 'Import it elsewhere to reuse this setup.');
       else toastRefusal({ message: 'This browser could not produce the file, so nothing was saved.', next: 'Try another browser.' });
     } catch (err) {
       if (err instanceof ApiError) toastRefusal(err.refusal);
@@ -172,16 +172,16 @@ function TemplateActions() {
     <div className="mb-md">
       {/* .formacts, start-aligned */}
       <div className="mb-md flex flex-wrap gap-sm">
-        <Button testId={tid.aorg.saveOpen} kind="primary" small onClick={() => setSaving(true)}>Save this setup as a template</Button>
-        <Button testId={tid.aorg.importOpen} kind="ghost" small pending={imp.anyPending} onClick={() => file.current?.click()}>Import a template</Button>
-        <input ref={file} type="file" accept=".json,application/json" data-testid={tid.aorg.importFile} aria-label="Template file" className="hidden"
+        <Button testId={tid.aorg.saveOpen} kind="primary" small onClick={() => setSaving(true)}>Save this setup as a preset</Button>
+        <Button testId={tid.aorg.importOpen} kind="ghost" small pending={imp.anyPending} onClick={() => file.current?.click()}>Import a preset</Button>
+        <input ref={file} type="file" accept=".json,application/json" data-testid={tid.aorg.importFile} aria-label="Setup preset file" className="hidden"
           onChange={e => void onFile(e)} />
       </div>
       {mine.length
         ? <>
-            <SubHead>Templates saved here</SubHead>
+            <SubHead>Setup presets saved here</SubHead>
             <Table data-testid={tid.aorg.saved} variant="records" dense>
-              <TableHeader><TableRow><TableHead>Template</TableHead><TableHead>Keeps</TableHead><TableHead>Saved</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
+              <TableHeader><TableRow><TableHead>Preset</TableHead><TableHead>Keeps</TableHead><TableHead>Saved</TableHead><TableHead><span className="sr-only">Actions</span></TableHead></TableRow></TableHeader>
               <TableBody>
                 {mine.map(t => (
                   <Row key={t.key} testId={tid.aorg.savedRow(t.key)}>
@@ -200,10 +200,10 @@ function TemplateActions() {
               </TableBody>
             </Table>
           </>
-        : list.data && <Small testId={tid.aorg.noSaved}>No templates saved on this device yet. Configure this tenant the way you want it, then save it.</Small>}
+        : list.data && <Small testId={tid.aorg.noSaved}>No presets saved on this device yet. Configure this tenant the way you want it, then save it.</Small>}
       {saving && <SaveDialog onClose={() => setSaving(false)} />}
       {removing && <ConfirmModal open onOpenChange={o => { if (!o) setRemoving(null); }} title={`Remove ${removing.name}?`} danger busy={remove.anyPending}
-        body="It is removed from this browser. Export it first to keep a copy. This tenant keeps everything the template set."
+        body="It is removed from this browser. Export it first to keep a copy. This tenant keeps everything the preset set."
         confirmLabel="Remove" onConfirm={() => {
           const t = removing;
           setRemoving(null);
@@ -222,48 +222,48 @@ function readText(f: File): Promise<string> {
   });
 }
 
-/* saveTemplateBox and tpl-save (v15:4624-4648, 11979-11995). */
+/* savePresetBox and tpl-save (v15:4624-4648, 11979-11995). */
 function SaveDialog({ onClose }: { onClose(): void }) {
-  const save = useSaveTemplate();
+  const save = useSavePreset();
   const caps = useCaps();
   const [name, setName] = useState(''), [desc, setDesc] = useState('');
-  const [scope, setScope] = useState<TemplateScope>('config');
+  const [scope, setScope] = useState<PresetScope>('config');
   const [warn, setWarn] = useState<string | null>(null);
   const go = () => {
-    if (!name.trim()) { setWarn('A template needs a name.'); return; }
+    if (!name.trim()) { setWarn('A preset needs a name.'); return; }
     setWarn(null);
     save.mutate({ name, description: desc, scope }, {
-      onSuccess: out => { onClose(); toastInfo(`${out.record.name} saved. ${scopeLabel(scope)}.`, 'It is available when choosing a template.'); },
+      onSuccess: out => { onClose(); toastInfo(`${out.record.name} saved. ${scopeLabel(scope)}.`, 'It is available when choosing a preset.'); },
     });
   };
   const nameError = save.fieldError('name');
   const shown = warn ?? (save.refusal && !save.refusal.field ? `${save.refusal.message} ${save.refusal.next}` : null);
   return (
-    <Modal open onOpenChange={o => { if (!o) onClose(); }} title="Save this setup as a template" width="wide"
-      description="A template starts a new tenant already configured. You are keeping what this one looks like now. Configure it first, then save."
+    <Modal open onOpenChange={o => { if (!o) onClose(); }} title="Save this setup as a preset" width="wide"
+      description="A preset starts a new tenant already configured. You are keeping what this one looks like now. Configure it first, then save."
       footer={<>
         <Button testId={tid.aorg.saveCancel} kind="ghost" onClick={onClose}>Cancel</Button>
-        <Button testId={tid.aorg.save} kind="primary" pending={save.anyPending} onClick={go}>Save template</Button>
+        <Button testId={tid.aorg.save} kind="primary" pending={save.anyPending} onClick={go}>Save preset</Button>
       </>}>
       <FieldGrid single>
-        <Field label="Template name" required error={nameError}>
+        <Field label="Preset name" required error={nameError}>
           <TextInput testId={tid.aorg.saveName} value={name} maxLength={80} placeholder="For example: Care, residential, two-stage approval"
             onChange={e => setName(e.target.value)} />
         </Field>
         <Field label="What it is for">
-          <TextInput testId={tid.aorg.saveDesc} value={desc} maxLength={300} placeholder="Shown on the card when somebody chooses a template"
+          <TextInput testId={tid.aorg.saveDesc} value={desc} maxLength={300} placeholder="Shown on the card when somebody chooses a preset"
             onChange={e => setDesc(e.target.value)} />
         </Field>
       </FieldGrid>
       <SubHead>What to keep</SubHead>
       <ChoiceList label="What to keep">
-        {TEMPLATE_SCOPES.map(s => (
+        {PRESET_SCOPES.map(s => (
           <ChoiceRow key={s.key} testId={tid.aorg.scope(s.key)} name="tpl-scope" value={s.key} checked={scope === s.key} onChange={() => setScope(s.key)}
             title={s.label} note={s.key === 'structure' && !caps.has('master_data') ? `${s.note} It needs Master data, which your access does not include.` : s.note} />))}
       </ChoiceList>
-      <Banner tone="info" title="Saved in this browser">
-        A template you save is kept alongside everything else, on this device. Export it to use it elsewhere or to hand it to somebody.
-      </Banner>
+      <Note title="Saved in this browser">
+        A preset you save is kept alongside everything else, on this device. Export it to use it elsewhere or to hand it to somebody.
+      </Note>
       {shown && <FormWarn testId={tid.aorg.saveWarn}>{shown}</FormWarn>}
     </Modal>);
 }

@@ -20,7 +20,7 @@ export const Session = z.object({
 export type Session = z.infer<typeof Session>;
 export const ViewAsRequest = z.object({ employeeCode: z.string() });
 /* One employee the account menu offers to view as: one per role (and one per
-   employee type among employees), so the list shows how the app differs
+   work pattern among employees), so the list shows how the app differs
    rather than listing the workforce. */
 export const ViewAsEmployee = z.object({ employeeCode: z.string(), name: z.string(), userType: SessionAccount.shape.userType,
   roleName: z.string(), locationName: z.string(), onboarding: z.boolean() });

@@ -5,14 +5,14 @@ import { tid } from '@/testids';
 import { expectTestIdCoverage } from '@/test/testid-coverage';
 import { renderPage, withFakeServer } from '@/test/render-page';
 import { fault, resetTo, signInAs, snapshot } from '@/test/api-helpers';
-import { EmployeeTypesPage } from './EmployeeTypesPage';
+import { WorkPatternsPage } from './WorkPatternsPage';
 import { slugOf } from './NewTypeModal';
 
 withFakeServer();
 beforeEach(async () => { resetTo('social'); await signInAs('admin'); });
-const types = () => Object.values(store.coll<{ id: string; code: string; name: string; capabilities: string[] }>('employeeTypes'));
+const types = () => Object.values(store.coll<{ id: string; code: string; name: string; fieldGroups: string[] }>('workPatterns'));
 const openNew = async () => {
-  renderPage(<EmployeeTypesPage />);
+  renderPage(<WorkPatternsPage />);
   await userEvent.click(await screen.findByTestId(tid.types.add));
   await screen.findByTestId(tid.types.newSave);
 };
@@ -20,11 +20,16 @@ const createWaking = async () => {
   await openNew();
   fireEvent.change(screen.getByTestId(tid.types.newField('name')), { target: { value: 'Waking Night Support' } });
   await userEvent.click(screen.getByTestId(tid.types.newSave));
-  await screen.findByTestId(tid.types.chip('waking_night_support'));
+  await waitFor(() => expect(screen.getByTestId(tid.types.list)).toHaveTextContent('Waking Night Support'));
+};
+/* the type dropdown: open it, then choose */
+const chooseType = async (code: string) => {
+  await userEvent.click(await screen.findByTestId(tid.types.list));
+  await userEvent.click(await screen.findByTestId(tid.types.chip(code)));
 };
 
-test('AD Employee types is no longer the densest page in the admin, and it says where the fields went, with full test id coverage', async () => {
-  renderPage(<EmployeeTypesPage />);
+test('AD Work patterns is no longer the densest page in the admin, and it says where the fields went, with full test id coverage', async () => {
+  renderPage(<WorkPatternsPage />);
   const detail = await screen.findByTestId(tid.types.detail);
   expect(detail.querySelectorAll('[role="switch"]').length).toBeLessThanOrEqual(6);
   expect(detail).toHaveTextContent('set in Timesheet setup');
@@ -32,7 +37,7 @@ test('AD Employee types is no longer the densest page in the admin, and it says 
   expect(await screen.findByTestId(tid.types.setupLink('mts'))).toHaveAttribute('href', '/setup/mts');
   expectTestIdCoverage(document.body);
 });
-test('ET A New employee type control exists, and the new-type form has full test id coverage', async () => {
+test('ET A New work pattern control exists, and the new-type form has full test id coverage', async () => {
   await openNew();
   expectTestIdCoverage(document.body);
 });
@@ -49,10 +54,10 @@ test('ET It asks for entry mode and pay basis', async () => {
 });
 test('ET A name is required', async () => {
   await openNew();
-  const before = snapshot('employeeTypes');
+  const before = snapshot('workPatterns');
   await userEvent.click(screen.getByTestId(tid.types.newSave));
   expect(await screen.findByTestId(tid.types.newWarn)).toHaveTextContent('A name is required.');
-  expect(snapshot('employeeTypes')).toEqual(before);
+  expect(snapshot('workPatterns')).toEqual(before);
 });
 test('ET A type is created, it appears in the type list, and it can be removed', async () => {
   await createWaking();
@@ -70,14 +75,14 @@ test('ET A type taken into use after it was read: Remove is refused, says who ho
   await createWaking();
   const remove = screen.getByTestId(tid.types.remove);
   expect(remove).toBeEnabled();
-  const someone = Object.values(store.coll<{ employeeType: string }>('employees'))[0];
+  const someone = Object.values(store.coll<{ workPattern: string }>('employees'))[0];
   if (!someone) throw new Error('no seeded employee');
-  someone.employeeType = 'waking_night_support';
-  const before = snapshot('employeeTypes', 'employees');
+  someone.workPattern = 'waking_night_support';
+  const before = snapshot('workPatterns', 'employees');
   await userEvent.click(remove);
   await userEvent.click(await screen.findByTestId(tid.modal.confirm));
   expect(await screen.findByTestId(tid.types.warn)).toHaveTextContent('waking_night_support is used by 1 employee. Move those first. Removing it would leave them pointing at nothing.');
-  expect(snapshot('employeeTypes', 'employees')).toEqual(before);
+  expect(snapshot('workPatterns', 'employees')).toEqual(before);
 });
 test('Remove asks for confirmation', async () => {
   await createWaking();
@@ -94,9 +99,9 @@ test('Remove asks for confirmation', async () => {
 /* ui-review row 64, Task 23 review: a type employees hold is not offered for
    removal; Remove this type is off, and says why. */
 test('ET A type employees hold cannot be removed: Remove is off, says why, and asks nothing', async () => {
-  renderPage(<EmployeeTypesPage />);
-  await userEvent.click(await screen.findByTestId(tid.types.chip('shift')));
-  const before = snapshot('employeeTypes', 'employees');
+  renderPage(<WorkPatternsPage />);
+  await chooseType('shift');
+  const before = snapshot('workPatterns', 'employees');
   const remove = await screen.findByTestId(tid.types.remove);
   expect(remove).toBeDisabled();
   expect(screen.getByTestId(tid.types.heldBy)).toHaveTextContent(/^Held by \d+ employees? · code shift$/);
@@ -104,31 +109,31 @@ test('ET A type employees hold cannot be removed: Remove is off, says why, and a
   expect(remove).toHaveAccessibleDescription(screen.getByTestId(tid.types.removeWhy).textContent ?? '');
   await userEvent.click(remove);
   expect(screen.queryByRole('dialog', { name: /Remove/ })).toBeNull();
-  expect(snapshot('employeeTypes', 'employees')).toEqual(before);
+  expect(snapshot('workPatterns', 'employees')).toEqual(before);
 });
-test('a capability switched on is saved and reported', async () => {
-  renderPage(<EmployeeTypesPage />);
-  await userEvent.click(await screen.findByTestId(tid.types.chip('shift')));
+test('a field group switched on is saved and reported', async () => {
+  renderPage(<WorkPatternsPage />);
+  await chooseType('shift');
   await userEvent.click(await screen.findByTestId(tid.types.cap('vehicle')));
   await userEvent.click(screen.getByTestId(tid.types.save));
   expect(await screen.findByTestId(tid.toast.info)).toHaveTextContent('1 field(s) changed');
-  expect(types().find(t => t.code === 'shift')?.capabilities).toContain('vehicle');
+  expect(types().find(t => t.code === 'shift')?.fieldGroups).toContain('vehicle');
 });
-test('DM Job profiles no longer live on the Employee types page', async () => {
-  renderPage(<EmployeeTypesPage />);
+test('DM Positions no longer live on the Work patterns page', async () => {
+  renderPage(<WorkPatternsPage />);
   expect(await screen.findByTestId(tid.types.jobs)).toHaveTextContent('held once under Dimensions');
-  expect(screen.getByTestId(tid.types.jobsLink)).toHaveAttribute('href', '/setup/aloc?d=job-profiles');
+  expect(screen.getByTestId(tid.types.jobsLink)).toHaveAttribute('href', '/setup/aloc?d=positions');
 });
 test('a failed save shows the refusal and leaves the type as it was', async () => {
-  const before = snapshot('employeeTypes');
-  renderPage(<EmployeeTypesPage />);
+  const before = snapshot('workPatterns');
+  renderPage(<WorkPatternsPage />);
   await userEvent.click(await screen.findByTestId(tid.types.cap('vehicle')));
   const first = types().sort((a, b) => a.name.localeCompare(b.name))[0];
   if (!first) throw new Error('no types');
-  await fault('PATCH', `/api/v1/employee-types/${first.id}`);
+  await fault('PATCH', `/api/v1/work-patterns/${first.id}`);
   await userEvent.click(screen.getByTestId(tid.types.save));
   expect(await screen.findByTestId(tid.toast.error)).toHaveTextContent('Nothing has been changed');
-  expect(snapshot('employeeTypes')).toEqual(before);
+  expect(snapshot('workPatterns')).toEqual(before);
 });
 test('a type code is suggested from its name', () => {
   expect(slugOf('Waking Night Support')).toBe('waking_night_support');

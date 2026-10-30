@@ -51,7 +51,7 @@ export const markNotificationRead = defineEndpoint({ method: 'POST', path: '/api
 export const markAllNotificationsRead = defineEndpoint({ method: 'POST', path: '/api/v1/notifications/read-all', response: NotificationsRead, allowedWhileOnboarding: true,
   summary: 'Mark every notification in my inbox read. One audit row; none when nothing was unread.' });
 export const getNotificationMatrix = defineEndpoint({ method: 'GET', path: '/api/v1/notifications/matrix', response: NotificationMatrix, capability: 'framework',
-  summary: 'Who is told of each event, per user type and channel, for the events this tenant can raise' });
+  summary: 'Who is told of each event, per access role and channel, for the events this tenant can raise' });
 export const updateNotificationMatrix = defineEndpoint({ method: 'PATCH', path: '/api/v1/notifications/matrix', request: UpdateMatrix, response: MatrixSaved,
   capability: 'framework', versioned: true, errors: [409],
   summary: 'Change channels in the matrix (If-Match). An event that is switched off is MODULE_OFF; a role an event never applies to is refused. Email and SMS are recorded as not connected. One audit row.' });

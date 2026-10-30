@@ -24,7 +24,7 @@ export type BankHolidayRecord = z.infer<typeof BankHoliday>;
    vehiclesMax have no other home. */
 export const FlagExtras = z.object({ weekGrid: WeekGrid, weekLayout: WeekLayout, breaksMax: z.number().int(), vehiclesMax: z.number().int() });
 export const Tenant = RecordMeta.extend({
-  name: z.string(), template: z.string(), modules: z.record(z.string(), z.boolean()), flags: z.record(z.string(), z.boolean()),
+  name: z.string(), preset: z.string(), modules: z.record(z.string(), z.boolean()), flags: z.record(z.string(), z.boolean()),
   company: Company, financialYear: FinancialYear, weekStart: z.enum(WEEK_STARTS), bankHolidays: z.array(BankHoliday),
   timezone: TimeZone, dateFormat: z.enum(DATE_FORMATS), clock: z.enum(CLOCK_STYLES),
   fullTimeWeeklyHours: z.number(),
@@ -43,7 +43,7 @@ export const ModuleEffect = z.object({
   kept: z.array(z.object({ what: z.string(), count: z.number().int().nonnegative() })),
   /* capture methods Timesheet brought back (on) or remembered (off) */
   capturesRestored: z.array(z.string()), capturesRemembered: z.array(z.string()),
-  /* employee types Sites off took the site capability from */
+  /* work patterns Sites off took the site capability from */
   siteRemovedFrom: z.array(z.string()),
 });
 export type ModuleEffect = z.infer<typeof ModuleEffect>;
@@ -78,7 +78,7 @@ export type UpdateTenantSettings = z.infer<typeof UpdateTenantSettings>;
 
 const ModuleParams = z.object({ code: z.string().min(1) });
 export const getTenant = defineEndpoint({ method: 'GET', path: '/api/v1/tenant', response: Tenant, errors: [404],
-  summary: 'The tenant: name, template, modules and flags with their extras, company details, financial year, week start, bank holidays and what a switch would restore' });
+  summary: 'The tenant: name, setup preset, modules and flags with their extras, company details, financial year, week start, bank holidays and what a switch would restore' });
 export const setModule = defineEndpoint({ method: 'PATCH', path: '/api/v1/tenant/modules/:code', params: ModuleParams, request: SetModule,
   response: ModuleSwitched, capability: 'mod_cfg', versioned: true, errors: [404, 409],
   summary: 'Turn a module or a Timesheet capture method on or off (If-Match: the tenant\'s version). Off keeps every record and reports counts; QniConnect is LOCKED; a capture method while Timesheet is off is MODULE_OFF.' });

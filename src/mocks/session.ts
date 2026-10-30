@@ -38,7 +38,7 @@ export const sessionHandlers = [
     return sessionView(updated);
   }),
   /* Ported from the prototype's drawMenu (v15:10776-10789): one employee per
-     role, and one per employee type among employees, never yourself, at
+     role, and one per work pattern among employees, never yourself, at
      most five, so the list shows how the app differs. Employees who have left
      are not offered, and neither is anyone without an account. */
   serve(listViewAsEmployees, ({ session }) => {
@@ -47,7 +47,7 @@ export const sessionHandlers = [
       const a = accountForEmployee(p.code);
       if (!a || p.code === session.account.employeeCode || GONE.has(p.state ?? '')) continue;
       const onboarding = a.userType === 'employee' && ONBOARDING.has(p.state ?? '');
-      const rank = a.userType !== 'employee' ? a.userType : onboarding ? 'candidate' : `employee:${p.employeeType ?? ''}`;
+      const rank = a.userType !== 'employee' ? a.userType : onboarding ? 'candidate' : `employee:${p.workPattern ?? ''}`;
       if (seen.has(rank)) continue;
       seen.add(rank);
       out.push({ employeeCode: p.code, name: p.name, userType: a.userType, roleName: roleNameOf(a), locationName: locationNameOf(p), onboarding });

@@ -36,7 +36,7 @@ export function PublicLayout({ testId, nav, children }: { testId: string; nav?: 
       </TopBar>
       <main data-testid={testId} className="flex flex-1 flex-col">{children}</main>
       <footer className="border-t bg-surface-page">
-        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-sm px-xl py-lg text-xs text-text-muted max-lg:px-md">
+        <div className="mx-auto flex w-full max-w-[1120px] flex-wrap items-center justify-between gap-sm px-xl py-lg text-xs text-text-muted max-lg:px-lg">
           <p data-testid={tid.pub.year}>© {new Date().getFullYear()} QniConnect. All rights reserved.</p>
           <div className="flex gap-lg">
             <a href={LEGAL_URL} target="_blank" rel="noreferrer" data-testid={tid.pub.privacy} className="rounded-sm underline-offset-2 hover:text-text-primary hover:underline max-md:inline-flex max-md:min-h-touch max-md:items-center">Privacy</a>

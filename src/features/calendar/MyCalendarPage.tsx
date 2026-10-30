@@ -5,7 +5,7 @@ import { Banner, Card, CalNav, NavLink, Page, PageHead, Stat, Stats } from '@/ui
 import { buttonVariants } from '@/ui/shadcn/button';
 import { ApiError } from '@/api/client';
 import { useHome, type HomeDay, type HomeMonth } from '@/api/home';
-import { MONTH_SHORT, formatDmy, parseIso, weekHeads } from '@/domain/time';
+import { MONTH_SHORT, formatDay, formatDmy, parseIso, periodStart, weekHeads } from '@/domain/time';
 import { GLYPHS, shiftMonth } from '@/domain/home';
 import { DayDialog } from './DayDialog';
 
@@ -25,7 +25,7 @@ export function MyCalendarPage() {
   const refused = q.error instanceof ApiError ? q.error.refusal : null;
   return (
     <Page testId={tid.page('cal')}>
-      <PageHead title="My Calendar" crumb={m ? `My work · My Calendar · ${m.who}` : 'My work · My Calendar'} />
+      <PageHead title="My Calendar" context={m?.who} />
       {q.isError && !m && <p data-testid={tid.cal.error} role="alert" className="text-err">
         {refused && refused.code !== 'network' ? `${refused.message} ${refused.next}` : 'Your month could not be loaded. Reload the page to try again.'}</p>}
       {!m && !q.isError && <p data-testid={tid.cal.loading} role="status" className="text-text-secondary">Loading your month&hellip;</p>}
@@ -65,10 +65,14 @@ function Home({ m, month, stale, onMonth }: { m: HomeMonth; month: string; stale
 }
 
 /* The figures above the month (.stats): today's timesheet and this week's
-   hours while the timesheet is on. */
+   hours while the timesheet is on. The week's hours are every day recorded in
+   it, drafts included, the same measure as the month's "45.0h recorded"; the
+   foot says so and names the week, so the two read apart (taste review
+   2026-10-26, Phase 1 item 5). */
 function Figures({ m }: { m: HomeMonth }) {
   const t = m.todayDay, w = m.week;
   const hours = Math.round(w.minutes / 6) / 10;
+  const recorded = `recorded in the week from ${formatDay(periodStart(m.today))}`;
   if (!m.can.recordHours) return null;
   return (
     <Stats>
@@ -76,7 +80,7 @@ function Figures({ m }: { m: HomeMonth }) {
         <span className="text-lg">{t.ts?.text || '—'}</span>
       </Stat>}
       {m.can.recordHours && <Stat label="Hours this week" testId={tid.cal.week}
-        foot={w.contracted > 0 ? `of ${w.contracted}h contracted` : 'bank · no contracted baseline'}>{hours}h</Stat>}
+        foot={w.contracted > 0 ? `${recorded}, of ${w.contracted}h contracted` : `${recorded} · bank, no contracted baseline`}>{hours}h</Stat>}
     </Stats>);
 }
 /* ----------------------------------------------------------------- a day */

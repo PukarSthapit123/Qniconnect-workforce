@@ -34,7 +34,7 @@ export const employeeView = (p: StoredEmployee): Employee =>
 
 export const employeeContext = (): EmployeeContext => ({
   employees: Object.values(employees()), locations: codesOf('locations'), departments: codesOf('departments'),
-  jobProfiles: codesOf('jobProfiles'), employeeTypes: codesOf('employeeTypes'),
+  positions: codesOf('positions'), workPatterns: codesOf('workPatterns'), grades: codesOf('payGrades'), levels: codesOf('payLevels'),
 });
 export const usageWorld = (): UsageWorld => ({
   employees: Object.values(employees()),
@@ -70,6 +70,6 @@ export function requireScope(s: Signed, location: string) {
   const sc = scopeOf(s);
   if (sc.all || sc.location === location) return;
   refuse(403, { code: 'scope', message: `You can add, edit and move employees at ${nameOf('locations', sc.location)} only.`,
-    next: 'Ask an administrator to make changes at other locations.' });
+    next: 'Ask an administrator to make changes at other sites.' });
 }
 export const isSelf = (s: Signed, p: StoredEmployee) => p.code === effectiveCode(s);

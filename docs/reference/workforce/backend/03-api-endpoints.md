@@ -168,7 +168,7 @@ Page IDs are offsets in the Workforce range (01 §3). Pages are their own object
 |---|---|---|---|---|---|
 | WF+127 | `people` | `person` | `Employee` (+ `SIR Employee`, `SIR_WF Employee`) | R C U | The person fields of 02 §2. state is read-only (it changes through `personTransitions`). Bank fields are masked. `inUse` is not a field: the proxy counts it. |
 | WF+128 | `personHistory` | `personHistoryEntry` | `SIR_WF Person History` | R | |
-| WF+129 | `employeeRelatives` | `employeeRelative` | `Employee Relative` | R | emergencyContact flag, name, phone. |
+| WF+129 | `employeeRelatives` | `employeeRelative` | `Employee Relative` | R | emergencyContact flag, first name, last name, phone. |
 | WF+130 | `employeeQualifications` | `employeeQualification` | `Employee Qualification` | R | qualificationCode, description, expirationDate. Rota eligibility. |
 | WF+131 | `employeeBankAccounts` | `employeeBankAccount` | `SIR Employee Bank Account` | R | Masked: last 4 characters of the account number and branch only. |
 | WF+132 | `employeeSites` | `employeeSite` | `SIR Employee Sites` | R | employeeCode, siteCode, isDefaultSite. |

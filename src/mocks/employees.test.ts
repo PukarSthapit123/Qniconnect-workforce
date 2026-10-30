@@ -9,8 +9,8 @@ beforeEach(() => resetTo('social'));
 const as = async (p: Persona) => caller(await tokenFor(p));
 const WRITES = ['employees', 'accounts', 'employeeHistory', 'audit'];
 const newEmployee = (over: Record<string, unknown> = {}) => ({
-  code: 'CP-9001', name: 'Test Employee', email: 'test.employee@brightpath.org', phone: '', jobProfile: 'SW', employeeType: 'shift',
-  category: 'Contracted', location: 'WH', department: 'CARE', manager: 'Rachel Hussain', contractedHours: 30, maxHours: 45,
+  code: 'CP-9001', firstName: 'Test', middleName: '', lastName: 'Employee', knownAs: '', email: 'test.employee@brightpath.org', phone: '', position: 'SW', workPattern: 'shift',
+  employmentType: 'Contracted', location: 'WH', department: 'CARE', grade: '', level: '', manager: 'Rachel Hussain', contractedHours: 30, maxHours: 45,
   night: false, resource: '', cis: false, start: '2026-08-13', state: 'active', userType: 'employee', ...over });
 const managerLocation = () => String(employeeOf(accountOf('manager').employeeCode).location);
 
@@ -35,15 +35,15 @@ describe('GET /api/v1/employees', () => {
     expect(list.map(p => p.name)).toContain('Amara Okafor');
     expect(list.every(p => /okafor/i.test(p.name) || /okafor/i.test(p.code))).toBe(true);
   });
-  test('q also finds employees by their job profile’s name', async () => {
-    const job = Object.values(store.coll<{ code: string; name: string }>('jobProfiles'))
-      .find(j => Object.values(store.coll<{ jobProfile: string; state: string }>('employees')).some(p => p.jobProfile === j.code && p.state === 'active'));
-    if (!job) throw new Error('the seed has no job profile anyone active holds');
+  test('q also finds employees by their position’s name', async () => {
+    const job = Object.values(store.coll<{ code: string; name: string }>('positions'))
+      .find(j => Object.values(store.coll<{ position: string; state: string }>('employees')).some(p => p.position === j.code && p.state === 'active'));
+    if (!job) throw new Error('the seed has no position anyone active holds');
     const list = listEmployees.response.parse((await (await as('admin'))('GET', `/api/v1/employees?q=${encodeURIComponent(job.name.toLowerCase())}`)).body);
     expect(list.length).toBeGreaterThan(0);
-    expect(list.some(p => p.jobProfile === job.code)).toBe(true);
+    expect(list.some(p => p.position === job.code)).toBe(true);
   });
-  test('a manager sees only their own location', async () => {
+  test('a manager sees only their own site', async () => {
     const list = listEmployees.response.parse((await (await as('manager'))('GET', '/api/v1/employees?state=all')).body);
     expect(list.length).toBeGreaterThan(0);
     expect(list.every(p => p.location === managerLocation())).toBe(true);
@@ -60,9 +60,9 @@ describe('GET /api/v1/employees', () => {
 });
 
 describe('GET /api/v1/employees/:id and its history', () => {
-  test('a manager is refused an employee at another location, even with the record ID', async () => {
+  test('a manager is refused an employee at another site, even with the record ID', async () => {
     const other = Object.values(store.coll<{ id: string; location: string }>('employees')).find(p => p.location !== managerLocation());
-    if (!other) throw new Error('the seed has nobody outside the manager\'s location');
+    if (!other) throw new Error('the seed has nobody outside the manager\'s site');
     const r = await (await as('manager'))('GET', `/api/v1/employees/${other.id}`);
     expect(r.status).toBe(403);
     expect(Refusal.parse(r.body).code).toBe('scope');
@@ -111,7 +111,7 @@ describe('POST /api/v1/employees', () => {
       .toEqual([expect.objectContaining({ source: 'created', field: 'state', to: 'active' })]);
     expect(audits()).toHaveLength(before + 1);
     expect(audits().find(a => a.id === auditId)).toMatchObject({ act: 'Employee created', entity: 'employee', entityId: 'CP-9001',
-      after: expect.objectContaining({ employeeType: 'shift', location: 'WH', contractedHours: 30 }) });
+      after: expect.objectContaining({ workPattern: 'shift', location: 'WH', contractedHours: 30 }) });
   });
   test('a duplicate employee ID is refused with 422 on the code field, and nothing is written', async () => {
     const call = await as('admin');
@@ -134,11 +134,11 @@ describe('POST /api/v1/employees', () => {
     expect(Refusal.parse(r.body)).toMatchObject({ code: 'capability', message: expect.stringContaining('Permissions and role configuration') });
     expect(snapshot(...WRITES)).toEqual(before);
   });
-  test('a manager can add someone at their own location, and only there', async () => {
+  test('a manager can add someone at their own site, and only there', async () => {
     const call = await as('manager');
     expect((await call('POST', '/api/v1/employees', newEmployee({ location: managerLocation() }))).status).toBe(200);
     const elsewhere = Object.values(store.coll<{ code: string }>('locations')).find(l => l.code !== managerLocation());
-    if (!elsewhere) throw new Error('the seed has one location only');
+    if (!elsewhere) throw new Error('the seed has one site only');
     const r = await call('POST', '/api/v1/employees', newEmployee({ code: 'CP-9002', email: 'x2@brightpath.org', location: elsewhere.code }));
     expect(r.status).toBe(403);
     expect(Refusal.parse(r.body).code).toBe('scope');
@@ -173,9 +173,16 @@ describe('PATCH /api/v1/employees/:id', () => {
   test('an edit that changes nothing writes nothing', async () => {
     const call = await as('admin');
     const p = employeeOf('CP-1042'), before = snapshot(...WRITES);
-    const r = await call('PATCH', `/api/v1/employees/${p.id}`, { name: String(p.name) }, p.version);
+    const r = await call('PATCH', `/api/v1/employees/${p.id}`, { firstName: String(p.firstName) }, p.version);
     expect(updateEmployee.response.parse(r.body)).toMatchObject({ changed: [], auditId: null });
     expect(snapshot(...WRITES)).toEqual(before);
+  });
+  test('a name is edited in its parts, and the name as shown follows them', async () => {
+    const call = await as('admin');
+    const p = employeeOf('CP-1042');
+    const r = await call('PATCH', `/api/v1/employees/${p.id}`, { knownAs: ' Ama ', lastName: 'Okafor-Reid' }, p.version);
+    expect(updateEmployee.response.parse(r.body)).toMatchObject({ changed: ['lastName', 'knownAs'], record: { name: 'Ama Okafor-Reid', knownAs: 'Ama', lastName: 'Okafor-Reid' } });
+    expect(employeeOf('CP-1042')).toMatchObject({ name: 'Ama Okafor-Reid', firstName: 'Amara' });
   });
   test('a stale version is refused with 412 and nothing changes', async () => {
     const call = await as('admin');
@@ -212,7 +219,7 @@ describe('PATCH /api/v1/employees/:id', () => {
     expect(store.coll('accounts')[`acc_${old}`]).toBeUndefined();
     expect(store.coll('accounts')['acc_amara.new@brightpath.org']).toMatchObject({ employeeCode: 'CP-1042' });
   });
-  test('a manager cannot change a user type', async () => {
+  test('a manager cannot change a access role', async () => {
     const call = await as('manager');
     const p = employeeOf(accountOf('employee').employeeCode), before = snapshot(...WRITES);
     const r = await call('PATCH', `/api/v1/employees/${p.id}`, { userType: 'manager' }, p.version);
@@ -224,12 +231,12 @@ describe('PATCH /api/v1/employees/:id', () => {
      carries more than an employee's rights is an access decision, as the
      user type is. Without this a manager could move an admin's account to an
      address of their choosing and lock the admin out. */
-  test('a manager cannot change the work email of an admin in their own location', async () => {
+  test('a manager cannot change the work email of an admin in their own site', async () => {
     resetTo('qnipay');
     const mgr = accountOf('manager'), here = String(employeeOf(mgr.employeeCode).location);
     const admin = Object.values(store.coll<{ email: string; userType: string; employeeCode: string }>('accounts'))
       .find(a => a.userType === 'admin' && employeeOf(a.employeeCode).location === here);
-    if (!admin) throw new Error('the qnipay seed has no admin at the manager\'s location');
+    if (!admin) throw new Error('the qnipay seed has no admin at the manager\'s site');
     const call = await as('manager'), p = employeeOf(admin.employeeCode), before = snapshot(...WRITES);
     const r = await call('PATCH', `/api/v1/employees/${p.id}`, { email: 'someone.else@dogmagroup.co.uk' }, p.version);
     expect(r.status).toBe(403);
@@ -247,9 +254,9 @@ describe('PATCH /api/v1/employees/:id', () => {
     expect(store.coll('accounts')['acc_moved.here@brightpath.org']).toMatchObject({ employeeCode: p.code, userType: 'employee' });
     expect(audits()).toHaveLength(rows + 1);
   });
-  test('a manager cannot edit someone at another location', async () => {
+  test('a manager cannot edit someone at another site', async () => {
     const other = Object.values(store.coll<{ id: string; version: number; location: string }>('employees')).find(p => p.location !== managerLocation());
-    if (!other) throw new Error('the seed has nobody outside the manager\'s location');
+    if (!other) throw new Error('the seed has nobody outside the manager\'s site');
     const r = await (await as('manager'))('PATCH', `/api/v1/employees/${other.id}`, { contractedHours: 10 }, other.version);
     expect(r.status).toBe(403);
     expect(Refusal.parse(r.body).code).toBe('scope');
@@ -261,7 +268,7 @@ describe('PATCH /api/v1/employees/:id', () => {
     expect((await call('PATCH', `/api/v1/employees/${p.id}`, { contractedHours: 20 }, p.version)).status).toBe(500);
     expect(snapshot(...WRITES)).toEqual(before);
   });
-  test('an admin can change a user type, which changes their account and is recorded', async () => {
+  test('an admin can change a access role, which changes their account and is recorded', async () => {
     const call = await as('admin');
     const emp = accountOf('employee'), p = employeeOf(emp.employeeCode);
     const r = await call('PATCH', `/api/v1/employees/${p.id}`, { userType: 'manager' }, p.version);
@@ -269,7 +276,7 @@ describe('PATCH /api/v1/employees/:id', () => {
     expect(updateEmployee.response.parse(r.body)).toMatchObject({ changed: ['userType'], record: { userType: 'manager' } });
     expect(store.coll<{ userType: string }>('accounts')[`acc_${emp.email}`]?.userType).toBe('manager');
   });
-  test('an admin cannot change their own user type: 409, and nothing is written', async () => {
+  test('an admin cannot change their own access role: 409, and nothing is written', async () => {
     const call = await as('admin');
     const me = employeeOf(accountOf('admin').employeeCode), before = snapshot(...WRITES);
     const r = await call('PATCH', `/api/v1/employees/${me.id}`, { userType: 'employee' }, me.version);
@@ -277,11 +284,11 @@ describe('PATCH /api/v1/employees/:id', () => {
     expect(Refusal.parse(r.body).code).toBe('locked');
     expect(snapshot(...WRITES)).toEqual(before);
   });
-  test('a manager cannot move someone to another location', async () => {
+  test('a manager cannot move someone to another site', async () => {
     const call = await as('manager');
     const p = employeeOf(accountOf('employee').employeeCode), before = snapshot(...WRITES);
     const elsewhere = Object.values(store.coll<{ code: string }>('locations')).find(l => l.code !== managerLocation());
-    if (!elsewhere) throw new Error('the seed has one location only');
+    if (!elsewhere) throw new Error('the seed has one site only');
     const r = await call('PATCH', `/api/v1/employees/${p.id}`, { location: elsewhere.code }, p.version);
     expect(r.status).toBe(403);
     expect(Refusal.parse(r.body).code).toBe('scope');

@@ -14,7 +14,7 @@ const T = '/api/v1/tenant';
 const MOD = (c: string) => `${T}/modules/${c}`;
 const FLAG = (c: string) => `${T}/flags/${c}`;
 const SETTINGS = `${T}/settings`;
-const WRITES = ['tenant', 'employeeTypes', 'timesheetConfig', 'userTypes', 'audit'];
+const WRITES = ['tenant', 'workPatterns', 'timesheetConfig', 'userTypes', 'audit'];
 
 const tenant = () => {
   const t = store.coll<{ version: number; modules: Record<string, boolean>; flags: Record<string, boolean> }>('tenant').tenant;
@@ -23,7 +23,7 @@ const tenant = () => {
 };
 const ver = () => tenant().version;
 const read = async () => getTenant.response.parse((await (await as('admin'))('GET', T)).body);
-const typeCaps = () => Object.fromEntries(Object.values(store.coll<{ code: string; capabilities: string[] }>('employeeTypes')).map(t => [t.code, [...t.capabilities]]));
+const typeCaps = () => Object.fromEntries(Object.values(store.coll<{ code: string; fieldGroups: string[] }>('workPatterns')).map(t => [t.code, [...t.fieldGroups]]));
 
 describe('reading the tenant', () => {
   test('the GET carries the catalogue state, company, calendar and the extras from their homes', async () => {
@@ -130,14 +130,14 @@ describe('modules (Review Focus 2)', () => {
     expect(on.effect.capturesRestored).toEqual(['A', 'C']);
     expect([on.record.modules.TS, on.record.modules.A, on.record.modules.B, on.record.modules.C]).toEqual([true, true, false, true]);
     expect(on.record.restore).toEqual({});
-    expect(on.effect.message).toBe('Timesheet turned on with Manual time entry, Sites & locations. It is live for everyone now.');
+    expect(on.effect.message).toBe('Timesheet turned on with Manual time entry, Sites. It is live for everyone now.');
     expect(audits().find(a => a.id === on.auditId)?.act).toBe('Module turned on');
   });
-  test('Sites off takes the site capability off every employee type and says which; on does not put it back (as the prototype)', async () => {
+  test('Sites off takes the site capability off every work pattern and says which; on does not put it back (as the prototype)', async () => {
     const call = await as('admin'), before = typeCaps();
     expect(Object.values(before).filter(c => c.includes('site')).length).toBe(2);
     const off = ModuleSwitched.parse((await call('PATCH', MOD('C'), { on: false }, ver())).body);
-    expect(off.effect.siteRemovedFrom.sort()).toEqual(['Relief / Bank Worker', 'Support Worker'].sort());
+    expect(off.effect.siteRemovedFrom.sort()).toEqual(['Bank', 'Shift'].sort());
     expect(Object.values(typeCaps()).some(c => c.includes('site'))).toBe(false);
     expect(audits().filter(a => a.id === off.auditId)).toHaveLength(1);
     ModuleSwitched.parse((await call('PATCH', MOD('C'), { on: true }, ver())).body);
@@ -255,11 +255,11 @@ describe('settings', () => {
 describe('role names (D11)', () => {
   const URL = (id: string) => `/api/v1/user-types/${id}`;
   const typeVer = (id: string) => store.coll<{ version: number }>('userTypes')[id]?.version ?? -1;
-  test('a rename changes only the name, writes Roles renamed, and the session\'s role name follows', async () => {
+  test('a rename changes only the name, writes Access roles renamed, and the session\'s role name follows', async () => {
     const caps = store.coll<{ capabilities: string[] }>('userTypes').manager?.capabilities;
     const out = renameUserType.response.parse((await (await as('admin'))('PATCH', URL('manager'), { name: '  Service Manager ' }, typeVer('manager'))).body);
     expect(out.record).toMatchObject({ name: 'Service Manager', capabilities: caps });
-    expect(audits().find(a => a.id === out.auditId)).toMatchObject({ act: 'Roles renamed', before: { name: 'Manager' }, after: { name: 'Service Manager' } });
+    expect(audits().find(a => a.id === out.auditId)).toMatchObject({ act: 'Access roles renamed', before: { name: 'Manager' }, after: { name: 'Service Manager' } });
     const s = Session.parse((await (await as('manager'))('GET', '/api/v1/session')).body);
     expect(s.account.roleName).toBe('Service Manager');
   });

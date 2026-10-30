@@ -38,7 +38,7 @@ export const isApproverRole = (v: unknown): v is ApproverRole => typeof v === 's
 /* One layer of a chain, as the prototype's APPROVAL_CHAIN rows. */
 export interface ChainStep { module: string; role: string; scope: string; when: string; sla: string; fixed: boolean }
 
-export const CHAIN_SCOPES = ['Own department', 'Own site', 'Own location', 'All departments', 'Named employees', '—'] as const;
+export const CHAIN_SCOPES = ['Own department', 'Own site', 'Own site', 'All departments', 'Named employees', '—'] as const;
 /* the dash belongs to the posting step alone */
 export const STEP_SCOPES = CHAIN_SCOPES.filter(s => s !== '—');
 export const CHAIN_WHEN = ['Every timesheet', 'Every contact detail change', 'Only bank details', 'Only above a premium threshold',
@@ -269,7 +269,7 @@ export function approversFor(role: string, scope: string, employeeCode: string, 
     const h = active(code);
     if (!h || h.code === employeeCode) return false;
     if (scope === 'Own department') return h.department === employee.department;
-    if (scope === 'Own location' || scope === 'Own site') return h.location === employee.location;
+    if (scope === 'Own site' || scope === 'Own site') return h.location === employee.location;
     return true;
   });
 }
@@ -361,7 +361,7 @@ const layerApplies = (s: ChainStep, facts: ItemFacts, conditions: Conditions) =>
 /* The layer's own scope, against the approver's record. Named employees has no list in this build, so it reads as all. */
 function inLayerScope(scope: string, p: DeciderEmployee, item: ChainItem): boolean {
   if (scope === 'Own department') return item.department === undefined ? p.location === item.location : p.department === item.department;
-  if (scope === 'Own location' || scope === 'Own site') return p.location === item.location;
+  if (scope === 'Own site' || scope === 'Own site') return p.location === item.location;
   return true;
 }
 /* Holds the layer's role for this item: the role's capability, the item in

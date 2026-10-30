@@ -32,13 +32,13 @@ export const tid = {
   reg: {
     back: 'reg-back', step: 'reg-step', tracker: (n: number) => k('reg-tracker', n), field: (name: string) => k('reg-field', name),
     next: 'reg-next', prev: 'reg-prev', submit: 'reg-submit', blocked: 'reg-blocked',
-    billing: (v: string) => k('reg-billing', v), plan: (v: string) => k('reg-plan', v), total: 'reg-total', totalNote: 'reg-total-note',
+    billing: (v: string) => k('reg-billing', v), plan: (v: string) => k('reg-plan', v), addOn: (code: string) => k('reg-add-on', code), total: 'reg-total', totalNote: 'reg-total-note',
     summary: (key: string) => k('reg-summary', key), legal: (n: number) => k('reg-legal', n),
     error: 'reg-error', errorDismiss: 'reg-error-dismiss', done: 'reg-done', doneHome: 'reg-done-home',
   },
   price: {
-    tier: (v: string) => k('price-tier', v), panel: (v: string) => k('price-panel', v),
-    cta: (v: string) => k('price-cta', v), compare: 'price-compare', table: 'price-table', row: (n: number) => k('price-row', n),
+    /* Ruling Q23: the base price, each add-on, the call to action, the add-on email and How access works */
+    base: 'price-base', addOn: (code: string) => k('price-add-on', code), cta: 'price-cta', ask: 'price-ask', how: 'price-how',
   },
   /* environment selection and the first-login overlay (src/features/account-setup) */
   accountSetup: {
@@ -69,7 +69,10 @@ export const tid = {
     startFailed: 'start-failed', startReload: 'start-reload',
   },
   notBuilt: { root: 'not-built', subProject: 'not-built-sub-project' },
-  setup: { card: (view: string) => k('setup-card', view), cardDescription: (view: string) => k('setup-description', view) },
+  setup: { card: (view: string) => k('setup-card', view), cardDescription: (view: string) => k('setup-description', view),
+    /* taste review 2026-10-26: the index's Recent changes, the last five audit entries */
+    recent: 'setup-recent', recentRow: (id: string) => k('setup-recent-row', id), recentAll: 'setup-recent-all',
+    recentEmpty: 'setup-recent-empty', recentError: 'setup-recent-error' },
   access: {
     table: 'access-table',
     cell: (cap: string, userType: string) => k('access-cell', cap, userType),
@@ -89,11 +92,13 @@ export const tid = {
     table: 'audit-table', row: (id: string) => k('audit-row', id),
     filterEntity: 'audit-filter-entity', filterWho: 'audit-filter-who', filterText: 'audit-filter-text',
     error: 'audit-error', total: 'audit-total', empty: 'audit-empty', clear: 'audit-clear',
+    /* taste review 2026-10-26: the count beside the filters */
+    count: 'audit-count',
   },
   /* plan 1b: the employees lists, the employee record, the employee form and the lifecycle dialog */
   employees: {
     table: 'employees-table', row: (code: string) => k('employees-row', code), search: 'employees-search', stateFilter: 'employees-state-filter',
-    locationFilter: 'employees-location-filter', typeFilter: 'employees-type-filter', categoryFilter: 'employees-category-filter',
+    locationFilter: 'employees-location-filter', loginFilter: 'employees-login-filter', typeFilter: 'employees-type-filter', employmentTypeFilter: 'employees-employment-type-filter',
     count: 'employees-count', empty: 'employees-empty', error: 'employees-error', add: 'employees-add',
     open: (code: string) => k('employees-open', code), edit: (code: string) => k('employees-edit', code), state: (code: string) => k('employees-state', code),
   },
@@ -136,20 +141,16 @@ export const tid = {
     card: (kind: string) => k('dims-card', kind), cardDescription: (kind: string) => k('dims-description', kind), back: 'dims-back', add: 'dims-add',
     table: 'dims-table', row: (code: string) => k('dims-row', code), edit: (code: string) => k('dims-edit', code),
     cell: (code: string, key: string) => k('dims-cell', code, key), field: (key: string) => k('dims-form', key),
+    /* a project's tasks: the count that opens them, and the list */
+    tasks: (code: string) => k('dims-tasks', code), taskList: (code: string) => k('dims-task-list', code),
     save: 'dims-form-save', remove: 'dims-form-remove', removeWhy: 'dims-form-remove-why', cancel: 'dims-form-cancel', warn: 'dims-form-warn',
     groupTip: (kind: string) => k('dims-group', kind, 'tip'), empty: 'dims-empty', error: 'dims-error',
   },
-  contracts: {
-    table: 'contracts-table', row: (code: string) => k('contracts-row', code), edit: (code: string) => k('contracts-edit', code),
-    hours: 'contracts-hours', max: 'contracts-max', save: 'contracts-save', cancel: 'contracts-cancel', warn: 'contracts-warn',
-    state: (code: string) => k('contracts-state', code), error: 'contracts-error',
-    fullTime: 'contracts-full-time', fullTimeLink: 'contracts-full-time-link',
-  },
-  /* plan 1b: Employee types (atypes) */
+  /* plan 1b: Work patterns (atypes) */
   types: {
-    list: 'types-list', chip: (code: string) => k('types-chip', code), add: 'types-add', detail: 'types-detail',
+    list: 'types-list', /* the dropdown's option for a type (SelectBox names its options) */ chip: (code: string) => `types-list-option-${code}`, add: 'types-add', detail: 'types-detail',
     field: (key: string) => k('types-form', key), cap: (code: string) => k('types-cap', code), save: 'types-save',
-    remove: 'types-remove', removeWhy: 'types-remove-why', warn: 'types-warn', jobs: 'types-jobs', jobsLink: 'types-jobs-link', tip: 'types-tip',
+    remove: 'types-remove', removeWhy: 'types-remove-why', warn: 'types-warn', jobs: 'types-jobs', jobsLink: 'types-jobs-link',
     newField: (key: string) => k('types-new', key), newSave: 'types-new-save', newCancel: 'types-new-cancel', newWarn: 'types-new-warn',
     error: 'types-error', heldBy: 'types-held-by',
     /* 1c group 8: where a type's capture fields are set */
@@ -173,7 +174,7 @@ export const tid = {
     seeded: 'ts-seeded', submitWeek: 'ts-submit-week', weekTotal: 'ts-week-total', contracted: 'ts-contracted', weekResult: 'ts-week-result',
     multiweek: 'ts-multiweek', mwTip: 'ts-multiweek-tip', mwAll: 'ts-multiweek-all', mwRow: (ws: string) => k('ts-multiweek-row', ws),
     mwCheck: (ws: string) => k('ts-multiweek-check', ws), mwState: (ws: string) => k('ts-multiweek-state', ws), mwSubmit: 'ts-multiweek-submit',
-    mwResult: 'ts-multiweek-result',
+    mwResult: 'ts-multiweek-result', weekAnswer: 'ts-week-answer',
   },
   /* module 2: the day form, shared by My timesheet and proxy entry */
   dayForm: {
@@ -318,6 +319,12 @@ export const tid = {
     summary: 'home-summary', avatar: 'home-avatar', name: 'home-name', role: 'home-role',
     employeeId: 'home-employee-id', joined: 'home-joined', frequency: 'home-frequency',
     latest: 'home-latest', latestNet: 'home-latest-net', latestPeriod: 'home-latest-period', latestPaid: 'home-latest-paid', latestEmpty: 'home-latest-empty',
+    /* Ruling Q19: the lead payslip's three amounts and its own View and Download */
+    latestLine: 'home-latest-line', latestView: 'home-latest-view', latestDownload: 'home-latest-download',
+    /* D2: the Today strip */
+    today: 'home-today', todayState: 'home-today-state', todayWeek: 'home-today-week', todayLink: 'home-today-link',
+    /* the eye that shows or hides every amount on the page (ui/PayMask) */
+    mask: 'home-mask',
     tax: 'home-tax', taxCode: 'home-tax-code', niNumber: 'home-ni-number', niCategory: 'home-ni-category',
     contact: 'home-contact', email: 'home-email', phone: 'home-phone', address: 'home-address',
     payslips: 'home-payslips', payslip: (row: number) => k('home-payslip', row), placeholder: (row: number) => k('home-payslip-none', row),
@@ -342,6 +349,8 @@ export const tid = {
   docs: {
     error: 'docs-error', loading: 'docs-loading', card: 'docs-card', tip: 'docs-tip', source: 'docs-source', row: (id: string) => k('docs-row', id),
     empty: 'docs-empty', openNote: 'docs-open-note',
+    /* the eye that shows or hides the payslips' amounts (ui/PayMask) */
+    mask: 'docs-mask',
     headTip: 'docs-head-tip', banner: 'docs-banner', bannerDismiss: 'docs-banner-dismiss', bannerNext: 'docs-banner-next',
     payLoading: 'docs-pay-loading', payslips: 'docs-payslips', year: 'docs-year', payslipsEmpty: 'docs-payslips-empty',
     payslip: (row: number) => k('docs-payslip', row), payslipView: (row: number) => k('docs-payslip-view', row),
@@ -433,10 +442,10 @@ export const tid = {
     docOn: (id: string) => k('monb-doc-on', id), docCustom: (id: string) => k('monb-doc-custom', id),
     docRename: (id: string) => k('monb-doc-rename', id), docRemove: (id: string) => k('monb-doc-remove', id), docAdd: 'monb-doc-add', docLocked: 'monb-doc-locked',
     docName: 'monb-doc-name', docHint: 'monb-doc-hint', docWarn: 'monb-doc-warn', docCancel: 'monb-doc-cancel', docSave: 'monb-doc-save',
-    /* templates by job profile: the bar, the New template dialog and a template while it loads */
+    /* templates by position: the bar, the New template dialog and a template while it loads */
     templateBar: 'monb-template-bar', template: 'monb-template', templateNew: 'monb-template-new', templateLoading: 'monb-template-loading',
     newName: 'monb-new-name', newFrom: 'monb-new-from', newWarn: 'monb-new-warn', newCancel: 'monb-new-cancel', newCreate: 'monb-new-create',
-    /* the Applies to card: job profile chips, the add picker, Rename and Delete */
+    /* the Applies to card: position chips, the add picker, Rename and Delete */
     profile: (code: string) => k('monb-profile', code), profileRemove: (code: string) => k('monb-profile-remove', code),
     profilesEmpty: 'monb-profiles-empty', profileAdd: 'monb-profile-add', profileError: 'monb-profile-error', nameError: 'monb-name-error',
     templateRename: 'monb-template-rename', templateDelete: 'monb-template-delete',
@@ -457,6 +466,8 @@ export const tid = {
     stat: (key: string) => k('aoverview-stat', key), expiry: 'aoverview-expiry', expiryLink: 'aoverview-expiry-link',
     action: (key: string) => k('aoverview-action', key), users: 'aoverview-users', usersAll: 'aoverview-users-all',
     tile: (key: string) => k('aoverview-tile', key), resource: (key: string) => k('aoverview-resource', key),
+    /* Ruling Q20: the connection lead block and its term meter */
+    connection: 'aoverview-connection', meter: 'aoverview-meter',
   },
   aenv: {
     loading: 'aenv-loading', error: 'aenv-error', add: 'aenv-add', empty: 'aenv-empty', emptyAdd: 'aenv-empty-add', list: 'aenv-list',
@@ -478,17 +489,18 @@ export const tid = {
     notifications: 'asettings-notifications', autoRefresh: 'asettings-auto-refresh', interval: 'asettings-interval', debug: 'asettings-debug',
     reset: 'asettings-reset', save: 'asettings-save', note: 'asettings-note',
   },
-  /* Task 20: People & access (src/features/employees): the portal logins
+  /* Task 20: Setup · Employees (src/features/employees): the portal logins
      (inventory USERS) beside the Workforce records, joined by employee number */
   people: {
-    records: 'people-records', recordsNotConnected: 'people-records-not-connected', notConnected: 'people-not-connected', portalCol: (code: string) => k('people-portal', code),
+    records: 'people-records', recordsNotConnected: 'people-records-not-connected', portalCol: (code: string) => k('people-portal', code),
     invite: (code: string) => k('people-invite', code), recordPortal: 'people-record-portal', recordInvite: 'people-record-invite',
+    loginLegend: 'people-login-legend',
   },
   ausers: {
     panel: 'ausers-panel', loading: 'ausers-loading', error: 'ausers-error', add: 'ausers-add', search: 'ausers-search',
     tab: (key: string) => k('ausers-tab', key), list: 'ausers-list', empty: 'ausers-empty', clear: 'ausers-clear',
     row: (id: string) => k('ausers-row', id), status: (id: string) => k('ausers-status', id), admin: (id: string) => k('ausers-admin', id),
-    lastLogin: (id: string) => k('ausers-last-login', id), record: (id: string) => k('ausers-record', id), recordOpen: (id: string) => k('ausers-record-open', id), noRecord: (id: string) => k('ausers-no-record', id),
+    lastLogin: (id: string) => k('ausers-last-login', id), noRecord: (id: string) => k('ausers-no-record', id),
     menu: (id: string) => k('ausers-menu', id), locked: (id: string) => k('ausers-locked', id),
     activate: (id: string) => k('ausers-activate', id), deactivate: (id: string) => k('ausers-deactivate', id), edit: (id: string) => k('ausers-edit', id),
     form: 'ausers-form', formError: 'ausers-form-error', name: 'ausers-name', email: 'ausers-email', role: 'ausers-role', isAdmin: 'ausers-is-admin',

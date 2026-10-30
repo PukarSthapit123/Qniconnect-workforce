@@ -12,7 +12,7 @@ import { tid } from '../src/testids';
    Calendar, Modules & features (the list and a module's drill-in),
    Notifications and Approvals for the admin; and Pay codes for the admin. */
 type Persona = 'employee' | 'manager' | 'admin';
-const BUILT = ['/setup/asetup', '/setup/aperm', '/setup/iaudit', '/setup/aemployees', '/setup/aloc', '/setup/aloc?d=locations', '/setup/acon', '/setup/atypes',
+const BUILT = ['/setup/asetup', '/setup/aperm', '/setup/iaudit', '/setup/aemployees', '/setup/aloc', '/setup/aloc?d=locations', '/setup/atypes',
   '/setup/mts',
   '/setup/aorg', '/setup/acal', '/setup/amods', '/setup/amods?m=TS', '/setup/anotif', '/setup/aappr', '/setup/mpay'];
 const BUILT_AS: [Persona, string][] = [['employee', '/work/ts'], ['employee', '/work/home'], ['employee', '/work/cal'],
@@ -20,7 +20,7 @@ const BUILT_AS: [Persona, string][] = [['employee', '/work/ts'], ['employee', '/
   ['manager', '/team/thome']];
 const READY: Record<string, string> = { '/setup/asetup': tid.page('asetup'), '/setup/aperm': tid.access.table, '/setup/iaudit': tid.page('iaudit'),
   '/setup/aemployees': tid.employees.table, '/setup/aloc': tid.dims.card('locations'), '/setup/aloc?d=locations': tid.dims.table,
-  '/setup/acon': tid.contracts.table, '/setup/atypes': tid.types.detail, '/setup/mts': tid.mts.card('rules'),
+  '/setup/atypes': tid.types.detail, '/setup/mts': tid.mts.card('rules'),
   '/work/ts': tid.ts.view('day'), '/team/tteam': tid.tteam.table,
   '/setup/aorg': tid.aorg.spine, '/setup/acal': tid.acal.card('saved'), '/setup/amods': tid.amods.card('TS'), '/setup/amods?m=TS': tid.amods.features,
   '/setup/anotif': tid.anotif.table, '/setup/aappr': tid.aappr.chainTable, '/work/home': tid.home.payslip(0), '/work/cal': tid.cal.grid, '/work/profile': tid.profile.state,
@@ -30,7 +30,7 @@ const READY: Record<string, string> = { '/setup/asetup': tid.page('asetup'), '/s
 const ALSO_READY: Record<string, string> = { '/work/profile': tid.profile.bcValue('pensionContribution') };
 /* The pages that register a guide (src/ui/guides.ts), by path, with the view it is registered under */
 const GUIDED: Record<string, string> = { '/work/ts': 'ts', '/team/tteam': 'tteam', '/setup/mts': 'mts',
-  '/setup/aemployees': 'aemployees', '/setup/aloc': 'aloc', '/setup/aloc?d=locations': 'aloc', '/setup/acon': 'acon', '/setup/aperm': 'aperm', '/work/docs': 'docs', '/work/profile': 'profile' };
+  '/setup/aemployees': 'aemployees', '/setup/aloc': 'aloc', '/setup/aloc?d=locations': 'aloc', '/setup/aperm': 'aperm', '/work/docs': 'docs', '/work/profile': 'profile' };
 
 /* Each page is reached as an employee moves between pages, through the router,
    not by reloading the app. A reload boots the app, the fake server and its

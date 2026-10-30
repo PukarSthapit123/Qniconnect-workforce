@@ -19,7 +19,7 @@ export const AMARA_DAY = 'tsd_CP-1042_2026-08-12';
 export async function grantAdmin(page: Page, api: Api, cap: string) {
   const types = (await api.get('/api/v1/user-types')).body as { id: string; version: number }[];
   const admin = types.find(t => t.id === 'admin');
-  if (!admin) throw new Error('no admin user type');
+  if (!admin) throw new Error('no admin access role');
   expect((await sendVersioned(page, 'PUT', `/api/v1/user-types/admin/capabilities/${cap}`, admin.version, { granted: true })).status).toBe(200);
 }
 

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { tid } from '@/testids';
 import type { Profile } from '@/contract/profile';
-import { Banner, Button, Field, FormWarn, Modal, Pill, TextInput, toastInfo } from '@/ui';
+import { Button, Field, FormWarn, Modal, Note, Pill, TextInput, toastInfo } from '@/ui';
 import { useProposeChanges } from '@/api/profile';
 
 /* Ported from the prototype's profileEditBox (qnipay-workforce-v15.html:
@@ -37,9 +37,9 @@ export function ProposeChange({ profile, onClose }: { profile: Profile; onClose(
       })}
       <Field label="Note for your approver">
         <TextInput testId={tid.profile.note} value={note} placeholder="Optional. Why it is changing" onChange={e => setNote(e.target.value)} /></Field>
-      <Banner tone="info" title="Who sees this">
+      <Note title="Who sees this">
         Your line manager approves every change. Bank details are also verified by payroll before they take effect. Workforce never uses them; they are held for payroll.
-      </Banner>
+      </Note>
       {send.refusal && <FormWarn testId={tid.profile.warn}>{send.refusal.message}</FormWarn>}
     </Modal>);
 }

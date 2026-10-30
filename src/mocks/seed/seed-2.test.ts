@@ -63,14 +63,14 @@ for (const [name, raw] of Object.entries({ social, qnipay })) {
       expect([weekLabel('2026-08-03'), total('2026-08-03')]).toEqual(['Week 32 · 03–09 Aug 2026', 2250]);
       expect([weekLabel('2026-07-27'), total('2026-07-27')]).toEqual(['Week 31 · 27 Jul – 02 Aug 2026', 1800]);
     });
-    test('timesheet config: capture rules, a capture entry per employee type, and the weekly layout', () => {
+    test('timesheet config: capture rules, a capture entry per work pattern, and the weekly layout', () => {
       const cfg = configOf(seed);
       expect(Object.keys(cfg.rules).sort()).toEqual(['blockFuture', 'enforceLock', 'maxDaily', 'minNet', 'nightFrom', 'nightTo',
         'otDaily', 'warnDaily']);
       expect(cfg.cutoff).toMatch(/^(Sunday|Monday|Tuesday|Wednesday|Thursday) \d{2}:\d{2}$/);
       expect(WEEK_GRIDS as readonly string[]).toContain(cfg.weekGrid);
       expect(WEEK_LAYOUTS as readonly string[]).toContain(cfg.weekLayout);
-      expect(Object.keys(cfg.types).sort()).toEqual(vals(seed, 'employeeTypes').map(t => t.code).sort());
+      expect(Object.keys(cfg.types).sort()).toEqual(vals(seed, 'workPatterns').map(t => t.code).sort());
       for (const [k, t] of Object.entries(cfg.types)) {
         for (const r of t.rules) expect(r.when === '' || Object.hasOwn(RATE_TRIGGERS, r.when), k).toBe(true);
         expect(t).not.toHaveProperty('overtime');

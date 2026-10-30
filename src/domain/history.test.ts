@@ -20,6 +20,6 @@ test('values read the way the audit shows them', () => {
 });
 test('fields have plain labels, and an unknown one reads as itself', () => {
   expect(fieldLabel('contractedHours')).toBe('Contracted hours');
-  expect(fieldLabel('state')).toBe('State');
+  expect(fieldLabel('state')).toBe('Status');
   expect(fieldLabel('somethingNew')).toBe('somethingNew');
 });

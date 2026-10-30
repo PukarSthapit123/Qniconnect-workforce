@@ -80,7 +80,7 @@ export interface PayUsageWorld {
   dayWorkTypes: readonly string[];
 }
 
-/* P's Claimed by: the employee types whose allowances or automatic rules name
+/* P's Claimed by: the work patterns whose allowances or automatic rules name
    the code. Standard time and the day rate are claimed by every type paid by
    the hour or by the day. */
 export function claimedBy(code: string, w: PayUsageWorld): UsageType[] {
@@ -94,7 +94,7 @@ export function claimedBy(code: string, w: PayUsageWorld): UsageType[] {
 export function payCodeUsage(code: string, w: PayUsageWorld): UsedBy[] {
   const out: UsedBy[] = [];
   const types = claimedBy(code, w);
-  if (types.length) out.push({ kind: 'employee-types', count: types.length, examples: types.slice(0, 3).map(t => t.name) });
+  if (types.length) out.push({ kind: 'work-patterns', count: types.length, examples: types.slice(0, 3).map(t => t.name) });
   const fields = w.fields.filter(f => f.pay === code);
   if (fields.length) out.push({ kind: 'fields', count: fields.length, examples: fields.slice(0, 3).map(f => f.label) });
   const days = w.dayWorkTypes.filter(x => x === code).length;
@@ -103,7 +103,7 @@ export function payCodeUsage(code: string, w: PayUsageWorld): UsedBy[] {
 }
 
 const NOUN: Record<string, [string, string]> = {
-  'employee-types': ['employee type', 'employee types'], fields: ['capture field', 'capture fields'], 'timesheet-days': ['timesheet day', 'timesheet days'],
+  'work-patterns': ['work pattern', 'work patterns'], fields: ['capture field', 'capture fields'], 'timesheet-days': ['timesheet day', 'timesheet days'],
 };
 export const usagePhrase = (u: readonly UsedBy[]) => u.map(x => {
   const [one, many] = NOUN[x.kind] ?? [x.kind, x.kind];

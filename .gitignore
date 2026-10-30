@@ -12,6 +12,7 @@ e2e/.auth/
 
 # Local tooling, kept out of the repository
 .claude/
+.taste-skill/
 graphify-out/
 docs/plans/
 docs/specs/

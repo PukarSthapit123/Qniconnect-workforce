@@ -8,7 +8,7 @@ import { everyone, employeeByCode, pick, rows } from './support/read';
 test.beforeEach(async ({ api }) => { await api.reset(); await api.setClock(FROZEN); });
 interface Change { id: string; employeeCode: string; field: string; status: string; stage: string }
 
-test('a manager sees only their own location, adds someone there, and is not offered the user type', async ({ page, api, signInAs }) => {
+test('a manager sees only their own site, adds someone there, and is not offered the access role', async ({ page, api, signInAs }) => {
   await signInAs('manager');
   await page.goto('/team/temployees');
   await expect(page.getByTestId(tid.employees.row('CP-1042'))).toBeVisible();
@@ -19,7 +19,9 @@ test('a manager sees only their own location, adds someone there, and is not off
   await expect(page.getByTestId(tid.employeeForm.field('code'))).not.toHaveValue('');
   await expect(page.getByTestId(tid.employeeForm.field('userType'))).toHaveCount(0);
   const id = await page.getByTestId(tid.employeeForm.field('code')).inputValue();
-  await page.getByTestId(tid.employeeForm.field('name')).fill('New Starter');
+  await page.getByTestId(tid.employeeForm.field('firstName')).fill('New');
+
+  await page.getByTestId(tid.employeeForm.field('lastName')).fill('Starter');
   await page.getByTestId(tid.employeeForm.field('email')).fill('new.starter@brightpath.org');
   await pick(page, tid.employeeForm.field('state'), 'candidate');
   await page.getByTestId(tid.employeeForm.save).click();

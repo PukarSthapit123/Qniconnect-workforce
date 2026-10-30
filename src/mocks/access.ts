@@ -46,20 +46,20 @@ export const accessHandlers = [
   serve(setTemplateCapability, ({ session, params, body: { granted }, checkVersion }) => {
     const types = store.coll<StoredUserType>('userTypes');
     const t = Object.hasOwn(types, params.id) ? types[params.id] : undefined;
-    if (!t) return refuse(404, { code: 'not-found', message: 'That user type no longer exists.', next: 'Reload the page.' });
+    if (!t) return refuse(404, { code: 'not-found', message: 'That access role no longer exists.', next: 'Reload the page.' });
     const c = capBy(params.capability);
     checkVersion(t);
     const had = t.capabilities.includes(c.id);
     /* M1: nobody removes their own way back to this page, whoever else
        still holds it. Another administrator has to make that change. */
     if (!granted && c.id === PERM_CAP && t.id === session.account.userType)
-      return refuse(409, { code: 'locked', message: `You cannot remove "${c.label}" from ${t.name}, your own user type. It is your way back to this page.`, next: SELF_NEXT });
+      return refuse(409, { code: 'locked', message: `You cannot remove "${c.label}" from ${t.name}, your own access role. It is your way back to this page.`, next: SELF_NEXT });
     if (!granted && c.lockedFor.includes(t.id))
-      return refuse(409, { code: 'locked', message: `"${c.label}" cannot be removed from ${t.name}. It is the only way back to this page.`, next: 'Give another user type this capability first, if you need to change who holds it.' });
+      return refuse(409, { code: 'locked', message: `"${c.label}" cannot be removed from ${t.name}. It is the only way back to this page.`, next: 'Give another access role this capability first, if you need to change who holds it.' });
     if (!granted && c.id === PERM_CAP) {
       const simulatedTypes = { ...types, [t.id]: { ...t, capabilities: t.capabilities.filter(x => x !== c.id) } };
       if (!holderExists(PERM_CAP, simulatedTypes, store.coll<Account>('accounts')))
-        return refuse(409, { code: 'locked', message: `Removing "${c.label}" from ${t.name} would leave nobody able to configure permissions.`, next: 'Grant it to another user type or account first, if you need to change who holds it.' });
+        return refuse(409, { code: 'locked', message: `Removing "${c.label}" from ${t.name} would leave nobody able to configure permissions.`, next: 'Grant it to another access role or account first, if you need to change who holds it.' });
     }
     if (had === granted) return { record: typeView(t), auditId: null };
     const next = bump(t, { capabilities: granted ? [...t.capabilities, c.id].sort() : t.capabilities.filter(x => x !== c.id) });
@@ -72,7 +72,7 @@ export const accessHandlers = [
   serve(renameUserType, ({ session, params, body: { name }, checkVersion }) => {
     const types = store.coll<StoredUserType>('userTypes');
     const t = Object.hasOwn(types, params.id) ? types[params.id] : undefined;
-    if (!t) return refuse(404, { code: 'not-found', message: 'That user type no longer exists.', next: 'Reload the page.' });
+    if (!t) return refuse(404, { code: 'not-found', message: 'That access role no longer exists.', next: 'Reload the page.' });
     checkVersion(t);
     const problem = roleNameProblem(name, Object.values(types).filter(x => x.id !== t.id).map(x => x.name));
     if (problem) return refuse(problem.taken ? 409 : 422, { code: problem.taken ? 'NAME_TAKEN' : 'invalid', field: problem.field, message: problem.message,
@@ -81,7 +81,7 @@ export const accessHandlers = [
     if (next === t.name) return { record: typeView(t), auditId: null };
     const saved = bump(t, { name: next });
     types[t.id] = saved;
-    const auditId = writeAudit({ who: actor(session), act: 'Roles renamed', entity: 'userType', entityId: t.id, before: { name: t.name }, after: { name: next } });
+    const auditId = writeAudit({ who: actor(session), act: 'Access roles renamed', entity: 'userType', entityId: t.id, before: { name: t.name }, after: { name: next } });
     return { record: typeView(saved), auditId };
   }),
   serve(listUsers, () => Object.values(store.coll<Account>('accounts')).map(userView)),

@@ -28,7 +28,7 @@ export const useNextCode = (enabled: boolean) =>
 /* An employee's writes change the in-use counts of the dimensions and types, and
    who is onboarding (a starter has a case, D1). The onboarding key is written
    out rather than imported, since src/api/onboarding.ts imports from here. */
-const AFTER_EMPLOYEE = [employeesKeys.all, ['dims'], ['employee-types'], ['onboarding']] as const;
+const AFTER_EMPLOYEE = [employeesKeys.all, ['dims'], ['work-patterns'], ['onboarding']] as const;
 
 export const useCreateEmployee = () => useRecordMutation({
   mutationFn: (body: CreateEmployee) => api(createEmployee, { body }),

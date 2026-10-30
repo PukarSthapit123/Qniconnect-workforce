@@ -27,7 +27,7 @@ test('social: August shows the bank holiday and the recorded days, with the key 
   const m = month(r);
   expect(m).toMatchObject({ month: '2026-08', label: 'August 2026', thisMonth: '2026-08', today: '2026-08-13', bounds: { min: '2026-07', max: '2027-08' }, leadingBlanks: 5 });
   expect(m.greeting).toBe('Good afternoon, Amara');
-  expect(m.who).toBe('Support Worker · Willow House');
+  expect(m.who).toBe('Support Worker · Shift · Willow House');
   expect(m.days).toHaveLength(31);
   expect(dayOf(m, '2026-08-03')).toMatchObject({ ts: { state: 'draft' }, glyph: 'draft' });
   expect(dayOf(m, '2026-08-10')).toMatchObject({ ts: null, glyph: null });

@@ -145,7 +145,7 @@ test('every /bc endpoint in the contract is answered by the fake', () => {
   const served = new Set(bcHandlers.map(h => h.info.header));
   for (const ep of BC_ENDPOINTS) expect(served.has(`${ep.method} ${BASE}${ep.path}`), `${ep.method} ${ep.path}`).toBe(true);
   /* named, so an endpoint never imported here cannot slip past the loop: the dashboard's (Task 16), Documents' (Task 17), the bell's (Task 18)
-     the admin pages' (Task 19), People & access's (Task 20) and registration's (Task 21) */
+     the admin pages' (Task 19), Setup · Employees' (Task 20) and registration's (Task 21) */
   for (const ep of [employeeCurrent, payslipsList, payslipPdf, fiscalYearsList, p60Pdf, p11dPdf, p45Pdf, notificationsList, notificationSeen,
     portalUsersList, adminEnvironmentsList, environmentCreate, authStatus, authUrl, authRefresh, portalRegistration,
     portalUserCreate, portalUserUpdate, portalUserUpdateStatus, portalRegistrationSubmit]) {
@@ -197,7 +197,7 @@ test('the admin fake: users, environments (unquoted filter), a new environment, 
   expect(await bcApi(portalRegistration)).toEqual({ id: REGISTRATION_ID, companyName: 'BrightPath Care Ltd', registrationDate: '2025-03-14' });
 });
 
-/* People & access's fake (Task 20): a new user starts pending, with the
+/* Setup · Employees' fake (Task 20): a new user starts pending, with the
    employee number Business Central's own record gives their email (never
    the Workforce side's, N19); an edit is kept; a duplicate email is refused. */
 test('the portal users fake: add (pending, employee number from the BC record), edit, and a duplicate refused', async () => {

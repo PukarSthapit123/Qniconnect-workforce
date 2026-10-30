@@ -33,7 +33,7 @@ const fetchThroughBackend = {
    an environment (BCS.R5), then X-Registration-ID when one is stored (BCS.R6). */
 export const portalUsersList = defineBcEndpoint({
   method: 'GET', path: '/bc/portalUsers', inventory: 'ADM.C1, USERS.C1',
-  summary: "The organisation's portal users (People & access, and the admin overview's counts)",
+  summary: "The organisation's portal users (Setup · Employees, and the admin overview's counts)",
   ...fetchThroughBackend,
   headers: ['X-BC-Environment', 'X-Registration-ID'], whenSet: ['X-BC-Environment', 'X-Registration-ID'],
   response: PortalUsersResponse,
@@ -47,7 +47,7 @@ export type PortalUserRequest = z.infer<typeof PortalUserRequest>;
 /* USERS.C2: the answer is added to the list as `{status: 'Active', ...result}` (USERS.R10). */
 export const portalUserCreate = defineBcEndpoint({
   method: 'POST', path: '/bc/portalUsers', inventory: 'USERS.C2',
-  summary: 'Add a portal user (People & access): they sign in to QniConnect with this email',
+  summary: 'Add a portal user (Setup · Employees): they sign in to QniConnect with this email',
   ...fetchThroughBackend,
   headers: ['X-BC-Environment', 'X-Registration-ID'], whenSet: ['X-BC-Environment', 'X-Registration-ID'],
   request: PortalUserRequest,
@@ -60,7 +60,7 @@ export const portalUserCreate = defineBcEndpoint({
    merged over the row, `result || {}` (USERS.R12): an empty answer is fine. */
 export const portalUserUpdate = defineBcEndpoint({
   method: 'PATCH', path: '/bc/portalUsers/:userId', inventory: 'USERS.C3',
-  summary: "Change a portal user's name, email, role or administrator access (People & access)",
+  summary: "Change a portal user's name, email, role or administrator access (Setup · Employees)",
   ...fetchThroughBackend,
   headers: ['X-Registration-ID', 'X-BC-Environment'], whenSet: ['X-BC-Environment'],
   params: z.object({ userId: z.string() }),

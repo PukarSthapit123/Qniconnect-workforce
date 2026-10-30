@@ -17,7 +17,7 @@ async function fillRegistration(page: Page, values: Record<string, string> = NOR
   await page.getByTestId(tid.reg.next).click();
   for (const k of ['tenantId', 'domainName', 'bcEnvironment', 'bcCompanyName', 'numberOfEmployees']) await fill(k);
   await page.getByTestId(tid.reg.next).click();
-  await expect(page.getByTestId(tid.reg.total)).toHaveText('£1920.00');
+  await expect(page.getByTestId(tid.reg.total)).toHaveText('£192.00'); // 40 employees at £0.40 a month, billed annually (Ruling Q23)
   await page.getByTestId(tid.reg.next).click();
   await fill('contactName'); await fill('contactEmail');
   await page.getByTestId(tid.reg.field('agreeTerms')).click();
@@ -41,7 +41,7 @@ test('registration: from the landing page through four steps to the confirmation
   await page.getByTestId(tid.land.register).click();
   await expect(page).toHaveURL(/\/register$/);
   await fillRegistration(page);
-  await expect(page.getByTestId(tid.reg.summary('plan'))).toHaveText('Essential · £4.00/user/mo');
+  await expect(page.getByTestId(tid.reg.summary('plan'))).toHaveText('QniConnect · £0.40/user/mo');
   const posted = page.waitForRequest(r => r.method() === 'POST' && r.url().endsWith('/bc/portalRegistrations'));
   await page.getByTestId(tid.reg.submit).click();
   const body = (await posted).postDataJSON() as Record<string, unknown>;
@@ -61,15 +61,13 @@ test('registration: a tenant already registered is refused in the backend\'s wor
   await expect(page.getByTestId(tid.reg.step)).toHaveText('Step 4 of 4');
 });
 
-test('pricing: one tier at a time, the comparison, and the way to register and to sign in', async ({ page, api }) => {
+test('pricing: the base price, the add-ons to be priced, and the way to register and to sign in (Ruling Q23)', async ({ page, api }) => {
   void api;
   await page.goto('/pricing');
-  await expect(page.getByTestId(tid.price.panel('basic'))).toContainText('£0.5');
-  await page.getByTestId(tid.price.tier('essential')).click();
-  await expect(page.getByTestId(tid.price.panel('essential'))).toContainText('Most popular');
-  await page.getByTestId(tid.price.compare).click();
-  await expect(page.getByTestId(tid.price.table).locator('tbody tr')).toHaveCount(12);
-  await page.getByTestId(tid.price.cta('essential')).click();
+  await expect(page.getByRole('heading', { level: 1 })).toHaveText('£0.50 per employee a month');
+  await expect(page.getByTestId(tid.price.addOn('TS'))).toContainText('Price to be confirmed');
+  await expect(page.getByTestId(tid.price.addOn('ON'))).toContainText('Price to be confirmed');
+  await page.getByTestId(tid.price.cta).click();
   await expect(page.getByTestId(tid.page('register'))).toBeVisible();
   await page.goto('/pricing');
   await page.getByTestId(tid.pub.signIn).click();
@@ -101,7 +99,7 @@ const PAGES: [string, string, (p: Page) => Promise<void>][] = [
   ['/', 'landing', async () => undefined],
   ['/login', 'login', async () => undefined],
   ['/register', 'register', async p => { await fillRegistration(p); }],
-  ['/pricing', 'pricing', async p => { await p.getByTestId(tid.price.compare).click(); await p.getByTestId(tid.price.table).waitFor(); }],
+  ['/pricing', 'pricing', async p => { await p.getByTestId(tid.price.base).waitFor(); }],
 ];
 
 for (const theme of ['light', 'dark'] as const) {

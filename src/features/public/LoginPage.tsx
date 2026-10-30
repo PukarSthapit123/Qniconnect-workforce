@@ -12,7 +12,7 @@ import { LOGIN_CONTACT, PublicLayout } from './PublicLayout';
 export function LoginPage() {
   return (
     <PublicLayout testId={tid.page('login')}>
-      <div className="flex flex-1 items-start justify-center px-xl py-2xl max-lg:px-md max-md:py-xl md:items-center">
+      <div className="flex flex-1 items-start justify-center px-xl py-2xl max-lg:px-lg max-md:py-xl md:items-center">
         <div className="w-[min(420px,100%)]">
           <h1 className="text-center">Sign in to QniConnect</h1>
           <p className="mt-xs mb-xl text-center text-text-secondary">Access your payslips, profile, and employee documents</p>

@@ -44,7 +44,8 @@ describe('Team timesheets, the day queue', () => {
     await openQueue();
     expect(screen.getByTestId(tid.tteam.pending)).toHaveTextContent('3 timesheets awaiting your decision');
     expect(screen.getByTestId(tid.tteam.pending)).toHaveTextContent('The oldest was submitted on 11/08/2026. The approval SLA for this layer is 24 hours.');
-    expect(screen.getByTestId(tid.tteam.approveAll)).toHaveTextContent('Review and approve 3 pending');
+    /* every one of the 3 is approvable here, so the button does not repeat the count the lead already says */
+    expect(screen.getByTestId(tid.tteam.approveAll)).toHaveTextContent(/^Review and approve all$/);
     expect(screen.getByTestId(tid.tteam.filter('pend'))).toHaveTextContent('Needs approval · 3');
     const bijay = screen.getByTestId(tid.tteam.row(BIJAY));
     expect(bijay).toHaveTextContent('Manchester');
@@ -121,7 +122,7 @@ describe('Team timesheets, the day queue', () => {
     await userEvent.click(screen.getByTestId(tid.tteam.approve(JAMIR)));
     const warn = await screen.findByTestId(tid.tteam.refusal);
     expect(warn).toHaveTextContent('You cannot approve or return your own timesheet.');
-    expect(warn).toHaveTextContent('Ask another approver at your location.');
+    expect(warn).toHaveTextContent('Ask another approver at your site.');
     expect(dayOf(JAMIR).state).toBe('pend');
     expect(audits()).toHaveLength(before);
   });
@@ -221,7 +222,7 @@ describe('Team timesheets, the week matrix', () => {
   });
 
   /* review Important 2: more than one queue page of days in the week; the earliest days must still show and be approved */
-  test('a full week at the location shows every day, and Approve selected approves the whole of an employee’s week', async () => {
+  test('a full week at the site shows every day, and Approve selected approves the whole of an employee’s week', async () => {
     const seed = dayOf(BIGYAN);
     const team = Object.values(store.coll<Employee>('employees')).filter(p => p.location === 'MCR' && p.code !== 'EMP001' && p.state === 'active');
     const week = ['2026-08-10', '2026-08-11', '2026-08-12', '2026-08-13', '2026-08-14'];

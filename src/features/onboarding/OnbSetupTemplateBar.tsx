@@ -4,16 +4,16 @@ import { Button, Combobox, ConfirmModal, Field, FieldGrid, FormWarn, Modal, Sele
 import { useCreateOnboardingTemplate, type OnboardingSetup } from '@/api/onboarding';
 import { DEFAULT_KEY, DEFAULT_TEMPLATE, ONB_TEMPLATE_NAME_MAX, onbTemplateNameProblem } from '@/domain/onboarding-templates';
 
-const profiles = (n: number) => `${n} job profile${n === 1 ? '' : 's'}`;
+const profiles = (n: number) => `${n} position${n === 1 ? '' : 's'}`;
 
-/* The picker's options: Default first, with the job profiles no template
+/* The picker's options: Default first, with the positions no template
    holds, then each template by name. */
 function templateOptions(setup: OnboardingSetup) {
-  const held = new Set(setup.templates.flatMap(t => t.jobProfiles.map(p => p.code)));
-  const free = setup.jobProfiles.filter(p => !held.has(p.code)).length;
+  const held = new Set(setup.templates.flatMap(t => t.positions.map(p => p.code)));
+  const free = setup.positions.filter(p => !held.has(p.code)).length;
   return [
     { value: DEFAULT_KEY, label: `${DEFAULT_TEMPLATE} (${profiles(free)})` },
-    ...setup.templates.map(t => ({ value: t.id, label: `${t.name} (${profiles(t.jobProfiles.length)})` })),
+    ...setup.templates.map(t => ({ value: t.id, label: `${t.name} (${profiles(t.positions.length)})` })),
   ];
 }
 
@@ -75,7 +75,7 @@ function NewTemplateDialog({ setup, onClose, onCreated }: { setup: OnboardingSet
         <Wide><Field label="Start from">
           <SelectBox testId={tid.monb.newFrom} options={templateStarts(setup)} value={from} onValueChange={setFrom} /></Field></Wide>
       </FieldGrid>
-      <p className="mt-md text-xs text-text-muted">It starts as a copy and applies to nobody until you add a job profile and save.</p>
+      <p className="mt-md text-xs text-text-muted">It starts as a copy and applies to nobody until you add a position and save.</p>
       {warn && <FormWarn testId={tid.monb.newWarn}>{warn}</FormWarn>}
     </Modal>);
 }

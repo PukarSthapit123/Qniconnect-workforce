@@ -25,8 +25,7 @@ import { AdminEmployeesPage } from '@/features/employees/AdminEmployeesPage';
 import { TeamEmployeesPage } from '@/features/employees/TeamEmployeesPage';
 import { ProfilePage } from '@/features/profile/ProfilePage';
 import { DimensionsPage } from '@/features/dimensions/DimensionsPage';
-import { ContractsPage } from '@/features/dimensions/ContractsPage';
-import { EmployeeTypesPage } from '@/features/employee-types/EmployeeTypesPage';
+import { WorkPatternsPage } from '@/features/work-patterns/WorkPatternsPage';
 import { TimesheetPage } from '@/features/timesheet/TimesheetPage';
 import { TeamTimesheetsPage } from '@/features/timesheet/TeamTimesheetsPage';
 import { TimesheetSetupPage } from '@/features/timesheet/TimesheetSetupPage';
@@ -51,7 +50,7 @@ import { SettingsPage } from '@/features/connection/SettingsPage';
 
 const BUILT: Record<string, ComponentType> = { asetup: SetupIndex, aperm: PermissionsPage, iaudit: AuditPage,
   aemployees: AdminEmployeesPage, temployees: TeamEmployeesPage, profile: ProfilePage,
-  aloc: DimensionsPage, acon: ContractsPage, atypes: EmployeeTypesPage, ts: TimesheetPage, tteam: TeamTimesheetsPage,
+  aloc: DimensionsPage, atypes: WorkPatternsPage, ts: TimesheetPage, tteam: TeamTimesheetsPage,
   mts: TimesheetSetupPage,
   amods: ModulesPage, acal: BankHolidaysPage, aorg: OrganisationPage, anotif: NotificationsPage, aappr: ApprovalsPage,
   home: HomePage, cal: MyCalendarPage, thome: TeamHomePage, docs: DocumentsPage, onb: OnboardingPage, tonb: TeamOnboardingPage,
@@ -63,7 +62,7 @@ const THEME_KEY = 'qnipay.theme';
    for an empty string, so this needs no unsafe indexing. */
 const capitalise = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
-/* The role pill's text: the user type's display name (D11), so a renamed
+/* The role pill's text: the access role's display name (D11), so a renamed
    role shows its new name; while viewing as someone, the viewed employee's. */
 export function roleLabelOf(session: Pick<Session, 'account' | 'viewingAs'>): string {
   const on = session.viewingAs ?? session.account;
@@ -149,16 +148,16 @@ export function ShellView({ nav, roleLabel, viewingAs, account, canViewAs = fals
   return (
     <div className="flex min-h-dvh flex-col">
       <TopBar>
-        {/* On a phone the areas scroll sideways with no scrollbar; the far
-            edge fades out, so an area past it reads as more to come. */}
-        <nav aria-label="Areas" data-surface="inverse" className="flex min-w-0 gap-[2px] md:flex-wrap max-md:flex-1 max-md:flex-nowrap max-md:overflow-x-auto max-md:[scrollbar-width:none] max-md:[mask-image:linear-gradient(90deg,black_88%,transparent)]">
-          {nav.map(g => <AreaLink key={g.key} group={g} current={g === current} />)}
-        </nav>
+        <AreaSwitcher>{nav.map(g => <AreaLink key={g.key} group={g} current={g === current} />)}</AreaSwitcher>
         <div className="ml-auto flex shrink-0 items-center gap-md max-md:gap-[2px]">
-          {/* .rolepill (v15:303-306): the role on screen, in the accent, in
-              capitals. Dashed while looking at the app as someone else. */}
-          <span data-testid={tid.shell.rolePill} data-caps
-            className={cn('hidden shrink-0 items-center rounded-pill border border-accent-line px-[11px] py-xs text-xs font-bold tracking-(--qp-tracking-caps) text-brand-accent uppercase md:inline-flex', viewingAs && 'border-dashed opacity-85')}
+          {/* .rolepill (v15:303-306), quietened (taste review 2026-10-26, D1;
+              a deliberate deviation): the role in sentence case and the muted
+              shell ink, with no outline. Looking at the app as someone else
+              keeps the prototype's dashed accent edge at 85%, so that state still
+              stands out. The transparent border holds the width steady. */}
+          <span data-testid={tid.shell.rolePill}
+            className={cn('hidden shrink-0 items-center rounded-pill border px-[11px] py-xs text-xs font-semibold text-shell-ink-muted md:inline-flex',
+              viewingAs ? 'border-dashed border-accent-line text-shell-ink opacity-85' : 'border-transparent')}
             title={viewingAs ? `Looking at the app as ${viewingAs} · your account is ${account.name}` : undefined}>{roleLabel}</span>
           {/* the icon previews what the button does, as its name says it */}
           <IconButton testId={tid.shell.theme} label={`${theme === 'dark' ? 'Light' : 'Dark'} theme`} onClick={toggleTheme}>
@@ -178,6 +177,8 @@ export function ShellView({ nav, roleLabel, viewingAs, account, canViewAs = fals
             const Built = BUILT[t.view];
             return <Route key={t.path} path={t.path} element={Built ? <Built /> : <NotBuilt tab={t} />} />;
           })}
+          {/* Working hours became the Hours column on Employees (2026-10-27); an old link lands there */}
+          <Route path="/setup/acon" element={<Navigate to="/setup/aemployees" replace />} />
           <Route path="/" element={landing ? <Navigate to={landing.path} replace /> : <NothingAvailable />} />
           <Route path="*" element={first ? <PageUnavailable path={pathname} home={first} /> : <NothingAvailable />} />
         </Routes>
@@ -203,12 +204,52 @@ function useHomeOnSwitch(who: string | undefined, nav: NavGroup[], pathname: str
   }, [who, nav, pathname, navigate]);
 }
 
-/* .modsw button (v15:287-301, 1527, 1560-1561): 14px/500 in the muted shell
-   green, 7px 14px, a white lift on hover; the current area in the accent at
-   600. The link itself is the 44px touch target; the pill is drawn inside
-   it, so the bar keeps the prototype's 34px pill.
+/* On a phone the areas scroll sideways with no scrollbar. An edge fades out
+   only while there is an area past it, so it reads as more to come; and the
+   current area is scrolled into view, so it is never the one under the fade.
+   Before, a fixed fade on the right cut "My Team" to "My" at 390px (taste
+   review 2026-10-26, Phase 1 item 3). On a wider screen nothing scrolls, so
+   neither edge fades. */
+const EDGE_MASK = {
+  none: '',
+  end: 'max-md:[mask-image:linear-gradient(90deg,black_88%,transparent)]',
+  start: 'max-md:[mask-image:linear-gradient(270deg,black_88%,transparent)]',
+  both: 'max-md:[mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]',
+} as const;
+function AreaSwitcher({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLElement>(null);
+  const [edge, setEdge] = useState<keyof typeof EDGE_MASK>('none');
+  const { pathname } = useLocation();
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => {
+      const before = el.scrollLeft > 1, after = el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+      setEdge(before && after ? 'both' : before ? 'start' : after ? 'end' : 'none');
+    };
+    /* centre the current area, as far as the strip can scroll (the nav is its offsetParent) */
+    const on = el.querySelector<HTMLElement>('[aria-current="true"]');
+    if (on && el.scrollWidth > el.clientWidth) el.scrollLeft = on.offsetLeft - (el.clientWidth - on.offsetWidth) / 2;
+    measure();
+    el.addEventListener('scroll', measure, { passive: true });
+    window.addEventListener('resize', measure);
+    return () => { el.removeEventListener('scroll', measure); window.removeEventListener('resize', measure); };
+  }, [pathname]);
+  return (
+    <nav ref={ref} aria-label="Areas" data-surface="inverse"
+      className={cn('relative flex min-w-0 gap-[2px] md:flex-wrap max-md:flex-1 max-md:flex-nowrap max-md:overflow-x-auto max-md:[scrollbar-width:none]', EDGE_MASK[edge])}>
+      {children}
+    </nav>);
+}
 
-   Switching area is the most frequent navigation in the app, so the lime
+/* .modsw button (v15:287-301, 1527, 1560-1561): 14px/500 in the muted shell
+   green, 7px 14px, a white lift on hover. The link itself is the 44px touch
+   target; the pill is drawn inside it, so the bar keeps the prototype's 34px
+   pill. The current area is white at 600 on a faint white pill with a 1px
+   edge, not the prototype's lime fill: a deliberate deviation (taste review
+   2026-10-26, D1; the tokens are --qp-color-shell-current*, src/index.css).
+
+   Switching area is the most frequent navigation in the app, so the
    "current" pill lands at once, with no crossfade between the old area and
    the new; only the press scales the pill. The keyboard ring is the
    inverse one (the nav carries data-surface="inverse"). */
@@ -217,7 +258,7 @@ function AreaLink({ group, current }: { group: NavGroup; current: boolean }) {
     <NavLink to={firstTabPath(group)} testId={tid.nav.group(group.key)} aria-current={current ? 'true' : undefined}
       className="group inline-flex min-h-touch shrink-0 items-center rounded-pill select-none focus-visible:shadow-none">
       <span className={cn('rounded-pill px-[14px] py-[7px] text-sm whitespace-nowrap transition-[scale] duration-(--dur-press) ease-(--ease-out) group-focus-visible:shadow-focus group-active:scale-[0.97] max-lg:px-[9px] max-lg:py-[6px] max-lg:text-xs max-md:px-[11px]',
-        current ? 'bg-brand-accent font-semibold text-text-on-accent' : 'font-medium text-shell-ink-muted group-hover:bg-shell-hover group-hover:text-text-on-brand')}>{group.label}</span>
+        current ? 'bg-shell-current font-semibold text-text-on-brand shadow-[inset_0_0_0_1px_var(--qp-color-shell-current-line)]' : 'font-medium text-shell-ink-muted group-hover:bg-shell-hover group-hover:text-text-on-brand')}>{group.label}</span>
     </NavLink>);
 }
 
@@ -244,8 +285,11 @@ function firstTabPath(g: NavGroup): string {
   return t.path;
 }
 
-/* Setup is not one flat strip. At the index the strip holds the index's own
-   tab alone, selected, as the prototype's does ("Setup"); inside a
+/* Setup is not one flat strip. At the index there is no strip: the
+   prototype's held the index's own tab alone ("Setup"), which said Setup a
+   third time under the top bar's area and over the page title (taste review
+   2026-10-26, a deliberate deviation; the phone already had no bottom bar
+   there). Inside a
    section it shows only that section's pages, plus a way back (ported from
    the prototype's SETUP_SECTIONS drill and its "‹ All setup" tab,
    qnipay-workforce-v15.html:4075). Work and My Team are unaffected: their
@@ -262,7 +306,7 @@ export function stripTabsFor(current: NavGroup | undefined, pathname: string, se
   const index = current.tabs.find(t => t.view === 'asetup');
   const active = current.tabs.find(t => t.path === pathname);
   const section = active?.section;
-  if (!section) return index && active === index ? [index] : [];
+  if (!section) return [];
   const m = moduleBy(active.module ?? (active.view === 'amods' ? new URLSearchParams(search).get('m') ?? '' : ''));
   const amods = current.tabs.find(t => t.view === 'amods');
   if (m && amods) {

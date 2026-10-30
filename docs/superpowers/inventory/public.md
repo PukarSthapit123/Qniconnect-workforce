@@ -171,7 +171,7 @@ Chrome: left panel only from the `lg` breakpoint (`className="hidden lg:flex"`, 
 
 ### Rules and edge cases
 Initial state and navigation
-- REG.R1: Initial `formData` (35-60): all strings `''`, `agreeTerms=false`, `agreeDataProcessing=false`, `selectedPlan='essential'`, `paymentFrequency='annual'`. Initial step is 1.
+- REG.R1: Initial `formData` (35-60): all strings `''`, `agreeTerms=false`, `agreeDataProcessing=false`, `selectedPlan='essential'`, `paymentFrequency='annual'`. Initial step is 1. Port (Ruling Q23): no `selectedPlan`; billing still starts annual.
 - REG.R2: `handleChange` copies `value` (or `checked` for checkboxes) into the field named by the input `name` (77-83).
 - REG.R3: `nextStep` increments `currentStep` only while `< 4` and calls `window.scrollTo(0,0)`; `prevStep` decrements only while `> 1` and scrolls to top (102-114). Data is kept when going back.
 - REG.R4: The Continue buttons on steps 1-3 are `type="button"`, so they never submit the form and never trigger native `required` validation. Only `isStepValid` gates them.
@@ -188,11 +188,11 @@ Initial state and navigation
 - REG.R10: The page does not check authentication; signed-in users can register.
 
 Plan and pricing in the form
-- REG.R11: `getPricing()` (263-278): `basePricing = { basic: 0.5, essential: 5, premium: 7 }`. Annual: `monthlyPrice = (price*0.8).toFixed(2)` (string), `annualPrice = (price*0.8*12).toFixed(2)` (string), `discount='20%'`. Monthly: `monthlyPrice = price` (number), `annualPrice = (price*12).toFixed(2)`, `discount='0%'`. `discount` is unused in the UI.
-- REG.R12: Step 3 total = `(annualPrice * (numberOfEmployees || 0)).toFixed(2)` when annual, `(monthlyPrice * (numberOfEmployees || 0)).toFixed(2)` when monthly (783-785). Values the port must reproduce: Essential annual, 10 employees -> `£480.00` per year (annualPrice `"48.00"`); Basic annual, 10 -> `£48.00` (`"4.80"`); Premium annual, 10 -> `£672.00` (`"67.20"`); Essential monthly, 10 -> `£50.00`; Basic monthly, 10 -> `£5.00`; Premium monthly, 10 -> `£70.00`.
-- REG.R13: The step 4 summary `Plan` line uses `monthlyPrice` as is (854): Essential annual `£4.00/user/mo`; Basic annual `£0.40/user/mo`; Premium annual `£5.60/user/mo`; monthly shows `£0.5`, `£5`, `£7` (numbers, no decimals).
-- REG.R14: The plan name in summaries is the key with its first letter upper-cased (`Basic`, `Essential`, `Premium`) (777, 854).
-- REG.R15: Prices are hard-coded in both `basePricing` and the card list (729-731). The text `Annual (Save 20%)` and `20% off` are hard-coded.
+- REG.R11: `getPricing()` (263-278): `basePricing = { basic: 0.5, essential: 5, premium: 7 }`. Annual: `monthlyPrice = (price*0.8).toFixed(2)` (string), `annualPrice = (price*0.8*12).toFixed(2)` (string), `discount='20%'`. Monthly: `monthlyPrice = price` (number), `annualPrice = (price*12).toFixed(2)`, `discount='0%'`. `discount` is unused in the UI. Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- REG.R12: Step 3 total = `(annualPrice * (numberOfEmployees || 0)).toFixed(2)` when annual, `(monthlyPrice * (numberOfEmployees || 0)).toFixed(2)` when monthly (783-785). Values the port must reproduce: Essential annual, 10 employees -> `£480.00` per year (annualPrice `"48.00"`); Basic annual, 10 -> `£48.00` (`"4.80"`); Premium annual, 10 -> `£672.00` (`"67.20"`); Essential monthly, 10 -> `£50.00`; Basic monthly, 10 -> `£5.00`; Premium monthly, 10 -> `£70.00`. Port (Ruling Q23): the base price times employees, per year or per month, in `£` to two places.
+- REG.R13: The step 4 summary `Plan` line uses `monthlyPrice` as is (854): Essential annual `£4.00/user/mo`; Basic annual `£0.40/user/mo`; Premium annual `£5.60/user/mo`; monthly shows `£0.5`, `£5`, `£7` (numbers, no decimals). Port: monthly Basic shows `£0.50` (pence in two places; whole pounds stay `£5`, `£7`) (Ruling Q22). Port (Ruling Q23): `QniConnect · £0.50/user/mo` monthly, `£0.40` annual.
+- REG.R14: The plan name in summaries is the key with its first letter upper-cased (`Basic`, `Essential`, `Premium`) (777, 854). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- REG.R15: Prices are hard-coded in both `basePricing` and the card list (729-731). The text `Annual (Save 20%)` and `20% off` are hard-coded. Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
 
 Submit
 - REG.R16: Submit handler: `e.preventDefault()`, `isLoading=true`, `error=null` (122-125).
@@ -267,9 +267,9 @@ None (grep for `fetch`, `axios`, `onSubmit`, `<form`, `localStorage`, `sessionSt
 None.
 
 ### States
-- PRICE.S1 default: tab `Basic` selected (`selectedTier='basic'`, line 8); comparison table hidden (`showComparison=false`, line 9).
-- PRICE.S2 tier `essential` or `premium` selected: that tier's panel shows.
-- PRICE.S3 comparison open: toggle label `Hide detailed comparison` and chevron rotated 180 degrees; closed: `View detailed comparison` (596-597).
+- PRICE.S1 default: tab `Basic` selected (`selectedTier='basic'`, line 8); comparison table hidden (`showComparison=false`, line 9). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- PRICE.S2 tier `essential` or `premium` selected: that tier's panel shows. Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- PRICE.S3 comparison open: toggle label `Hide detailed comparison` and chevron rotated 180 degrees; closed: `View detailed comparison` (596-597). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
 - No loading, empty or error states.
 
 ### Header and navigation (83-101)
@@ -328,16 +328,16 @@ Mock browser frame (716-735): title `QniConnect Employee Portal`, an `<img src="
 **Footer** (741-882): columns, all links `href="#"` with no behaviour. `Solutions`: `Payroll Management`, `Employee Self-Service`, `Document Management`, `HR Analytics`. `Support`: `Documentation`, `API Reference`, `Guides`, `Help Center`. `Company`: `About`, `Blog`, `Careers`, `Contact`. `Legal`: `Privacy`, `Terms`, `Cookie Policy`, `GDPR`. Right block: logo (46px), `The premier employee portal solution for Business Central users. Simplify HR operations and enhance employee experience.`, `Subscribe to our newsletter`, email input (`aria-label="Email address"`, `type="email"`, `required`, placeholder `Enter your email`), button `Subscribe`. Bottom line: `© 2025 QniConnect. All rights reserved.` (year hard-coded).
 
 ### Rules and edge cases
-- PRICE.R1: `selectedTier` is local state, default `basic`; the tab buttons and the mobile `<select>` both call `handleTierChange(tier)` (11-13, 119-164). Only the selected tier panel is rendered (173, 298, 446).
-- PRICE.R2: `toggleComparison` flips `showComparison` (15-17).
-- PRICE.R3: Comparison rows are shaded by `parseInt(index) % 2 === 0 ? 'bg-white' : 'bg-gray-50'` (622).
-- PRICE.R4: Every CTA (`Get started with Basic|Essential|Premium`) links to `/register` and does not carry the tier; the register form defaults to `essential` regardless (REG.R1).
-- PRICE.R5: The `tiers` fields `name`, `price` and `description` are never rendered; displayed prices and copy are the literal strings in the JSX (the lists above are the contract). Prices: Basic `£0.5`, Essential `£5`, Premium `£7`, all `per employee/month`, `billed monthly`.
-- PRICE.R6: No annual-discount concept exists on this page (unlike REG.R11).
-- PRICE.R7: Feature wording differs between PRICE and the REG plan cards (REG: `Profile visibility`, `Payslip access`, `Secure auth`, ...). Each is contract content for its own page.
+- PRICE.R1: `selectedTier` is local state, default `basic`; the tab buttons and the mobile `<select>` both call `handleTierChange(tier)` (11-13, 119-164). Only the selected tier panel is rendered (173, 298, 446). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- PRICE.R2: `toggleComparison` flips `showComparison` (15-17). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- PRICE.R3: Comparison rows are shaded by `parseInt(index) % 2 === 0 ? 'bg-white' : 'bg-gray-50'` (622). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- PRICE.R4: Every CTA (`Get started with Basic|Essential|Premium`) links to `/register` and does not carry the tier; the register form defaults to `essential` regardless (REG.R1). Port (Ruling Q23): one CTA, `Register your organisation`.
+- PRICE.R5: The `tiers` fields `name`, `price` and `description` are never rendered; displayed prices and copy are the literal strings in the JSX (the lists above are the contract). Prices: Basic `£0.5`, Essential `£5`, Premium `£7`, all `per employee/month`, `billed monthly`. Port: Basic shows `£0.50` (Ruling Q22). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- PRICE.R6: No annual-discount concept exists on this page (unlike REG.R11). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
+- PRICE.R7: Feature wording differs between PRICE and the REG plan cards (REG: `Profile visibility`, `Payslip access`, `Secure auth`, ...). Each is contract content for its own page. Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
 - PRICE.R8: The page is public; no auth check and no redirect for signed-in users.
 - PRICE.R9: The newsletter control has no handler and is not inside a `<form>`: clicking `Subscribe` does nothing; `required` is never validated.
-- PRICE.R10: Responsive switch: tab bar `hidden sm:block`, select `sm:hidden` (116, 154).
+- PRICE.R10: Responsive switch: tab bar `hidden sm:block`, select `sm:hidden` (116, 154). Port (Ruling Q23): superseded, one base price and add-ons priced separately (`src/domain/pricing.ts`).
 
 ### Storage
 None.

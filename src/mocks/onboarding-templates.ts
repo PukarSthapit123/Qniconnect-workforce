@@ -1,4 +1,4 @@
-/* Onboarding templates: what a starter is asked can differ by job profile. A
+/* Onboarding templates: what a starter is asked can differ by position. A
    template is a row of its own with its own version, written whole with If-Match
    and one audit row. Every rule is the domain's (src/domain/onboarding-templates.ts).
    With the Onboarding module off every endpoint refuses (module-off). */
@@ -51,19 +51,19 @@ export const onboardingTemplateHandlers = [
     const row = templateAt(params.id);
     checkVersion(row);
     const base = onbConfig();
-    const draft: OnbTemplateDraft = { name: body.name.trim(), jobProfiles: [...new Set(body.jobProfiles)], steps: body.steps, documents: body.documents, policies: [...new Set(body.policies)] };
-    /* the row being saved is not "another template" holding its own job profiles */
+    const draft: OnbTemplateDraft = { name: body.name.trim(), positions: [...new Set(body.positions)], steps: body.steps, documents: body.documents, policies: [...new Set(body.policies)] };
+    /* the row being saved is not "another template" holding its own positions */
     const others = templatesNow().filter(t => t.id !== row.id);
-    const jobProfiles = Object.values(store.coll<{ code: string; name: string }>('jobProfiles'));
-    const bad = onbTemplateProblem(draft, { base, was: row, others, jobProfiles, policyIds: policiesNow().map(p => p.id), features: featuresNow() });
+    const positions = Object.values(store.coll<{ code: string; name: string }>('positions'));
+    const bad = onbTemplateProblem(draft, { base, was: row, others, positions, policyIds: policiesNow().map(p => p.id), features: featuresNow() });
     if (bad) return refuseOnb(bad);
     const was = view(row);
     const next: StoredTemplate = normaliseTemplate({ ...row, ...draft }, base);
     const summary = templateSavedText(draft.name);
     const steps = next.steps.filter(s => was.steps.find(x => x.id === s.id)?.on !== s.on);
     const documents = next.documents.filter(d => !sameJson(d, was.documents.find(x => x.id === d.id)));
-    const changed = { name: next.name !== was.name, jobProfiles: !sameSet(next.jobProfiles, was.jobProfiles), policies: !sameSet(next.policies, was.policies) };
-    if (!changed.name && !changed.jobProfiles && !changed.policies && !steps.length && !documents.length)
+    const changed = { name: next.name !== was.name, positions: !sameSet(next.positions, was.positions), policies: !sameSet(next.policies, was.policies) };
+    if (!changed.name && !changed.positions && !changed.policies && !steps.length && !documents.length)
       return { record: was, summary: 'Nothing has changed.', auditId: null };
     const saved: StoredTemplate = bump(row, next);
     templatesColl()[row.id] = saved;
@@ -71,7 +71,7 @@ export const onboardingTemplateHandlers = [
       const t = side === 'was' ? was : next;
       return {
         ...(changed.name ? { name: t.name } : {}),
-        ...(changed.jobProfiles ? { jobProfiles: t.jobProfiles } : {}),
+        ...(changed.positions ? { positions: t.positions } : {}),
         ...(steps.length ? { steps: byId(steps, s => t.steps.find(x => x.id === s.id)?.on) } : {}),
         ...(documents.length ? { documents: byId(documents, d => { const r = t.documents.find(x => x.id === d.id); return r ? { on: r.on, req: r.req, blocks: r.blocks } : null; }) } : {}),
         ...(changed.policies ? { policies: t.policies } : {}),
@@ -87,7 +87,7 @@ export const onboardingTemplateHandlers = [
     checkVersion(row);
     Reflect.deleteProperty(templatesColl(), row.id);
     const auditId = writeAudit({ who: actor(session), act: 'Onboarding template deleted', entity: 'onboardingTemplate', entityId: row.id,
-      before: { name: row.name, jobProfiles: row.jobProfiles }, after: null });
+      before: { name: row.name, positions: row.positions }, after: null });
     return { id: row.id, summary: templateDeletedText(row.name), auditId };
   }),
 ];

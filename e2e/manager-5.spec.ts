@@ -81,7 +81,7 @@ test('a manager checks documents, rejects one with a reason the starter acts on,
   /* the portal invite is offered, and recorded on the fake server (N19) */
   await expect(page.getByTestId(tid.tonb.portalOffer)).toContainText('Send Tom Achterberg a portal invite?');
   await page.getByTestId(tid.tonb.portalSend).click();
-  await expect(info(page, 'The portal invite for Tom Achterberg is recorded. Onboarding is not yet connected to the portal, so add their login on People & access.')).toBeVisible();
+  await expect(info(page, 'The portal invite for Tom Achterberg is recorded. Onboarding is not yet connected to the portal, so add their login on Setup · Employees.')).toBeVisible();
   await expect(page.getByTestId(tid.tonb.portalOffer)).toHaveCount(0);
   expect((await employeeByCode(api, 'EMP003')).state).toBe('active');
   expect((await teamOf(api)).rows.map(r => r.employee.code)).not.toContain('EMP003');
@@ -107,7 +107,8 @@ test('Invite moves a candidate to preboarding and says no email is sent; Add a n
   await page.getByTestId(tid.tonb.add).click();
   await page.getByTestId(tid.employeeForm.root).waitFor();
   await expect(page.getByTestId(tid.employeeForm.field('state'))).toContainText('Candidate');
-  await page.getByTestId(tid.employeeForm.field('name')).fill('Sarah Lindqvist');
+  await page.getByTestId(tid.employeeForm.field('firstName')).fill('Sarah');
+  await page.getByTestId(tid.employeeForm.field('lastName')).fill('Lindqvist');
   await page.getByTestId(tid.employeeForm.field('email')).fill('sarah.lindqvist@dogmagroup.co.uk');
   await page.getByTestId(tid.employeeForm.save).click();
   await expect(info(page, /Sarah Lindqvist created/)).toBeVisible();

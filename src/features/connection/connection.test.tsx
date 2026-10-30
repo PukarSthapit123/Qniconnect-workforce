@@ -47,7 +47,7 @@ const withWhere = (ui: ReactNode) => <>{ui}<Where /></>;
 describe('ADM.DASH: the overview', () => {
   const open = async () => { renderPage(<OverviewPage />, '/setup/aoverview'); await screen.findByTestId(tid.aoverview.tenant); };
 
-  test('ADM.DASH states: loading, then the tenant, four figures, quick actions, portal users and the resources, with full test id coverage', async () => {
+  test('ADM.DASH states (Ruling Q20): loading, then the tenant, the connection, the portal users strip, quick actions and the resources, with full test id coverage', async () => {
     renderPage(<OverviewPage />, '/setup/aoverview');
     expect(await screen.findByTestId(tid.aoverview.loading)).toHaveTextContent('Loading the overview…');
     await screen.findByTestId(tid.aoverview.tenant);
@@ -55,7 +55,17 @@ describe('ADM.DASH: the overview', () => {
     expect(document.getElementById(`${tid.head.tip('aoverview')}-text`)).toHaveTextContent('Management console for the QniConnect employee portal.');
     const users = bcStore.db.portalUsers;
     expect(text(tid.aoverview.stat('users'))).toBe(String(users.length));
-    expect(screen.getByTestId(tid.aoverview.stat('users')).parentElement).toHaveTextContent(`Active: ${users.filter(u => u.status === 'Active').length}`);
+    /* Ruling Q20: the total heads the users strip; its "Active: n" line is the strip's own Active count */
+    expect(screen.getByTestId(tid.aoverview.stat('users')).parentElement).toHaveTextContent(new RegExp(`^Total${users.length}$`));
+    /* Ruling Q20: the connection leads, with Refresh authorization as its one primary action */
+    const connection = within(screen.getByTestId(tid.aoverview.connection));
+    for (const id of [tid.aoverview.stat('auth'), tid.aoverview.stat('environment'), tid.aoverview.stat('environments'), tid.aoverview.action('authorization')])
+      expect(connection.getByTestId(id)).toBeInTheDocument();
+    expect(screen.getByTestId(tid.aoverview.action('authorization'))).toHaveTextContent(/^Refresh authorization$/);
+    /* 67 days left of a 90-day term */
+    const meter = screen.getByTestId(tid.aoverview.meter);
+    expect(meter).toHaveAttribute('data-tone', 'ok');
+    expect(meter.nextElementSibling?.querySelector('i')?.getAttribute('style')).toMatch(/width: 74\.4\d*%/);
     expect(text(tid.aoverview.stat('environments'))).toBe('2');
     expect(text(tid.aoverview.stat('auth'))).toBe('Active');
     expect(screen.getByTestId(tid.aoverview.stat('auth')).parentElement).toHaveTextContent('Remaining: 67 days');
@@ -111,17 +121,20 @@ describe('ADM.DASH: the overview', () => {
     expect(text(tid.aoverview.stat('environments'))).toBe('2');
     expect(text(tid.aoverview.stat('auth'))).toBe('Unknown');
     expect(screen.getByTestId(tid.aoverview.stat('auth')).parentElement).toHaveTextContent('Expiry unknown');
+    /* no term to measure against, so no meter */
+    expect(screen.queryByTestId(tid.aoverview.meter)).toBeNull();
     /* no expiry counts as none left (ADM.DASH.R6), so it asks for a refresh */
     expect(screen.getByTestId(tid.aoverview.expiry)).toHaveTextContent('Authorization needs refreshing');
     expect(text(tid.aoverview.tenant)).toMatch(/^Tenant: BrightPath Care Ltd/);
   });
 
-  test('ADM.DASH.R4 and ADM.DASH.R7: exact statuses are counted, and no active users reads "Active: 0", not "0"', async () => {
+  test('ADM.DASH.R4 and ADM.DASH.R7: exact statuses are counted, and no active users is a named zero, not a bare "0"', async () => {
     for (const u of bcStore.db.portalUsers) u.status = 'Inactive';
     const first = bcStore.db.portalUsers[0];
     if (first) first.status = 'PendingFirstLogin';
     await open();
-    expect(screen.getByTestId(tid.aoverview.stat('users')).parentElement).toHaveTextContent('Active: 0');
+    /* Ruling Q20: R7's "Active: 0" is the strip's Active count, under its name */
+    expect(screen.getByTestId(tid.aoverview.tile('active')).parentElement).toHaveTextContent(/^Active0$/);
     expect(text(tid.aoverview.tile('active'))).toBe('0');
     expect(text(tid.aoverview.tile('pending'))).toBe('1');
     expect(text(tid.aoverview.tile('inactive'))).toBe(String(bcStore.db.portalUsers.length - 1));
@@ -132,6 +145,9 @@ describe('ADM.DASH: the overview', () => {
     const { unmount } = renderPage(<OverviewPage />, '/setup/aoverview');
     const alert = await screen.findByTestId(tid.aoverview.expiry);
     expect(alert).toHaveClass('text-warn');
+    /* Ruling Q20: the banner sits in the connection block */
+    expect(within(screen.getByTestId(tid.aoverview.connection)).getByTestId(tid.aoverview.expiry)).toBe(alert);
+    expect(screen.getByTestId(tid.aoverview.meter)).toHaveAttribute('data-tone', 'warn');
     expect(alert).toHaveTextContent('Authorization expiring soon');
     expect(alert).toHaveTextContent('The Business Central authorization expires in 10 days. Refresh it so the portal keeps uninterrupted access to Business Central.');
     expect(screen.getByTestId(tid.aoverview.expiryLink)).toHaveAttribute('href', '/setup/aauth');
@@ -151,7 +167,7 @@ describe('ADM.DASH: the overview', () => {
     expect(text(tid.aoverview.stat('auth'))).toBe('Expired');
   });
 
-  test('ADM.DASH.R11 and R12: nothing refreshes on its own; and the people links show only to someone who can open People & access', async () => {
+  test('ADM.DASH.R11 and R12: nothing refreshes on its own; and the people links show only to someone who can open Setup · Employees', async () => {
     /* an employee who is a portal admin: no Workforce setup, but People &
        access's portal-login half is theirs (Task 20, N18), so the links are */
     const amara = bcStore.db.portalUsers.find(u => u.email === 'amara.okafor@brightpath.org');

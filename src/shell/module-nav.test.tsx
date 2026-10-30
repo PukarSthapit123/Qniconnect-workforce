@@ -76,7 +76,7 @@ test('My Calendar sits after Home, and goes and comes back with the Timesheet mo
 /* Suite FUSION3 CONFIGURED THROUGH THE TEMPLATE: the manager keeps timesheet
    approvals after the M&E template is applied. */
 test('after the Fusion3 template is applied, the manager keeps timesheet approvals', async () => {
-  await admin('POST', '/api/v1/templates/mne/apply', undefined);
-  expect(store.coll<{ template: string }>('tenant').tenant?.template).toBe('mne');
+  await admin('POST', '/api/v1/setup-presets/mne/apply', undefined);
+  expect(store.coll<{ preset: string }>('tenant').tenant?.preset).toBe('mne');
   expect(await tabsOf('manager')).toContain('tteam');
 });

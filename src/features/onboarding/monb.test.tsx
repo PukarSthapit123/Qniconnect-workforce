@@ -39,7 +39,8 @@ const rows = () => screen.getByTestId(tid.monb.policies).querySelectorAll('tbody
 describe('Onboarding setup: steps and documents apply on Save', () => {
   test('the three fixed steps are always asked; switching one off is unsaved until Save, Cancel puts it back, and Save says employees keep what they gave', async () => {
     await open();
-    expect(screen.getByText('Modules · Onboarding · Onboarding setup')).toBeInTheDocument();
+    /* no crumb: the tab strip leads back to the module and all modules */
+    expect(screen.queryByText('Modules · Onboarding · Onboarding setup')).toBeNull();
     const policies = await screen.findByTestId(tid.monb.card('policies'));
     expect(policies.compareDocumentPosition(screen.getByTestId(tid.monb.save)) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getAllByText('Always asked')).toHaveLength(3);

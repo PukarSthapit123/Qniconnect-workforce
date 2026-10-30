@@ -1,4 +1,4 @@
-/* People & access (spec D12, N19): one admin page, each person keyed by
+/* Setup · Employees (spec D12, N19): one admin page, each person keyed by
    employee number, with their portal login (real /bc/portalUsers) and their
    Workforce record (the fake /api/v1). The two never meet on the wire: they
    are joined here, in the browser, and a row unmatched on either side is
@@ -69,6 +69,14 @@ export function filterPortalUsers<U extends PortalUserRow>(users: readonly U[], 
   const term = q.toLowerCase();
   return users.filter(u => inTab(u, tab) && (!term || u.name.toLowerCase().includes(term) || u.email.toLowerCase().includes(term)));
 }
+/* Setup · Employees' one table: QniConnect's tabs as a filter on each row's
+   login, plus the people with none. */
+export type LoginFilter = UsersTab | 'none';
+export const LOGIN_FILTERS: readonly { value: LoginFilter; label: string }[] = [
+  { value: 'all', label: 'Any portal login' }, { value: 'active', label: 'Login active' }, { value: 'inactive', label: 'Login inactive or pending' },
+  { value: 'admin', label: 'Portal admins' }, { value: 'none', label: 'No portal login' },
+];
+export const loginMatches = (u: PortalUserRow | undefined, f: LoginFilter): boolean => (f === 'none' ? !u : f === 'all' || (!!u && inTab(u, f)));
 /* USERS.R3: from the whole list, whatever the search. */
 export function tabCounts(users: readonly PortalUserRow[]): Record<UsersTab, number> {
   return { all: users.length, active: users.filter(u => inTab(u, 'active')).length, inactive: users.filter(u => inTab(u, 'inactive')).length, admin: users.filter(u => u.isAdmin).length };

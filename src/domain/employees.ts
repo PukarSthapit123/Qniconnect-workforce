@@ -2,15 +2,37 @@
    handler, in its order, so the first failing rule is the one reported. */
 import { EMPLOYEE_CODE, employeeCodeProblem, type Problem } from './codes';
 
-export interface EmployeeDraft {
-  code: string; name: string; email: string; contractedHours: number; maxHours: number;
-  location: string; employeeType: string; department: string; jobProfile: string;
+/* The name as payroll holds it: each part on its own, as HMRC is sent it. */
+export interface NameParts { firstName: string; middleName: string; lastName: string; knownAs: string }
+/* Business Central's First, Middle and Last Name are 30 characters each */
+export const NAME_PART_MAX = 30;
+/* The name as shown: the known-as name and the last name, or without one
+   every part in order, so nothing is guessed or dropped. */
+export function displayName(p: NameParts): string {
+  const first = p.knownAs.trim() || [p.firstName.trim(), p.middleName.trim()].filter(Boolean).join(' ');
+  return [first, p.lastName.trim()].filter(Boolean).join(' ');
+}
+const NAME_PARTS = [['firstName', 'A first name'], ['middleName', 'A middle name'], ['lastName', 'A last name'], ['knownAs', 'A known-as name']] as const;
+function nameLengthProblem(d: Partial<NameParts>): Problem | null {
+  for (const [field, noun] of NAME_PARTS) {
+    if ((d[field]?.trim().length ?? 0) > NAME_PART_MAX) return { field, message: `${noun} can be up to ${NAME_PART_MAX} characters, as payroll holds it.` };
+  }
+  return null;
+}
+const FIRST_REQUIRED: Problem = { field: 'firstName', message: 'A first name is required.' };
+const LAST_REQUIRED: Problem = { field: 'lastName', message: 'A last name is required. Payroll reports it to HMRC.' };
+
+export interface EmployeeDraft extends NameParts {
+  code: string; email: string; contractedHours: number; maxHours: number;
+  location: string; workPattern: string; department: string; position: string; grade: string; level: string;
   /* an employee code, or the name of a manager outside the company */
   manager?: string;
 }
 export interface EmployeeContext {
   employees: readonly { code: string; name: string; email: string }[];
-  locations: readonly string[]; departments: readonly string[]; jobProfiles: readonly string[]; employeeTypes: readonly string[];
+  locations: readonly string[]; departments: readonly string[]; positions: readonly string[]; workPatterns: readonly string[];
+  /* payroll's Pay Grade and Pay Level codes */
+  grades: readonly string[]; levels: readonly string[];
 }
 export const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -30,8 +52,9 @@ function hoursProblem(con: number, max: number): Problem | null {
   return null;
 }
 const REFS = [
-  ['location', 'locations', 'location'], ['employeeType', 'employeeTypes', 'employee type'],
-  ['department', 'departments', 'department'], ['jobProfile', 'jobProfiles', 'job profile'],
+  ['location', 'locations', 'site'], ['workPattern', 'workPatterns', 'work pattern'],
+  ['department', 'departments', 'department'], ['position', 'positions', 'position'],
+  ['grade', 'grades', 'pay grade'], ['level', 'levels', 'pay level'],
 ] as const;
 function refsProblem(d: Partial<EmployeeDraft>, ctx: EmployeeContext): Problem | null {
   for (const [field, list, noun] of REFS) {
@@ -45,13 +68,16 @@ function refsProblem(d: Partial<EmployeeDraft>, ctx: EmployeeContext): Problem |
 }
 
 export function newEmployeeProblem(d: EmployeeDraft, ctx: EmployeeContext): Problem | null {
-  if (!d.name.trim()) return { field: 'name', message: 'A full name is required.' };
+  if (!d.firstName.trim()) return FIRST_REQUIRED;
+  if (!d.lastName.trim()) return LAST_REQUIRED;
+  const length = nameLengthProblem(d);
+  if (length) return length;
   const example = ctx.employees.find(p => /^[A-Z]/.test(p.code))?.code ?? 'EMP001';
   return employeeCodeProblem(d.code, ctx.employees.map(p => p.code), example)
     ?? emailProblem(d.email, null, ctx)
     ?? hoursProblem(d.contractedHours, d.maxHours)
-    ?? (d.location ? null : { field: 'location', message: 'A location is required.' })
-    ?? (d.employeeType ? null : { field: 'employeeType', message: 'An employee type is required.' })
+    ?? (d.location ? null : { field: 'location', message: 'A site is required.' })
+    ?? (d.workPattern ? null : { field: 'workPattern', message: 'A work pattern is required.' })
     ?? refsProblem(d, ctx);
 }
 
@@ -59,14 +85,18 @@ export function newEmployeeProblem(d: EmployeeDraft, ctx: EmployeeContext): Prob
    when the email actually changes: records exported from Business Central carry
    blank and shared addresses, and editing their hours must still work. */
 export function employeeEditProblem(before: EmployeeDraft, patch: Partial<Omit<EmployeeDraft, 'code'>>, ctx: EmployeeContext): Problem | null {
-  if (patch.name !== undefined && !patch.name.trim()) return { field: 'name', message: 'A full name is required.' };
+  if (patch.firstName !== undefined && !patch.firstName.trim()) return FIRST_REQUIRED;
+  /* a last name cannot be taken away; a record from Business Central without one stays editable */
+  if (patch.lastName !== undefined && !patch.lastName.trim() && before.lastName.trim()) return LAST_REQUIRED;
+  const length = nameLengthProblem(patch);
+  if (length) return length;
   if (patch.email !== undefined && patch.email.trim().toLowerCase() !== before.email.toLowerCase()) {
     const p = emailProblem(patch.email, before.code, ctx);
     if (p) return p;
   }
   const hours = hoursProblem(patch.contractedHours ?? before.contractedHours, patch.maxHours ?? before.maxHours);
   if (hours) return hours;
-  if (patch.location !== undefined && !patch.location) return { field: 'location', message: 'A location is required.' };
-  if (patch.employeeType !== undefined && !patch.employeeType) return { field: 'employeeType', message: 'An employee type is required.' };
+  if (patch.location !== undefined && !patch.location) return { field: 'location', message: 'A site is required.' };
+  if (patch.workPattern !== undefined && !patch.workPattern) return { field: 'workPattern', message: 'A work pattern is required.' };
   return refsProblem(patch, ctx);
 }

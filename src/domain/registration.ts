@@ -1,14 +1,14 @@
 /* Registration (docs/superpowers/inventory/public.md, REG): QniConnect's
    EnhancedRegistration rules as pure functions. The form collects more than
-   it sends (REG.R18); the plan and billing choice are shown, never sent. */
-
-export type Plan = 'basic' | 'essential' | 'premium';
-export type Billing = 'monthly' | 'annual';
+   it sends (REG.R18); the billing choice is shown, never sent. Prices are
+   domain/pricing's (Ruling Q23): one base price, no plan to choose. */
+import { baseTotal, gbp, monthlyPrice, type Billing } from './pricing';
+export type { Billing };
 
 export interface RegistrationForm {
   companyName: string; companyEmail: string; companyWebsite: string; companyPhone: string; industry: string;
   tenantId: string; domainName: string; bcEnvironment: string; bcCompanyName: string; numberOfEmployees: string;
-  selectedPlan: Plan; paymentFrequency: Billing;
+  paymentFrequency: Billing;
   contactName: string; contactEmail: string; contactPhone: string; agreeTerms: boolean; agreeDataProcessing: boolean;
 }
 
@@ -16,7 +16,7 @@ export interface RegistrationForm {
 export const INITIAL_REGISTRATION: RegistrationForm = {
   companyName: '', companyEmail: '', companyWebsite: '', companyPhone: '', industry: '',
   tenantId: '', domainName: '', bcEnvironment: '', bcCompanyName: '', numberOfEmployees: '',
-  selectedPlan: 'essential', paymentFrequency: 'annual',
+  paymentFrequency: 'annual',
   contactName: '', contactEmail: '', contactPhone: '', agreeTerms: false, agreeDataProcessing: false,
 };
 
@@ -29,33 +29,17 @@ export function isStepValid(step: number, f: RegistrationForm): boolean {
   switch (step) {
     case 1: return !!(f.companyName && f.companyEmail);
     case 2: return !!(f.tenantId && f.domainName && f.bcEnvironment && f.bcCompanyName && f.numberOfEmployees);
-    case 3: return !!(f.selectedPlan && f.paymentFrequency);
+    case 3: return !!f.paymentFrequency;
     case 4: return !!(f.contactName && f.contactEmail && f.agreeTerms && f.agreeDataProcessing);
     default: return false;
   }
 }
 
-/* REG.R11 and R15: hard-coded per user per month, 20% off when annual. */
-export const BASE_PRICE: Record<Plan, number> = { basic: 0.5, essential: 5, premium: 7 };
-export function pricing(plan: Plan, billing: Billing): { monthlyPrice: string | number; annualPrice: string } {
-  const price = BASE_PRICE[plan];
-  return billing === 'annual'
-    ? { monthlyPrice: (price * 0.8).toFixed(2), annualPrice: (price * 0.8 * 12).toFixed(2) }
-    : { monthlyPrice: price, annualPrice: (price * 12).toFixed(2) };
-}
+/* REG.R12: the step 3 total, per year when annual and per month when monthly */
+export const stepTotal = (f: RegistrationForm) => gbp(baseTotal(f.paymentFrequency, f.numberOfEmployees));
 
-/* REG.R14 */
-export const planName = (plan: Plan) => plan.charAt(0).toUpperCase() + plan.slice(1);
-
-/* REG.R12: JavaScript's own coercion, as QniConnect multiplied the text. */
-export function stepTotal(f: RegistrationForm): string {
-  const { monthlyPrice, annualPrice } = pricing(f.selectedPlan, f.paymentFrequency);
-  const each = Number(f.paymentFrequency === 'annual' ? annualPrice : monthlyPrice);
-  return (each * Number(f.numberOfEmployees || 0)).toFixed(2);
-}
-
-/* REG.R13 */
-export const planLine = (f: RegistrationForm) => `${planName(f.selectedPlan)} · £${pricing(f.selectedPlan, f.paymentFrequency).monthlyPrice}/user/mo`;
+/* REG.R13: the step 4 plan line, the base price for the billing chosen */
+export const planLine = (f: RegistrationForm) => `QniConnect · ${gbp(monthlyPrice(f.paymentFrequency))}/user/mo`;
 
 /* REG.R17: exactly what POST /bc/portalRegistrations carries. The address
    keys never existed in the form, so they are always blank. */

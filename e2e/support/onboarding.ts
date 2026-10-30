@@ -64,7 +64,7 @@ export async function completeMine(page: Page, api: Get, opts: { submit?: boolea
     ok(sendVersioned(page, 'PUT', `/api/v1/onboarding/me/steps/${id}`, await v(), { mode: 'check', ...body }), `step ${id}`);
   await step('personal', { personal: { dob: '1990-03-02', nat: 'Dutch', ni: 'QQ123456C' } });
   await step('contact', { contact: { mob: '07700 900321', a1: '12 Canal Street', city: 'Manchester', post: 'M1 3HE' } });
-  await step('emergency', { emergency: [{ nm: 'Sanne Achterberg', rel: 'Partner', ph: '07700 900654' }] });
+  await step('emergency', { emergency: [{ fn: 'Sanne', ln: 'Achterberg', rel: 'Partner', ph: '07700 900654' }] });
   await step('additional', { additional: { conv: 'No', wtd: 'No, I do not opt out', quals: [] } });
   for (const d of DOCS)
     await ok(sendVersioned(page, 'POST', `/api/v1/onboarding/me/documents/${d}`, await v(), { name: `${d}.pdf`, size: PDF.length, type: 'application/pdf' }), `upload ${d}`);

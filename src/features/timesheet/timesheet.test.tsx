@@ -23,6 +23,22 @@ const config = () => {
   return c;
 };
 const set = (testId: string, value: string) => fireEvent.change(screen.getByTestId(testId), { target: { value } });
+/* the week's allocation pickers are the Day form's Combobox: open it, narrow it (a long list draws its first 50), then
+   choose by what the option says, as a person does ("Project › Task" for a task) */
+const pick = async (testId: string, label: string, query = label.split(' › ')[0] ?? label) => {
+  await userEvent.click(screen.getByTestId(testId));
+  if (query) fireEvent.change(await screen.findByTestId(`${testId}-search`), { target: { value: query } });
+  const same = (n: string) => n.replace(/\s+/g, ' ') === label.replace(/\s+/g, ' ');
+  await userEvent.click(within(await screen.findByRole('listbox')).getByRole('option', { name: same }));
+};
+const optionsOf = async (testId: string, query = '') => {
+  await userEvent.click(screen.getByTestId(testId));
+  if (query) fireEvent.change(await screen.findByTestId(`${testId}-search`), { target: { value: query } });
+  const list = await screen.findByRole('listbox');
+  const labels = within(list).getAllByRole('option').map(o => o.textContent ?? '');
+  await userEvent.keyboard('{Escape}');
+  return labels;
+};
 const openDay = async () => {
   renderPage(<TimesheetPage />);
   await userEvent.click(await screen.findByTestId(tid.ts.view('day')));
@@ -184,7 +200,15 @@ describe('My timesheet, week view', () => {
     expect(within(grid).getAllByRole('columnheader').some(h => h.textContent?.startsWith('Allocation'))).toBe(true);
     expect(screen.getByTestId(tid.week.cell(0, 2, 'start'))).toHaveValue('07:00');
     expect(screen.getByTestId(tid.week.dayTotal(2))).toHaveTextContent('07:30');
-    expect(screen.getByTestId(tid.ts.contracted)).toHaveTextContent('40h contracted');
+    /* timesheet week review: the answer leads the card, in one hours format; Mon, Tue and today are still blank, Fri is not yet */
+    expect(screen.getByTestId(tid.ts.contracted)).toHaveTextContent(/^40:00$/);
+    expect(screen.getByTestId(tid.ts.weekAnswer)).toHaveTextContent('07:30 of 40:00 recorded3 weekdays still blank');
+    expect(screen.getByTestId(tid.week.dayTotal(0))).toHaveTextContent(/^–$/);
+    /* the classic cell reads as text: an untouched row says what to do, with no box and no + */
+    expect(screen.getByTestId(tid.week.ctx(0, 'project'))).toHaveTextContent('Choose project and task');
+    expect(screen.getByTestId(tid.week.ctx(0, 'cost_c'))).toHaveTextContent('Cost centre');
+    expect(screen.queryByTestId(tid.week.ctx(0, 'job_task'))).toBeNull();
+    expect(screen.getByRole('columnheader', { current: 'date' })).toHaveTextContent('today');
     expect(screen.getByTestId(tid.ts.multiweek)).toBeInTheDocument();
     expectTestIdCoverage(document.body);
     await userEvent.click(screen.getByTestId(tid.week.addAlloc));
@@ -197,15 +221,34 @@ describe('My timesheet, week view', () => {
     await userEvent.click(screen.getByTestId(tid.week.delAlloc(1)));
     expect(screen.queryByTestId(tid.week.row(1))).toBeNull();
   });
-  test('the allocation selects list this organisation’s projects, and a task list that follows the chosen project', async () => {
+  test('one picker lists this organisation’s projects with their tasks; choosing a task sets both and the project’s cost centre, which stays editable', async () => {
     await openWeek();
-    const optionsOf = (testId: string) => [...within(screen.getByTestId(testId)).getAllByRole('option')].map(o => o.textContent ?? '').filter(t => t !== '—');
-    expect(optionsOf(tid.week.ctx(0, 'project'))).toContain('Go fibre BC implementation Project');
-    expect(optionsOf(tid.week.ctx(0, 'project'))).not.toContain('Northgate Fit-out');
-    set(tid.week.ctx(0, 'project'), 'Contoso D365 Implementation');
-    const tasks = optionsOf(tid.week.ctx(0, 'job_task'));
+    const projectPicker = tid.week.ctx(0, 'project'), cost = tid.week.ctx(0, 'cost_c');
+    const first = await optionsOf(projectPicker);
+    expect(first[0]).toBe('No project');
+    expect(first).toContain('Go fibre BC implementation Project');
+    expect(first.some(o => o.includes('Northgate Fit-out'))).toBe(false);
+    const contoso = await optionsOf(projectPicker, 'Contoso D365 Implementation');
+    const tasks = contoso.filter(o => o.startsWith('Contoso D365 Implementation › '));
     expect(tasks).toHaveLength(35);
-    expect(tasks.every(t => t.startsWith('PT-'))).toBe(true);
+    expect(tasks.every(t => t.split(' › ')[1]?.startsWith('PT-'))).toBe(true);
+    /* as the page shows it: seeded task names carry doubled spaces, which text collapses */
+    const task = (tasks[0]?.split(' › ')[1] ?? '').replace(/\s+/g, ' ');
+    await pick(projectPicker, `Contoso D365 Implementation › ${task}`);
+    /* the cell reads as text: the project in ink, its task on the line under it */
+    expect(screen.getByTestId(projectPicker).querySelector('b')).toHaveTextContent(/^Contoso D365 Implementation$/);
+    expect(screen.getByTestId(projectPicker)).toHaveTextContent(task);
+    expect(screen.getByTestId(projectPicker)).not.toHaveTextContent('Choose');
+    /* the cost centre comes from the project (CC-100), and can be changed for this row */
+    expect(screen.getByTestId(cost)).toHaveTextContent('CC-100');
+    await pick(cost, 'CC-220');
+    expect(screen.getByTestId(cost)).toHaveTextContent('CC-220');
+    expectTestIdCoverage(document.body);
+    /* a cost centre chosen by hand stays when the project changes; No project empties the project and task */
+    await pick(projectPicker, 'Go fibre BC implementation Project');
+    expect(screen.getByTestId(cost)).toHaveTextContent('CC-220');
+    await pick(projectPicker, 'No project', 'No project');
+    expect(screen.getByTestId(projectPicker)).toHaveTextContent('Choose project and task');
   });
   test('the grid layout puts each allocation in a section header with its own row', async () => {
     config().weekLayout = 'grid';
@@ -388,9 +431,10 @@ describe('My timesheet, a tenant whose week starts on Sunday', () => {
 
 describe('My timesheet, the grid layout', () => {
   beforeEach(async () => { await signInEmail(BIGYAN); config().weekLayout = 'grid'; });
-  test('an empty day in the grid layout totals 00:00, not a dash', async () => {
+  /* timesheet week review (2026-10-27), agreed with the user: nothing recorded is missing, not a measured zero (was 00:00) */
+  test('an empty day in the grid layout totals a dash, not 00:00', async () => {
     await openWeek();
-    expect(screen.getByTestId(tid.week.dayTotal(0))).toHaveTextContent(/^00:00$/);
+    expect(screen.getByTestId(tid.week.dayTotal(0))).toHaveTextContent(/^–$/);
     expect(screen.getByTestId(tid.week.dayTotal(2))).toHaveTextContent('07:30');
   });
   test('an added allocation is a second section, numbered, blank, with its own day row; only it can be removed, and the day columns line up', async () => {
@@ -405,7 +449,7 @@ describe('My timesheet, the grid layout', () => {
     const inputs = [...screen.getByTestId(tid.week.row(1)).querySelectorAll('input')];
     expect(inputs).toHaveLength(14);
     for (const i of inputs) expect(i).toHaveValue('');
-    for (const s of within(screen.getByTestId(tid.week.allocRow(1))).getAllByRole('combobox')) expect(s).toHaveValue('');
+    for (const s of within(screen.getByTestId(tid.week.allocRow(1))).getAllByRole('combobox')) expect(s).toHaveAttribute('data-placeholder');
     expect(screen.queryByTestId(tid.week.delAlloc(0))).toBeNull();
     expect(screen.getByTestId(tid.week.delAlloc(1))).toBeInTheDocument();
     const cells = (row: number) => screen.getByTestId(tid.week.row(row)).querySelectorAll('td').length;
@@ -415,7 +459,7 @@ describe('My timesheet, the grid layout', () => {
   test('hours in the second section update its own total, the Monday total and the allocation breakdown, and removing it returns to one', async () => {
     await openWeek();
     await userEvent.click(screen.getByTestId(tid.week.addAlloc));
-    set(tid.week.ctx(1, 'project'), 'Contoso D365 Implementation');
+    await pick(tid.week.ctx(1, 'project'), 'Contoso D365 Implementation');
     set(tid.week.cell(1, 0, 'start'), '18:00');
     set(tid.week.cell(1, 0, 'finish'), '20:00');
     expect(screen.getByTestId(tid.week.rowTotal(1))).toHaveTextContent('02:00');
@@ -426,7 +470,7 @@ describe('My timesheet, the grid layout', () => {
     expect(screen.queryByTestId(tid.week.allocRow(1))).toBeNull();
     expect(screen.queryByTestId(tid.week.row(1))).toBeNull();
     expect(screen.getByTestId(tid.week.allocRow(0))).toBeInTheDocument();
-    expect(screen.getByTestId(tid.week.dayTotal(0))).toHaveTextContent(/^00:00$/);
+    expect(screen.getByTestId(tid.week.dayTotal(0))).toHaveTextContent(/^–$/);
   });
   test('submitting the week in the grid layout sends what the grid holds', async () => {
     await openWeek();
@@ -441,7 +485,7 @@ describe('My timesheet, the grid layout', () => {
 /* trace CL#8-21: the list layout, one row per day */
 describe('My timesheet, the list layout', () => {
   beforeEach(async () => { await signInEmail(BIGYAN); config().weekLayout = 'days'; });
-  test('each line takes its allocation before its times, today is marked, and the foot shows the week total and contracted hours', async () => {
+  test('each line takes its allocation before its times, today is marked, and the foot shows the week total (contracted is in the answer above)', async () => {
     await openWeek();
     const select = screen.getByTestId(tid.week.lineCtx(2, 0, 'project')), start = screen.getByTestId(tid.week.lineCell(2, 0, 'start'));
     expect(select.compareDocumentPosition(start) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -450,7 +494,8 @@ describe('My timesheet, the list layout', () => {
     const foot = screen.getByTestId(tid.week.total).parentElement;
     expect(screen.getByTestId(tid.week.total)).toHaveTextContent('07:30');
     expect(foot).toHaveTextContent('Week total');
-    expect(foot).toHaveTextContent('contracted 40:00');
+    expect(foot).not.toHaveTextContent('contracted');
+    expect(screen.getByTestId(tid.ts.contracted)).toHaveTextContent('40:00');
   });
   test('a line added to a day goes on that day only, starts blank, alone has a remove control, adds to the day, and removing it returns to one line', async () => {
     await openWeek();

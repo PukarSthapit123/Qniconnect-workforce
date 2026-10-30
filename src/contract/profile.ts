@@ -3,7 +3,7 @@ import { defineEndpoint } from './endpoints';
 import { IsoDateTime, RecordMeta } from './common';
 import { Employee } from './employees';
 
-export const SelfFieldKey = z.enum(['phone', 'address', 'emergencyName', 'emergencyPhone', 'bankAccount', 'bankSortCode']);
+export const SelfFieldKey = z.enum(['phone', 'address', 'emergencyFirstName', 'emergencyLastName', 'emergencyPhone', 'bankAccount', 'bankSortCode']);
 export const ApprovalStage = z.enum(['manager', 'payroll']);
 export const ProfileChange = RecordMeta.extend({
   employeeCode: z.string(), employeeName: z.string(), field: SelfFieldKey, from: z.string(), to: z.string(), note: z.string(),

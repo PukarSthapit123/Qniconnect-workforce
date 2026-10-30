@@ -29,15 +29,34 @@ test('DM Dimensions is an index of cards, not one long stacked page; every dimen
   expect(screen.queryByTestId(tid.dims.table)).toBeNull();
   expectTestIdCoverage(document.body);
 });
-test('DM All five dimensions are here, including job profiles and projects, and each card says how many entries it holds', async () => {
+test('DM All five dimensions are here, including positions and projects, and each card says how many entries it holds', async () => {
   renderPage(<DimensionsPage />, '/setup/aloc');
   for (const k of DIMENSION_KINDS) expect(await screen.findByTestId(tid.dims.card(k))).toHaveTextContent(/\d+ entr(y|ies)/);
 });
-test('DF Dimensions are grouped by the question they answer, in a readable order, and card descriptions are behind hover', async () => {
+/* user ruling 2026-10-27: Master data, three kinds of thing: the dimensions, positions, and projects with their tasks */
+test('DF Master data groups the dimensions, positions and projects apart, and card descriptions are behind hover', async () => {
   renderPage(<DimensionsPage />, '/setup/aloc');
   await screen.findByTestId(tid.dims.card('locations'));
-  expect(screen.getAllByRole('heading', { level: 2 }).map(h => h.firstChild?.textContent)).toEqual(['Where work happens', 'What employees do', 'What work is charged to']);
+  expect(screen.getByRole('heading', { level: 1 }).firstChild?.textContent).toBe('Master data');
+  expect(screen.getAllByRole('heading', { level: 2 }).map(h => h.firstChild?.textContent)).toEqual(['Dimensions', 'Positions', 'Projects']);
+  const cardsIn = (heading: string) => [...(screen.getByRole('heading', { level: 2, name: new RegExp(`^${heading}`) }).closest('section')?.querySelectorAll('[data-testid^="dims-card-"]') ?? [])]
+    .map(c => c.getAttribute('data-testid'));
+  expect(cardsIn('Dimensions')).toEqual([tid.dims.card('locations'), tid.dims.card('departments'), tid.dims.card('cost-centres')]);
+  expect(cardsIn('Projects')).toEqual([tid.dims.card('projects')]);
   expect(screen.getByTestId(tid.dims.cardDescription('locations'))).toHaveClass('sr-only');
+});
+test('a project lists its tasks, read from its job, under its row', async () => {
+  renderPage(<DimensionsPage />, '/setup/aloc?d=projects');
+  await screen.findByTestId(tid.dims.table);
+  const toggle = await screen.findByTestId(tid.dims.tasks('PRJ-204'));
+  expect(toggle).toHaveTextContent(/^\d+ tasks$/);
+  expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await userEvent.click(toggle);
+  const list = screen.getByTestId(tid.dims.taskList('PRJ-204'));
+  expect(list.querySelectorAll('li').length).toBe(Number(toggle.textContent?.split(' ')[0]));
+  expectTestIdCoverage(document.body);
+  await userEvent.click(toggle);
+  expect(screen.queryByTestId(tid.dims.taskList('PRJ-204'))).toBeNull();
 });
 test('DM Opening a dimension gives it its own page, with a way back, and full test id coverage', async () => {
   renderPage(<DimensionsPage />, '/setup/aloc');
@@ -72,7 +91,7 @@ test('DM A valid entry is created, says where it becomes available, and the new 
   await openAdd();
   set('code', 'TQ'); set('name', 'Test Quay');
   await userEvent.click(screen.getByTestId(tid.dims.save));
-  expect(await screen.findByTestId(tid.toast.info)).toHaveTextContent('Test Quay created · available everywhere this location is offered');
+  expect(await screen.findByTestId(tid.toast.info)).toHaveTextContent('Test Quay created · available everywhere this site is offered');
   expect(await screen.findByTestId(tid.dims.row('TQ'))).toBeInTheDocument();
   expect(locations().map(l => l.code)).toContain('TQ');
   await userEvent.click(screen.getByTestId(tid.dims.edit('TQ')));
@@ -163,7 +182,7 @@ test('DM One form serves every dimension', async () => {
   }
 });
 test('DM Boolean fields render as toggles, not text', async () => {
-  await openAdd('job-profiles');
+  await openAdd('positions');
   expect(f('night')).toHaveAttribute('role', 'switch');
 });
 test('a failed save shows the refusal and leaves the store unchanged', async () => {

@@ -7,7 +7,6 @@ import { useNames } from '@/api/reference';
 import { fieldLabel } from '@/domain/history';
 import { LIFECYCLE, isEmployeeState } from '@/domain/lifecycle';
 import { formatDate, formatDateTime } from '@/lib/format';
-import { lastLoginText } from '@/domain/people-access';
 import { StatePill } from './StatePill';
 import { PortalLogin, type PortalSide } from './EmployeesList';
 
@@ -27,11 +26,11 @@ export const historyLine = (h: HistoryEntry, manager: (stored: string) => string
    history instead. */
 export function EmployeeRecord({ employeeId, onClose, actions, portal }: {
   employeeId: string; onClose(): void; actions?: (p: Employee) => ReactNode;
-  /* People & access, for a portal admin: the record's portal login (N19) */
+  /* Setup · Employees, for a portal admin: the record's portal login (N19) */
   portal?: PortalSide;
 }) {
   const employee = useEmployee(employeeId), history = useHistory(employeeId), names = useNames();
-  const p = employee.data;
+  const p = employee.data, login = p && portal?.byCode.get(p.code);
   return (
     <Modal open onOpenChange={o => { if (!o) onClose(); }} title={p?.name ?? 'Employee'}
       footer={<>
@@ -44,28 +43,31 @@ export function EmployeeRecord({ employeeId, onClose, actions, portal }: {
           <Avatar name={p.name} large />
           <div className="min-w-0">
             <div className="text-sm font-semibold">{p.name}</div>
-            <Small>{names.job(p.jobProfile)} · {names.type(p.employeeType)} · {names.location(p.location)} · <span className="tabular-nums">{p.code}</span></Small>
+            <Small>{names.job(p.position)} · {names.type(p.workPattern)} · {names.location(p.location)} · <span className="tabular-nums">{p.code}</span></Small>
           </div>
           <div className="ml-auto"><StatePill testId={tid.employee.state} state={p.state} /></div>
         </div>
         <GroupLabel>Shared workforce record</GroupLabel>
         <Fact label="Work email" testId={tid.employee.fact('email')}>{p.email || '—'}</Fact>
-        <Fact label="Employee type" testId={tid.employee.fact('employeeType')}>{names.type(p.employeeType)}</Fact>
-        <Fact label="Job profile" testId={tid.employee.fact('jobProfile')}>{names.job(p.jobProfile)}</Fact>
+        <Fact label="Work pattern" testId={tid.employee.fact('workPattern')}>{names.type(p.workPattern)}</Fact>
+        <Fact label="Position" testId={tid.employee.fact('position')}>{names.job(p.position)}</Fact>
         <Fact label="Department" testId={tid.employee.fact('department')}>{names.department(p.department)}</Fact>
-        <Fact label="Location" testId={tid.employee.fact('location')}>{names.location(p.location)}</Fact>
+        <Fact label="Site" testId={tid.employee.fact('location')}>{names.location(p.location)}</Fact>
         <Fact label="Line manager" testId={tid.employee.fact('manager')}>{names.manager(p.manager, p.code)}</Fact>
         <Fact label="Business Central resource no." testId={tid.employee.fact('resource')}>{p.resource || '—'}</Fact>
 
         {portal && <>
           <GroupLabel className="mt-lg">Portal login</GroupLabel>
-          <Fact label="QniConnect sign-in"><PortalLogin side={portal} p={p} testId={tid.people.recordPortal} inviteTestId={tid.people.recordInvite} /></Fact>
-          {portal.byCode.get(p.code) && <Fact label="Last login" testId={tid.employee.fact('lastLogin')}>{lastLoginText(portal.byCode.get(p.code)?.lastLogin ?? null)}</Fact>}
+          {portal.banner}
+          {/* the login's own actions are here, not on the row (user ruling 2026-10-27: one View per row) */}
+          <Fact label="QniConnect sign-in"><span className="inline-flex flex-wrap items-center gap-sm">
+            <PortalLogin side={portal} p={p} testId={tid.people.recordPortal} inviteTestId={tid.people.recordInvite} />
+            {login && portal.menu?.(login)}</span></Fact>
         </>}
 
         <GroupLabel className="mt-lg">Contract</GroupLabel>
-        <Fact label="Worker category" testId={tid.employee.fact('category')}>{p.category}</Fact>
-        <Fact label="Contracted hours" testId={tid.employee.fact('contractedHours')}>{perWeek(p.contractedHours, `${p.category} · no contracted hours`)}</Fact>
+        <Fact label="Employment type" testId={tid.employee.fact('employmentType')}>{p.employmentType}</Fact>
+        <Fact label="Contracted hours" testId={tid.employee.fact('contractedHours')}>{perWeek(p.contractedHours, `${p.employmentType} · no contracted hours`)}</Fact>
         <Fact label="Maximum hours" testId={tid.employee.fact('maxHours')}>{perWeek(p.maxHours, 'No maximum set')}</Fact>
         <Fact label="Employment" testId={tid.employee.fact('employment')}>{formatDate(p.start)}{p.end ? ` to ${formatDate(p.end)}` : ''}</Fact>
 

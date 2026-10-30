@@ -20,7 +20,7 @@ import type { Refusal } from '@/contract/common';
 import type { DayInput } from '@/contract/timesheets';
 import {
   ALREADY_CLOSED, BAD_FINISH, BREAK_ENDED, CHOOSE_FINISH_NEXT, FINISH_AHEAD, chosenToast, clockTime, closedNoDayToast, finishAhead, noDayNotice, BREAK_STARTED, CLOCK_OFF, CLOCK_STATUS, NOT_CLOCK_TYPE, breaksUsed, clockEntry, clockInAgainProblem,
-  clockState, clockedInToast, clockedOutToast, closeFirst, closedToast, elapsedSeconds, eventsFor, isForgotten, isOpenState,
+  clockState, clockedInToast, closingEvents, clockedOutToast, closeFirst, closedToast, elapsedSeconds, eventsFor, isForgotten, isOpenState,
   moveProblem, RING_TARGET_HOURS, clockWritten, type ClockEvent, type ClockMove, type ClockProblem, type ClockWritten,
 } from '@/domain/clock';
 import { DEFAULT_EXTRAS, flagOn, modOn } from '@/domain/modules';
@@ -48,7 +48,7 @@ function tenant(): Tenant {
 const live = (t: Tenant) => modOn(t.modules, 'TS') && modOn(t.modules, 'B');
 const breaksOn = (t: Tenant) => flagOn(t.modules, t.flags, 'BREAKS');
 const breaksMax = (t: Tenant) => t.extras?.breaksMax ?? DEFAULT_EXTRAS.breaksMax;
-const typeOf = (p: StoredEmployee) => Object.values(store.coll<StoredType>('employeeTypes')).find(x => x.code === p.employeeType);
+const typeOf = (p: StoredEmployee) => Object.values(store.coll<StoredType>('workPatterns')).find(x => x.code === p.workPattern);
 const closed = (r: StoredClock) => r.closedLate != null || r.closedNoDay != null;
 const stateOf = (r: StoredClock) => clockState(r.events, closed(r));
 const view = (r: StoredClock): ClockRecord => ({ ...r, written: r.written ?? null, closedNoDay: r.closedNoDay ?? null, state: stateOf(r),
@@ -89,7 +89,7 @@ function owner(s: Signed): { p: StoredEmployee; t: Tenant } {
   const p = me(s), t = tenant();
   if (!live(t)) refuseWith(CLOCK_OFF);
   const type = typeOf(p);
-  if (type?.mode !== 'clock') refuseWith(NOT_CLOCK_TYPE(type?.name ?? 'This employee type'));
+  if (type?.mode !== 'clock') refuseWith(NOT_CLOCK_TYPE(type?.name ?? 'This work pattern'));
   return { p, t };
 }
 const put = (base: StoredClock, changes: Partial<StoredClock>): StoredClock => {
@@ -154,7 +154,10 @@ export const clockHandlers = [
     const { current, open } = locate(p);
     /* D6: nothing new while an earlier clock is still open */
     if (open) refuseWith(closeFirst(open.date));
-    const rec = current ?? blank(p, clockDate()), st = stateOf(rec);
+    const found = current ?? blank(p, clockDate());
+    /* a same-day clock closed at a chosen finish (closedLate) reopens: its close becomes an out event and the flag clears */
+    const rec = found.closedLate ? { ...found, events: [...found.events, ...closingEvents(found.date, found.events, found.closedLate.finish)], closedLate: null } : found;
+    const st = stateOf(rec);
     const problem = moveProblem(st, 'in', { breaksOn: true, breaksUsed: 0, breaksMax: 1 })
       /* the gap before "Clock in again" is a break pair, so it needs one left (ruling) */
       ?? clockInAgainProblem(storedDay(p, rec.date)?.entries[0]?.breaks ?? [], rec.events, store.now(), breaksMax(t), rec.written);

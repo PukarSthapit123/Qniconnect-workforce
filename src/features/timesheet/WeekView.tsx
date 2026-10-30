@@ -1,13 +1,13 @@
 import { useState, type ReactNode } from 'react';
 import { Check, Clock, Minus, X } from 'lucide-react';
 import { tid } from '@/testids';
-import { Banner, Button, CalNav, Card, FormWarn, Pill, toastInfo, useNarrow, type Tone } from '@/ui';
+import { Banner, Button, CalNav, Card, FormWarn, Meter, Pill, toastInfo, useNarrow, type Tone } from '@/ui';
 import { useSubmitWeek } from '@/api/timesheets';
 import type { TimesheetWeek, WeekSubmitted } from '@/contract/timesheets';
 import { addDays, formatDay, isoWeek, periodStart, weekLayoutFor, weekModel } from '@/domain/timesheet';
 import { envOf, flagOn, hm, typeOf } from './capture';
 import { gridAs, gridTotals, initialGrid, kindFor, refusedDay, weekBody, type GridState } from './week';
-import { WeekGrid } from './WeekGrid';
+import { WeekGrid, weekend } from './WeekGrid';
 import { MultiWeek } from './MultiWeek';
 
 /* The week view: tsWeekView (qnipay-workforce-v15.html:6337-6366) and the
@@ -58,6 +58,23 @@ export function WeekView({ week, today, onAnchor, employeeId }: {
     </>);
 }
 
+/* Timesheet week review (2026-10-27): the week's answer leads, beside Submit week, instead of a 12px line under the
+   grid. Recorded against contracted on the app's Meter, then the weekdays up to today with nothing on them: a future
+   day is not blank yet, and a closed one cannot be filled. The status is the pill alone. */
+function WeekAnswer({ week, minutes, dayMin }: { week: TimesheetWeek; minutes: number; dayMin: number[] }) {
+  const c = week.capture, contracted = week.employee.contractedHours * 60;
+  const blank = week.days.filter((d, i) => !weekend(d.date) && !d.future && !d.locked && !dayMin[i]).length;
+  const figure = <><span data-testid={tid.ts.weekTotal}>{hm(c, minutes)}</span><span className="font-normal text-text-secondary">{contracted > 0
+    && <> of <span data-testid={tid.ts.contracted}>{hm(c, contracted)}</span></>} recorded</span></>;
+  return (
+    <div data-testid={tid.ts.weekAnswer} className="flex min-w-[240px] flex-[1_1_320px] flex-wrap items-center gap-x-md gap-y-xs text-sm">
+      {contracted > 0
+        ? <div className="min-w-[240px] flex-[0_1_360px]"><Meter pct={(minutes / contracted) * 100} tone="ok">{figure}</Meter></div>
+        : <strong className="font-semibold tabular-nums">{figure}</strong>}
+      {blank > 0 && <span className="text-text-secondary">{blank} weekday{blank === 1 ? '' : 's'} still blank</span>}
+    </div>);
+}
+
 function WeekPanel({ week, today, onAnchor, onSubmit, pending }: {
   week: TimesheetWeek; today: string; onAnchor: (date: string) => void; onSubmit: (s: GridState) => void; pending: boolean;
 }) {
@@ -69,7 +86,6 @@ function WeekPanel({ week, today, onAnchor, onSubmit, pending }: {
   const totals = gridTotals(current, m, week.days.map(d => d.date));
   const chip = weekChip(week);
   const end = addDays(week.weekStart, 6), thisWeek = periodStart(today);
-  const contracted = week.employee.contractedHours;
   return (
     <Card>
       <div className="mb-md flex flex-wrap items-center gap-md">
@@ -77,15 +93,12 @@ function WeekPanel({ week, today, onAnchor, onSubmit, pending }: {
           prev={{ testId: tid.ts.weekPrev, label: 'Previous week', onClick: () => onAnchor(addDays(week.weekStart, -7)) }}
           next={{ testId: tid.ts.weekNext, label: 'Next week', onClick: () => onAnchor(addDays(week.weekStart, 7)) }}
           back={{ testId: tid.ts.weekToday, label: 'Back to this week', current: 'This week', atCurrent: week.weekStart === thisWeek, onClick: () => onAnchor(today) }} />
+        <WeekAnswer week={week} minutes={totals.weekMin} dayMin={totals.dayMin} />
         <div className="ml-auto flex flex-wrap items-center gap-sm">
           <Pill testId={tid.ts.weekState} tone={chip.tone} glyph={chip.glyph}>{chip.label}</Pill>
           <Button testId={tid.ts.submitWeek} kind="primary" small pending={pending} onClick={() => onSubmit(current)}>Submit week</Button>
         </div>
       </div>
       <WeekGrid week={week} model={m} layout={layout} state={current} onChange={setState} today={today} />
-      <div className="mt-md flex flex-wrap items-center gap-md text-xs text-text-muted">
-        <span>Total <b data-testid={tid.ts.weekTotal} className="text-text-primary tabular-nums">{hm(c, totals.weekMin)}</b> · {chip.label.toLowerCase()}</span>
-        {contracted > 0 && <span data-testid={tid.ts.contracted} className="ml-auto"><b className="tabular-nums">{contracted}h</b> contracted</span>}
-      </div>
     </Card>);
 }

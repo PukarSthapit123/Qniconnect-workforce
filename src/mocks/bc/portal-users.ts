@@ -7,7 +7,7 @@
    A new user's employee number comes from Business Central's own employee
    records (the fake's profiles), matched by email, as the backend would know
    it: never from the Workforce side (spec N19). Someone with no Business
-   Central record has none, and People & access shows them unmatched. Kept
+   Central record has none, and Setup · Employees shows them unmatched. Kept
    for this page load, as the rest of the fake /bc is. */
 import { portalUserCreate, portalUsersList, portalUserUpdate, type BcPortalUser } from '@/contract/bc/portal-users';
 import { bcRefuse, bcServe } from './serve';

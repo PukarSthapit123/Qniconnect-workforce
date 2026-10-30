@@ -5,9 +5,9 @@ import { AdminCard, Button, Combobox, ConfirmModal, Field, FormWarn, Modal, Pill
 import type { OnboardingSetup, UpdateOnbTemplate } from '@/api/onboarding';
 import { ONB_TEMPLATE_NAME_MAX, onbTemplateNameProblem } from '@/domain/onboarding-templates';
 
-/* The Applies to card of a named template: the job profiles whose starters are
+/* The Applies to card of a named template: the positions whose starters are
    asked what it asks, a picker to add one, and Rename and Delete. Rename only
-   changes the draft's name; it is stored with Save. A job profile belongs to
+   changes the draft's name; it is stored with Save. A position belongs to
    one template at most, so one another template holds is shown but cannot be
    chosen. */
 export function AppliesToCard({ setup, templateId, draft, fe, onChange, onDelete, deleting }: {
@@ -15,33 +15,33 @@ export function AppliesToCard({ setup, templateId, draft, fe, onChange, onDelete
   onChange(patch: Partial<UpdateOnbTemplate>): void; onDelete(): void; deleting: boolean;
 }) {
   const [box, setBox] = useState<'rename' | 'delete' | null>(null);
-  const nameOf = (code: string) => setup.jobProfiles.find(p => p.code === code)?.name ?? code;
-  const holder = (code: string) => setup.templates.find(t => t.id !== templateId && t.jobProfiles.some(p => p.code === code));
-  const options = setup.jobProfiles.filter(p => !draft.jobProfiles.includes(p.code)).map(p => {
+  const nameOf = (code: string) => setup.positions.find(p => p.code === code)?.name ?? code;
+  const holder = (code: string) => setup.templates.find(t => t.id !== templateId && t.positions.some(p => p.code === code));
+  const options = setup.positions.filter(p => !draft.positions.includes(p.code)).map(p => {
     const other = holder(p.code);
     return other
       ? { value: p.code, label: `${p.name} (${p.code}), in ${other.name}`, disabled: true }
       : { value: p.code, label: `${p.name} (${p.code})` };
   });
-  const profileError = fe('jobProfiles'), nameError = fe('name');
+  const profileError = fe('positions'), nameError = fe('name');
   return (
     <AdminCard testId={tid.monb.card('applies')} icon={<UsersRound />} title="Applies to" tipTestId={tid.monb.tip('applies')}
-      tip="The job profiles that use this template. A job profile belongs to one template at most; every other one uses Default.">
-      {draft.jobProfiles.length === 0
-        ? <p data-testid={tid.monb.profilesEmpty} className="text-sm text-text-muted">No job profiles yet. Nobody uses this template until you add one and save.</p>
+      tip="The positions that use this template. A position belongs to one template at most; every other one uses Default.">
+      {draft.positions.length === 0
+        ? <p data-testid={tid.monb.profilesEmpty} className="text-sm text-text-muted">No positions yet. Nobody uses this template until you add one and save.</p>
         : <div className="flex flex-wrap gap-sm">
-          {draft.jobProfiles.map(code => (
+          {draft.positions.map(code => (
             <Pill key={code} testId={tid.monb.profile(code)} tone="neu" className="gap-xs pr-[3px]">
               {nameOf(code)}
               <Button testId={tid.monb.profileRemove(code)} kind="ghost" small className="size-6 min-h-0 p-0" aria-label={`Remove ${nameOf(code)}`}
-                onClick={() => onChange({ jobProfiles: draft.jobProfiles.filter(c => c !== code) })}><XIcon /></Button>
+                onClick={() => onChange({ positions: draft.positions.filter(c => c !== code) })}><XIcon /></Button>
             </Pill>))}
         </div>}
       {profileError && <p data-testid={tid.monb.profileError} role="alert" className="mt-xs text-xs text-err">{profileError}</p>}
       {nameError && <p data-testid={tid.monb.nameError} role="alert" className="mt-xs text-xs text-err">{nameError}</p>}
       <div className="mt-md min-w-0 max-md:w-full md:w-[320px]">
-        <Combobox testId={tid.monb.profileAdd} aria-label="Add job profile" searchLabel="Search job profiles" placeholder="Add job profile" options={options}
-          onValueChange={code => onChange({ jobProfiles: [...draft.jobProfiles, code] })} />
+        <Combobox testId={tid.monb.profileAdd} aria-label="Add position" searchLabel="Search positions" placeholder="Add position" options={options}
+          onValueChange={code => onChange({ positions: [...draft.positions, code] })} />
       </div>
       <div className="mt-lg flex flex-wrap gap-sm">
         <Button testId={tid.monb.templateRename} kind="ghost" small onClick={() => setBox('rename')}>Rename</Button>
@@ -50,7 +50,7 @@ export function AppliesToCard({ setup, templateId, draft, fe, onChange, onDelete
       {box === 'rename' && <RenameDialog setup={setup} templateId={templateId} name={draft.name} onClose={() => setBox(null)}
         onRename={name => { onChange({ name }); setBox(null); }} />}
       {box === 'delete' && <ConfirmModal open onOpenChange={o => { if (!o) setBox(null); }} title={`Delete ${draft.name}?`}
-        body="Its job profiles use the Default template from now on. Starters who have not submitted follow the Default template too."
+        body="Its positions use the Default template from now on. Starters who have not submitted follow the Default template too."
         confirmLabel="Delete template" danger busy={deleting} onConfirm={onDelete} />}
     </AdminCard>);
 }

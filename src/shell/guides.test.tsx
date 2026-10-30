@@ -8,7 +8,6 @@ import { resetTo, signInAs, type Persona } from '@/test/api-helpers';
 import { AdminEmployeesPage } from '@/features/employees/AdminEmployeesPage';
 import { TeamEmployeesPage } from '@/features/employees/TeamEmployeesPage';
 import { DimensionsPage } from '@/features/dimensions/DimensionsPage';
-import { ContractsPage } from '@/features/dimensions/ContractsPage';
 import { PermissionsPage } from '@/features/access/PermissionsPage';
 import { ProfilePage } from '@/features/profile/ProfilePage';
 import { DocumentsPage } from '@/features/documents/DocumentsPage';
@@ -20,7 +19,7 @@ import { BankHolidaysPage } from '@/features/calendar/BankHolidaysPage';
 import { OrganisationPage } from '@/features/organisation/OrganisationPage';
 import { NotificationsPage } from '@/features/notifications/NotificationsPage';
 import { ApprovalsPage } from '@/features/approvals/ApprovalsPage';
-import { EmployeeTypesPage } from '@/features/employee-types/EmployeeTypesPage';
+import { WorkPatternsPage } from '@/features/work-patterns/WorkPatternsPage';
 
 /* Suite GUIDES (S:1210-1243) and GUIDE AFFORDANCE (S:938-963): the
    explanation a page used to print lives behind its `?`, one structured
@@ -33,7 +32,6 @@ type Case = [view: string, persona: Persona, Page: ComponentType, path: string];
 const GUIDED: Case[] = [
   ['aemployees', 'admin', AdminEmployeesPage, '/setup/aemployees'],
   ['aloc', 'admin', DimensionsPage, '/setup/aloc'],
-  ['acon', 'admin', ContractsPage, '/setup/acon'],
   ['aperm', 'admin', PermissionsPage, '/setup/aperm'],
   ['profile', 'employee', ProfilePage, '/work/profile'],
   ['docs', 'employee', DocumentsPage, '/work/docs'],
@@ -61,7 +59,7 @@ test.each(GUIDED)('the %s page offers a ? that opens its guide, section by secti
 
 test('the permissions guide keeps the security caveat, and the guides read as sentences, not dashed asides', () => {
   expect(GUIDES.aperm?.sections.map(([h]) => h)).toContain('UI visibility is not security');
-  for (const g of ['aemployees', 'aloc', 'acon', 'aperm', 'profile', 'docs']) {
+  for (const g of ['aemployees', 'aloc', 'aperm', 'profile', 'docs']) {
     for (const [h, b] of GUIDES[g]?.sections ?? []) expect(`${h} ${b}`).not.toMatch(/ — | – /);
   }
 });
@@ -76,7 +74,7 @@ const UNGUIDED: Case[] = [
   ['aorg', 'admin', OrganisationPage, '/setup/aorg'],
   ['anotif', 'admin', NotificationsPage, '/setup/anotif'],
   ['aappr', 'admin', ApprovalsPage, '/setup/aappr'],
-  ['atypes', 'admin', EmployeeTypesPage, '/setup/atypes'],
+  ['atypes', 'admin', WorkPatternsPage, '/setup/atypes'],
 ];
 
 test.each(UNGUIDED)('the %s page has no guide in the prototype, so it shows no ?', async (view, persona, Page, path) => {
@@ -89,7 +87,7 @@ test.each(UNGUIDED)('the %s page has no guide in the prototype, so it shows no ?
 });
 
 /* Suite GUIDES: "Its explainer banner is gone from the page" (Employees,
-   Dimensions, Contracts, Permissions) and "Its read-only-pay banner is gone"
+   Master data, Permissions; Contracts is gone, 2026-10-27) and "Its read-only-pay banner is gone"
    (Profile): what the guide explains is not printed on the page as well, and
    the page carries no explainer banner. */
 test.each(GUIDED)('the %s page prints none of what its guide explains, and has no explainer banner', async (view, persona, Page, path) => {

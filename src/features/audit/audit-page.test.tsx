@@ -7,6 +7,7 @@ import { writeAudit } from '@/mocks/audit';
 import { queryClient } from '@/api/query';
 import { tid } from '@/testids';
 import { AuditPage } from './AuditPage';
+import { auditCount } from './entry';
 import { signInEmail, clearStubAccount } from '@/test/api-helpers';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
@@ -136,4 +137,20 @@ test('no entries at all says nothing is recorded yet; filters that match nothing
   fireEvent.click(screen.getByTestId(tid.audit.clear));
   expect(await screen.findByTestId(tid.audit.row(id))).toBeInTheDocument();
   expect(screen.getByTestId(tid.audit.filterText)).toHaveValue('');
+});
+
+/* Taste review 2026-10-26, Phase 2: the count beside the filters says how
+   much of the log is on screen. */
+test('the count: one entry, many entries, or the slice shown of a longer log', () => {
+  expect(auditCount(1, 1)).toBe('1 entry');
+  expect(auditCount(12, 12)).toBe('12 entries');
+  expect(auditCount(200, 1284)).toBe('1–200 of 1,284');
+});
+
+test('the count sits beside the filters, as the log holds it', async () => {
+  for (let i = 0; i < 205; i++) writeAudit({ who: { employeeCode: 'A', name: 'Dee' }, act: `Change ${i}`, entity: 'userType', entityId: 'employee' });
+  mount();
+  await screen.findByTestId(tid.audit.table);
+  const total = Object.keys(store.coll('audit')).length;
+  expect(screen.getByTestId(tid.audit.count)).toHaveTextContent(`1–200 of ${new Intl.NumberFormat('en-GB').format(total)}`);
 });

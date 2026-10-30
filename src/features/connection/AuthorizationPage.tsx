@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { CheckCircle2, Copy, ExternalLink, Eye, EyeOff, KeyRound, Plus, RefreshCw, ShieldOff, TriangleAlert } from 'lucide-react';
+import { CheckCircle2, Copy, ExternalLink, Eye, EyeOff, Plus, RefreshCw, ShieldOff, TriangleAlert } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router';
 import { tid } from '@/testids';
 import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
-import { Banner, Button, Card, CardHead, Modal, Page, PageHead, Pill } from '@/ui';
+import { Banner, Button, Card, CardHead, Modal, Note, Page, PageHead, Pill } from '@/ui';
 import { fieldControl } from '@/ui/shadcn/input';
 import { bcContext } from '@/api/bc/context';
 import { isInteractionRequired } from '@/api/bc/account-setup';
@@ -180,9 +180,9 @@ export function AuthorizationPage() {
           <Button testId={tid.aauth.cancel} kind="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
           <Button testId={tid.aauth.begin} kind="primary" pending={starting} onClick={() => void start()}>Start authorization</Button>
         </>}>
-        <Banner tone="info" icon={<KeyRound />} title="Administrator privileges required">
+        <Note title="Administrator privileges required">
           You will need to log in with a Business Central admin account to authorize the application. Make sure you have the necessary permissions before proceeding.
-        </Banner>
+        </Note>
         {/* a refusal while the dialog is open is said where the eye is */}
         {modalOpen && message && message.kind !== 'success' && <p role="alert" className="text-sm text-err">{message.text}</p>}
       </Modal>

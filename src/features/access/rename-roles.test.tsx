@@ -24,7 +24,7 @@ const type = async (id: string, value: string) => {
   if (value) await userEvent.type(input, value);
 };
 
-test('renaming saves each changed name on its user type, one audit row each, and the matrix follows; capabilities do not change', async () => {
+test('renaming saves each changed name on its access role, one audit row each, and the matrix follows; capabilities do not change', async () => {
   const before = caps();
   const box = await openDialog();
   expect(box).toHaveTextContent('This only changes what they are called');
@@ -33,7 +33,7 @@ test('renaming saves each changed name on its user type, one audit row each, and
   await type('employee', 'Support Worker');
   await type('manager', 'Service Manager');
   await userEvent.click(screen.getByTestId(tid.roleNames.save));
-  expect(await screen.findByText('Roles renamed: Support Worker, Service Manager, Admin.')).toBeInTheDocument();
+  expect(await screen.findByText('Access roles renamed: Support Worker, Service Manager, Admin.')).toBeInTheDocument();
   expect(names()).toEqual({ employee: 'Support Worker', manager: 'Service Manager', admin: 'Admin' });
   expect(caps()).toEqual(before);
   expect(audits().filter(a => a.entity === 'userType')).toHaveLength(2);

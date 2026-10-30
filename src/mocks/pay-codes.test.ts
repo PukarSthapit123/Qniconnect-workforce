@@ -29,10 +29,10 @@ describe('the list (mod_cfg)', () => {
     expect(l.codes.map(c => c.code)).toEqual(['STD', 'OT15', 'OT20', 'OT-WD', 'OT-SAT', 'OT-SUN', 'NIGHT', 'TRAVEL', 'DAY_RATE', 'UNSOC', 'ABS', 'LVE', 'SSP']);
     const std = l.codes.find(c => c.code === 'STD');
     expect(std?.claimedBy.map(t => t.code)).toEqual(['shift', 'casual']);
-    expect(std?.usedBy.map(u => u.kind)).toEqual(['employee-types', 'timesheet-days']);
+    expect(std?.usedBy.map(u => u.kind)).toEqual(['work-patterns', 'timesheet-days']);
     expect(l.codes.find(c => c.code === 'OT20')?.usedBy).toEqual([]);
     expect(l.codes.filter(c => c.basis === 'flat' || c.basis === 'units').every(c => c.value === '')).toBe(true);
-    expect(l.allowances.find(a => a.code === 'SLEEP_IN')).toEqual({ code: 'SLEEP_IN', label: 'Sleep-in', element: 'PE-SLEEP', claimedBy: [{ code: 'shift', name: 'Support Worker' }] });
+    expect(l.allowances.find(a => a.code === 'SLEEP_IN')).toEqual({ code: 'SLEEP_IN', label: 'Sleep-in', element: 'PE-SLEEP', claimedBy: [{ code: 'shift', name: 'Shift' }] });
     expect(JSON.stringify(l)).not.toMatch(/[£$€]|amount|currency/i);
   });
   test('a session without mod_cfg is refused', async () => {
@@ -118,8 +118,8 @@ describe('remove (If-Match, D2)', () => {
     expect(r.status).toBe(409);
     const x = refusal(r);
     expect(x.code).toBe('in-use');
-    expect(x.message).toMatch(/^STD is used by 2 employee types and \d+ timesheet days\.$/);
-    expect(x.usedBy?.map(u => u.kind)).toEqual(['employee-types', 'timesheet-days']);
+    expect(x.message).toMatch(/^STD is used by 2 work patterns and \d+ timesheet days\.$/);
+    expect(x.usedBy?.map(u => u.kind)).toEqual(['work-patterns', 'timesheet-days']);
     expect(store.coll('payCodes').pc_STD).toBeDefined();
   });
   test('an unused code is removed with one audit row and is gone from the list', async () => {

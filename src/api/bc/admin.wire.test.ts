@@ -90,7 +90,7 @@ describe('ADM wire (the overview, its own service instance)', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(4);
     expect(data.users).toEqual([]);
     expect(data.environments.map(e => e.name)).toEqual(['Sandbox']);
-    expect(data.auth).toEqual({ status: null, expiresAt: null });
+    expect(data.auth).toEqual({ status: null, issuedAt: null, expiresAt: null });
     /* ADM.C4's fallbacks: the environment's name and id */
     expect(data.tenant).toEqual({ name: 'Production Env', id: 'env-1', registrationDate: null });
   });

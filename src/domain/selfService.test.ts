@@ -1,13 +1,14 @@
 import { SELF_FIELDS, afterDecision, maskBank, routeFor, selfField, STAGE_CAPABILITY } from './selfService';
 
 test('the six self-service fields are the prototype\'s, and only bank details are sensitive', () => {
-  expect(SELF_FIELDS.map(f => f.key)).toEqual(['phone', 'address', 'emergencyName', 'emergencyPhone', 'bankAccount', 'bankSortCode']);
+  expect(SELF_FIELDS.map(f => f.key)).toEqual(['phone', 'address', 'emergencyFirstName', 'emergencyLastName', 'emergencyPhone', 'bankAccount', 'bankSortCode']);
   expect(SELF_FIELDS.filter(f => f.sensitive).map(f => f.key)).toEqual(['bankAccount', 'bankSortCode']);
   expect(selfField('phone').label).toBe('Mobile number');
 });
 test('contact and emergency changes go to the line manager; bank changes go to payroll as well', () => {
   expect(routeFor('phone')).toEqual(['manager']);
-  expect(routeFor('emergencyName')).toEqual(['manager']);
+  expect(routeFor('emergencyFirstName')).toEqual(['manager']);
+  expect(routeFor('emergencyLastName')).toEqual(['manager']);
   expect(routeFor('bankAccount')).toEqual(['manager', 'payroll']);
   expect(routeFor('bankSortCode')).toEqual(['manager', 'payroll']);
 });

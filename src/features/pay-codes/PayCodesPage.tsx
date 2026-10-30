@@ -16,7 +16,7 @@ const FOOTER = 'Workforce posts hours and a pay code. Business Central owns the 
 /* Ported from the prototype's admPayCodes (qnipay-workforce-v15.html:
    9596-9633): one table of the base codes, then the allowance codes, each
    with its name, whether it is a work type, what it posts as, its value, its
-   Business Central element and the employee types that claim it. A base
+   Business Central element and the work patterns that claim it. A base
    code opens the new or edit dialog; an allowance code is read only here,
    as it is kept with the allowances in Timesheet setup. No money (P1): the
    prototype's inline £ value is not ported; a value is a multiplier or a
@@ -29,7 +29,7 @@ export function PayCodesPage() {
   const editing = form?.row && latest(form.row, list.data?.codes);
   return (
     <Page testId={tid.page('mpay')}>
-      <PageHead title="Pay codes" crumb="Setup · Pay codes" tip={LEDE} tipTestId={tid.head.tip('mpay')} />
+      <PageHead title="Pay codes" tip={LEDE} tipTestId={tid.head.tip('mpay')} />
       {list.isPending && <p data-testid={tid.mpay.loading} className="text-text-secondary">Loading the pay codes&hellip;</p>}
       {list.isError && <p data-testid={tid.mpay.error} role="alert" className="text-err">The pay codes could not be loaded, so nothing here is current. Reload the page.</p>}
       {list.data && (

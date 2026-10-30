@@ -30,7 +30,7 @@ const world = () => ({ codes: Object.values(codes()).map(fieldsOf), allowances: 
 function usageWorld(): PayUsageWorld {
   const types = config().types;
   return {
-    types: Object.values(store.coll<StoredType>('employeeTypes')).map(t => {
+    types: Object.values(store.coll<StoredType>('workPatterns')).map(t => {
       const cap = recordAt(types, t.code);
       return { code: t.code, name: t.name, uom: t.uom, allowances: cap?.allowances ?? [], ruleCodes: (cap?.rules ?? []).map(r => r.code) };
     }),

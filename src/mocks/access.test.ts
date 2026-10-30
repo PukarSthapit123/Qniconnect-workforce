@@ -33,7 +33,7 @@ function accountByEmail(email: string): SeedAccount {
 }
 function ut(id: string): SeedUserType {
   const found = userTypes()[id];
-  if (!found) throw new Error(`no seeded user type "${id}"`);
+  if (!found) throw new Error(`no seeded access role "${id}"`);
   return found;
 }
 function audits(): SeedAudit[] { return Object.values(auditRows()); }
@@ -194,7 +194,7 @@ test('removing your own perm_cfg grant is refused even when someone else still h
   expect(accountByEmail(emp.email)).toEqual(before);
 });
 
-test('removing perm_cfg from your own user type is refused, even a template that is not locked', async () => {
+test('removing perm_cfg from your own access role is refused, even a template that is not locked', async () => {
   /* perm_cfg's lockedFor is only ["admin"] (see seed/social.json), so the
      lockedFor guard alone would let this through for "manager". */
   const types = userTypes();
@@ -205,7 +205,7 @@ test('removing perm_cfg from your own user type is refused, even a template that
   const beforeStore = structuredClone(store.db);
   const r = await req('PUT', '/api/v1/user-types/manager/capabilities/perm_cfg', { granted: false }, before.version);
   expect(r.status).toBe(409);
-  expect(await r.json()).toMatchObject({ code: 'locked', message: expect.stringContaining('your own user type'), next: SELF_NEXT });
+  expect(await r.json()).toMatchObject({ code: 'locked', message: expect.stringContaining('your own access role'), next: SELF_NEXT });
   expect(ut('manager')).toEqual(before);
   expect(store.db).toEqual(beforeStore);
 });

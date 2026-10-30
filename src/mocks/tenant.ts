@@ -24,7 +24,7 @@ interface Meta { id: string; version: number; updatedAt: string }
 /* What the tenant record holds. weekGrid and weekLayout are read from their
    own home into the view. */
 export type StoredTenant = Omit<Tenant, 'extras'> & { extras: { breaksMax: number; vehiclesMax: number } };
-interface StoredType extends Meta { code: string; name: string; capabilities: string[] }
+interface StoredType extends Meta { code: string; name: string; fieldGroups: string[] }
 
 const NO_TENANT = { code: 'not-found', message: 'This tenant has no settings loaded.', next: 'Reload the page. If it keeps happening, report it.' };
 export const tenantRec = (): StoredTenant => recordAt(store.coll<StoredTenant>('tenant'), 'tenant') ?? refuse(404, NO_TENANT);
@@ -61,13 +61,13 @@ export function view(t: StoredTenant): Tenant {
 const refuseWith = (r: DomainRefusal): never =>
   refuse(r.status, { code: r.code, message: r.message, next: r.next, ...(r.field ? { field: r.field } : {}) });
 
-/* Sites off takes the site capability from every employee type (the prototype's mod-off). */
+/* Sites off takes the site capability from every work pattern (the prototype's mod-off). */
 export function sitesOff(): string[] {
-  const types = store.coll<StoredType>('employeeTypes');
+  const types = store.coll<StoredType>('workPatterns');
   const changed: string[] = [];
   for (const t of Object.values(types)) {
-    if (!t.capabilities.includes('site')) continue;
-    types[t.id] = bump(t, { capabilities: t.capabilities.filter(c => c !== 'site') });
+    if (!t.fieldGroups.includes('site')) continue;
+    types[t.id] = bump(t, { fieldGroups: t.fieldGroups.filter(c => c !== 'site') });
     changed.push(t.name);
   }
   return changed;

@@ -9,8 +9,8 @@ import { renderPage, withFakeServer } from '@/test/render-page';
 import { audits, fault, resetTo, signInAs } from '@/test/api-helpers';
 import { OnboardingSetupPage } from './OnboardingSetupPage';
 
-/* The qnipay seed: Senior consultants holds the SCONS job profile; the other
-   three job profiles use the Default template. */
+/* The qnipay seed: Senior consultants holds the SCONS position; the other
+   three positions use the Default template. */
 withFakeServer();
 beforeEach(() => resetTo('qnipay'));
 const SENIOR = 'onbt-senior-consultants';
@@ -29,21 +29,21 @@ const pick = async (key: string) => {
 const onSwitch = (id: string) => screen.getByTestId(tid.monb.stepSwitch(id));
 
 describe('Onboarding setup: the template bar', () => {
-  test('the bar lists Default first, then each template with its job profile count', async () => {
+  test('the bar lists Default first, then each template with its position count', async () => {
     await open();
-    expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (3 job profiles)');
+    expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (3 positions)');
     await userEvent.click(screen.getByTestId(tid.monb.template));
-    expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual(['Default (3 job profiles)', 'Senior consultants (1 job profile)']);
+    expect(screen.getAllByRole('option').map(o => o.textContent)).toEqual(['Default (3 positions)', 'Senior consultants (1 position)']);
     await userEvent.click(screen.getByTestId(`${tid.monb.template}-option-${SENIOR}`));
     expect(await screen.findByTestId(tid.monb.card('applies'))).toBeInTheDocument();
   });
 
   test('a template named in the address opens it, and a stale one opens Default', async () => {
     await open(`/setup/monb?template=${SENIOR}`);
-    expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Senior consultants (1 job profile)');
+    expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Senior consultants (1 position)');
     cleanup();
     await open('/setup/monb?template=onbt-gone');
-    expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (3 job profiles)');
+    expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (3 positions)');
     expect(await screen.findByTestId(tid.monb.card('steps'))).toBeInTheDocument();
     expect(screen.queryByTestId(tid.monb.error)).toBeNull();
   });
@@ -66,7 +66,7 @@ describe('Onboarding setup: the template bar', () => {
     await userEvent.click(await screen.findByTestId(`${tid.monb.newFrom}-option-${SENIOR}`));
     await userEvent.click(screen.getByTestId(tid.monb.newCreate));
     await waitFor(() => expect(toasts()).toContain(templateCreatedText('Consultants')));
-    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Consultants (0 job profiles)'));
+    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Consultants (0 positions)'));
     expect(await screen.findByTestId(tid.monb.card('applies'))).toBeInTheDocument();
     expect(await screen.findByTestId(tid.monb.stepSwitch('additional'))).toHaveAttribute('aria-checked', 'false');
   });
@@ -84,7 +84,7 @@ describe('Onboarding setup: the template bar', () => {
     expect(screen.getByTestId(tid.monb.dirty)).toBeInTheDocument();
     await pick('default');
     await userEvent.click(screen.getByTestId(tid.modal.confirm));
-    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (3 job profiles)'));
+    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (3 positions)'));
     expect(screen.queryByTestId(tid.monb.card('applies'))).toBeNull();
     expect(JSON.stringify(templates()[SENIOR])).toBe(before);
   });
@@ -121,19 +121,19 @@ describe('Onboarding setup: Applies to', () => {
     await screen.findByTestId(tid.monb.card('applies'));
   };
 
-  test('the job profiles show as chips, and removing one is part of the draft', async () => {
+  test('the positions show as chips, and removing one is part of the draft', async () => {
     await open(`/setup/monb?template=${SENIOR}`);
     expect(await screen.findByTestId(tid.monb.profile('SCONS'))).toHaveTextContent('Senior Consultant');
     await userEvent.click(screen.getByTestId(tid.monb.profileRemove('SCONS')));
-    expect(screen.getByTestId(tid.monb.profilesEmpty)).toHaveTextContent('No job profiles yet. Nobody uses this template until you add one and save.');
+    expect(screen.getByTestId(tid.monb.profilesEmpty)).toHaveTextContent('No positions yet. Nobody uses this template until you add one and save.');
     expect(screen.getByTestId(tid.monb.dirty)).toBeInTheDocument();
-    expect(templates()[SENIOR]?.jobProfiles).toEqual(['SCONS']);
+    expect(templates()[SENIOR]?.positions).toEqual(['SCONS']);
     await userEvent.click(screen.getByTestId(tid.monb.save));
-    await waitFor(() => expect(templates()[SENIOR]?.jobProfiles).toEqual([]));
+    await waitFor(() => expect(templates()[SENIOR]?.positions).toEqual([]));
     expectTestIdCoverage(document.body);
   });
 
-  test('Add job profile lists the free profiles, shows one held elsewhere as unavailable naming its template, and adds a free one', async () => {
+  test('Add position lists the free profiles, shows one held elsewhere as unavailable naming its template, and adds a free one', async () => {
     await open();
     await newTemplate('Consultants');
     await addMenu();
@@ -148,17 +148,17 @@ describe('Onboarding setup: Applies to', () => {
     expect(screen.queryByTestId(`${tid.monb.profileAdd}-option-CONS`)).toBeNull();
     await userEvent.keyboard('{Escape}');
     await userEvent.click(screen.getByTestId(tid.monb.save));
-    await waitFor(() => expect(templates()['onbt-consultants']?.jobProfiles).toEqual(['CONS']));
+    await waitFor(() => expect(templates()['onbt-consultants']?.positions).toEqual(['CONS']));
   });
 
-  test('a job profile the server refuses as held elsewhere shows its field error under the chips', async () => {
+  test('a position the server refuses as held elsewhere shows its field error under the chips', async () => {
     await open();
     await newTemplate('Consultants');
     await addMenu();
     await userEvent.click(screen.getByTestId(`${tid.monb.profileAdd}-option-CONS`));
     const senior = templates()[SENIOR];
     if (!senior) throw new Error('seed has no Senior consultants');
-    senior.jobProfiles = ['SCONS', 'CONS'];
+    senior.positions = ['SCONS', 'CONS'];
     await userEvent.click(screen.getByTestId(tid.monb.save));
     expect(await screen.findByTestId(tid.monb.profileError)).toHaveTextContent(
       'Consultant (CONS) is already in Senior consultants. Take it out of Senior consultants first.');
@@ -179,7 +179,7 @@ describe('Onboarding setup: Applies to', () => {
     expect(templates()[SENIOR]?.name).toBe('Senior consultants');
     await userEvent.click(screen.getByTestId(tid.monb.save));
     await waitFor(() => expect(templates()[SENIOR]?.name).toBe('Seniors'));
-    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Seniors (1 job profile)'));
+    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Seniors (1 position)'));
   });
 
   test('Delete asks first, says the profiles fall back to Default, then opens Default', async () => {
@@ -187,16 +187,16 @@ describe('Onboarding setup: Applies to', () => {
     await userEvent.click(await screen.findByTestId(tid.monb.templateDelete));
     const dialog = screen.getByTestId(tid.modal.root);
     expect(within(dialog).getByText('Delete Senior consultants?')).toBeInTheDocument();
-    expect(dialog).toHaveTextContent('Its job profiles use the Default template from now on. Starters who have not submitted follow the Default template too.');
+    expect(dialog).toHaveTextContent('Its positions use the Default template from now on. Starters who have not submitted follow the Default template too.');
     await userEvent.click(screen.getByTestId(tid.modal.confirm));
     await waitFor(() => expect(toasts()).toContain(templateDeletedText('Senior consultants')));
-    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (4 job profiles)'));
+    await waitFor(() => expect(screen.getByTestId(tid.monb.template)).toHaveTextContent('Default (4 positions)'));
     expect(Object.keys(templates())).toEqual([]);
     expect(screen.queryByTestId(tid.monb.card('applies'))).toBeNull();
   });
 
-  test('with several hundred job profiles the search still finds one', async () => {
-    const profiles = store.coll<{ id: string; code: string; name: string }>('jobProfiles');
+  test('with several hundred positions the search still finds one', async () => {
+    const profiles = store.coll<{ id: string; code: string; name: string }>('positions');
     for (let n = 1; n <= 300; n++) { const code = `JP${String(n).padStart(3, '0')}`; profiles[`job-${code}`] = { id: `job-${code}`, code, name: `Profile ${code}` }; }
     await open(`/setup/monb?template=${SENIOR}`);
     await addMenu();
@@ -290,10 +290,10 @@ describe('Onboarding setup: no false unsaved changes', () => {
     await userEvent.click(sw);
     noDirty();
   });
-  test('a job profile removed and added back is not a change', async () => {
+  test('a position removed and added back is not a change', async () => {
     const senior = templates()[SENIOR];
     if (!senior) throw new Error('seed has no Senior consultants');
-    senior.jobProfiles = ['SCONS', 'CONS'];
+    senior.positions = ['SCONS', 'CONS'];
     await open(`/setup/monb?template=${SENIOR}`);
     await userEvent.click(await screen.findByTestId(tid.monb.profileRemove('SCONS')));
     expect(screen.getByTestId(tid.monb.dirty)).toBeInTheDocument();

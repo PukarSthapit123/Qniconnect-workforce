@@ -15,11 +15,11 @@ interface Spec {
   refs: readonly (readonly [field: string, collection: string, noun: string])[];
 }
 const SPECS: Spec[] = [
-  { kind: 'locations', collection: 'locations', prefix: 'loc', label: 'Location', singular: 'location', entity: 'location',
+  { kind: 'locations', collection: 'locations', prefix: 'loc', label: 'Site', singular: 'site', entity: 'location',
     refs: [['department', 'departments', 'department'], ['costCentre', 'costCentres', 'cost centre']] },
   { kind: 'departments', collection: 'departments', prefix: 'dep', label: 'Department', singular: 'department', entity: 'department', refs: [] },
   { kind: 'cost-centres', collection: 'costCentres', prefix: 'cc', label: 'Cost centre', singular: 'cost centre', entity: 'costCentre', refs: [] },
-  { kind: 'job-profiles', collection: 'jobProfiles', prefix: 'job', label: 'Job profile', singular: 'job profile', entity: 'jobProfile', refs: [] },
+  { kind: 'positions', collection: 'positions', prefix: 'job', label: 'Position', singular: 'position', entity: 'position', refs: [] },
   { kind: 'projects', collection: 'projects', prefix: 'prj', label: 'Project', singular: 'project', entity: 'project',
     refs: [['costCentre', 'costCentres', 'cost centre'], ['location', 'locations', 'location']] },
 ];
@@ -48,8 +48,10 @@ function handlersFor(spec: Spec) {
   return [
     serve(api.list, () => {
       const w = usageWorld();
+      const tasks = spec.kind === 'projects' ? Object.values(store.coll<{ projectCode: string; name: string }>('projectTasks')) : [];
       return Object.values(coll()).sort((a, b) => a.code.localeCompare(b.code))
-        .map(r => ({ ...r, inUse: totalUses(usageOf(spec.kind, r.code, w)) }));
+        .map(r => ({ ...r, inUse: totalUses(usageOf(spec.kind, r.code, w)),
+          ...(spec.kind === 'projects' ? { tasks: tasks.filter(t => t.projectCode === r.code).map(t => t.name) } : {}) }));
     }),
     serve(api.create, ({ session, body }) => {
       const b: Record<string, unknown> = body;

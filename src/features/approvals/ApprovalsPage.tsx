@@ -23,7 +23,7 @@ export function ApprovalsPage() {
   const setup = useApprovalSetup();
   return (
     <Page testId={tid.page('aappr')}>
-      <PageHead title="Approval framework" crumb="Setup · Approvals" tipTestId={tid.aappr.tip}
+      <PageHead title="Approvals" tipTestId={tid.aappr.tip}
         tip="One framework: layer, approver, scope, condition, SLA, escalation, delegation and return reason. Workflows stay module-specific." />
       {setup.data
         ? <><ChainCard chains={setup.data.chains} /><SignOffCard s={setup.data.signOff} /></>
@@ -81,7 +81,7 @@ function SignOffCard({ s }: { s: SignOff }) {
   const range = (p: { from: string; to: string }) => `${formatDmy(p.from)} – ${formatDmy(p.to)}`;
   return (
     <AdminCard testId={tid.aappr.signOff} icon={<Shield />} title="Sign-off settings" tipTestId={tid.aappr.signOffTip}
-      tip="Applies to every employee type. Each employee's approver is the manager on their record." desc="How a period gets approved">
+      tip="Applies to every work pattern. Each employee's approver is the manager on their record." desc="How a period gets approved">
       <SettingRow title={<>Approval method<Tip testId={tid.aappr.methodTip} text="An email link lets a manager approve without signing in." /></>} desc="How managers approve">
         <span data-testid={tid.aappr.method} className="text-sm">{s.emailApproval ? 'Email link (one-click)' : 'In-app only'}</span>
         <NavLink testId={tid.aappr.methodLink} to="/setup/amods?m=TS" className={LINK}>Change it in Modules and features</NavLink>

@@ -34,7 +34,7 @@
    "code": "VEHICLE",
    "label": "Vehicle & movement fields",
    "mod": "TS",
-   "desc": "Offered to employee types with the vehicle capability."
+   "desc": "Offered to work patterns with the vehicle capability."
   },
   {
    "code": "PROJECT",
@@ -144,7 +144,7 @@
    "code": "CORE",
    "name": "QniConnect",
    "ic": "users",
-   "desc": "Employees, employee types, approvals and notifications.",
+   "desc": "Employees, work patterns, approvals and notifications.",
    "locked": true
   },
   {
@@ -266,65 +266,65 @@
  "typeArchetypes": [
   {
    "key": "salaried",
-   "name": "Salaried Employee",
+   "name": "Salaried",
    "mode": "grid",
    "uom": "day",
-   "capabilities": []
+   "fieldGroups": []
   },
   {
    "key": "hourly",
-   "name": "Hourly Operative",
+   "name": "Hourly",
    "mode": "form",
    "uom": "hour",
-   "capabilities": []
+   "fieldGroups": []
   },
   {
    "key": "shift",
-   "name": "Shift Worker",
+   "name": "Shift",
    "mode": "form",
    "uom": "hour",
-   "capabilities": [
+   "fieldGroups": [
     "shift"
    ]
   },
   {
    "key": "site_op",
-   "name": "Site Operative",
+   "name": "Site-based",
    "mode": "clock",
    "uom": "hour",
-   "capabilities": [
+   "fieldGroups": [
     "site"
    ]
   },
   {
    "key": "driver",
-   "name": "Driver",
+   "name": "Mobile",
    "mode": "form",
    "uom": "hour",
-   "capabilities": [
+   "fieldGroups": [
     "vehicle"
    ]
   },
   {
    "key": "project_res",
-   "name": "Project Resource",
+   "name": "Project-based",
    "mode": "grid",
    "uom": "day",
-   "capabilities": [
+   "fieldGroups": [
     "project"
    ]
   },
   {
    "key": "casual",
-   "name": "Casual / Bank Worker",
+   "name": "Bank",
    "mode": "clock",
    "uom": "hour",
-   "capabilities": [
+   "fieldGroups": [
     "shift"
    ]
   }
  ],
- "typeCapabilities": [
+ "patternFieldGroups": [
   {
    "code": "vehicle",
    "label": "Vehicles & driving",
@@ -332,8 +332,8 @@
   },
   {
    "code": "site",
-   "label": "Site & location",
-   "desc": "Offers the location field and per-site rules. Needs the Sites module."
+   "label": "Site",
+   "desc": "Offers the site field and per-site rules. Needs the Sites module."
   },
   {
    "code": "project",
@@ -360,10 +360,15 @@
    "hint": "Kept for payroll and statutory documents"
   },
   {
-   "k": "emgName",
-   "label": "Emergency contact",
+   "k": "emgFirst",
+   "label": "Emergency contact first name",
    "type": "text",
    "hint": "Who we call if something happens on shift"
+  },
+  {
+   "k": "emgLast",
+   "label": "Emergency contact last name",
+   "type": "text"
   },
   {
    "k": "emgPhone",
@@ -487,8 +492,8 @@
   {
    "c": "site",
    "tier": "site",
-   "label": "Location",
-   "cat": "Location",
+   "label": "Site",
+   "cat": "Site",
    "input": "select",
    "opts": [
     "Willow House",

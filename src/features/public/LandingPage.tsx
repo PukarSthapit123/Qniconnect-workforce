@@ -34,7 +34,9 @@ export function LandingPage() {
   return (
     <PublicLayout testId={tid.page('landing')} nav={<TopLink href={SUPPORT_MAIL} testId={tid.pub.help}>Need help?</TopLink>}>
       <section className="flex flex-1 items-center bg-surface-inverse text-text-on-inverse">
-        <div className="mx-auto grid w-full max-w-[1120px] items-center gap-2xl px-xl py-2xl max-lg:px-md max-md:gap-xl max-md:py-xl lg:grid-cols-[1fr_400px]">
+        {/* a 16px gutter below lg: at 12px the pitch's text sat on the screen
+            edge (taste review 2026-10-26, Phase 1 item 6) */}
+        <div className="mx-auto grid w-full max-w-[1120px] items-center gap-2xl px-xl py-2xl max-lg:px-lg max-md:gap-xl max-md:py-xl lg:grid-cols-[1fr_400px]">
           <div>
             <p className="mb-lg inline-flex items-center gap-sm rounded-pill border border-glass-line bg-glass px-md py-xs text-xs font-semibold">
               <span aria-hidden="true" className="size-[6px] rounded-pill bg-brand-accent" />Employee self-service portal

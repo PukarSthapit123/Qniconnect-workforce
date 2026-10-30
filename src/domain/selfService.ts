@@ -5,14 +5,15 @@
    detail change takes every field, one that applies only to bank details
    takes the two bank fields, in the chain's order. */
 import { defaultChainFor, type ChainStep } from './approvals';
-export const SELF_FIELD_KEYS = ['phone', 'address', 'emergencyName', 'emergencyPhone', 'bankAccount', 'bankSortCode'] as const;
+export const SELF_FIELD_KEYS = ['phone', 'address', 'emergencyFirstName', 'emergencyLastName', 'emergencyPhone', 'bankAccount', 'bankSortCode'] as const;
 export type SelfFieldKey = (typeof SELF_FIELD_KEYS)[number];
 export interface SelfFieldDef { key: SelfFieldKey; label: string; hint: string; sensitive: boolean; inputType: 'tel' | 'text' }
 
 export const SELF_FIELDS: readonly SelfFieldDef[] = [
   { key: 'phone', label: 'Mobile number', hint: 'Used for shift offers and urgent cover', sensitive: false, inputType: 'tel' },
   { key: 'address', label: 'Home address', hint: 'Kept for payroll and statutory documents', sensitive: false, inputType: 'text' },
-  { key: 'emergencyName', label: 'Emergency contact', hint: 'Who we call if something happens on shift', sensitive: false, inputType: 'text' },
+  { key: 'emergencyFirstName', label: 'Emergency contact first name', hint: 'Who we call if something happens on shift', sensitive: false, inputType: 'text' },
+  { key: 'emergencyLastName', label: 'Emergency contact last name', hint: '', sensitive: false, inputType: 'text' },
   { key: 'emergencyPhone', label: 'Emergency number', hint: '', sensitive: false, inputType: 'tel' },
   { key: 'bankAccount', label: 'Bank account number', hint: 'Verified by payroll before it takes effect. Workforce never uses it.', sensitive: true, inputType: 'text' },
   { key: 'bankSortCode', label: 'Sort code', hint: '', sensitive: true, inputType: 'text' },

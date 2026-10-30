@@ -53,7 +53,8 @@ Mutation responses (`record`, `auditId`, `changed`, `summary`, `message`, `warni
 | `email` | string | `Employee."Company E-Mail"` | Text[80] | direct. Also the key of `SIR_WF Account`. |
 | `phone` | string | `Employee."Mobile Phone No."` | Text[30] | direct. |
 | `address` | string | `Employee.Address`, `"Address 2"`, `City`, `"Post Code"` | Text[100], Text[50], Text[30], Code[20] | split / join on commas. The first part goes to Address, the last part that looks like a post code goes to Post Code, the part before it goes to City, and anything else goes to Address 2. The read joins the non-blank parts with ", ". |
-| `emergencyName` | string | `Employee Relative."First Name"` where `"SIR_WF Emergency Contact" = true` | Text[30] | direct. The first emergency row, created if missing. |
+| `emergencyFirstName` | string | `Employee Relative."First Name"` where `"SIR_WF Emergency Contact" = true` | Text[30] | direct. The first emergency row, created if missing. |
+| `emergencyLastName` | string | `Employee Relative."Last Name"` (same row) | Text[30] | direct. |
 | `emergencyPhone` | string | `Employee Relative."Phone No."` (same row) | Text[30] | direct. |
 | `bankAccount` | string | `SIR Employee Bank Account."Bank Account No."`, the row in `Employee."SIR Preferred Bank Acc. Code"` | Text[30] | mask. Written only through an approved profile change (§2.3) or by `emp_crud` on create. |
 | `bankSortCode` | string | `SIR Employee Bank Account."Bank Branch No."` (same row) | Text[20] | mask. |
@@ -96,7 +97,7 @@ The cost centre is not a person field in the contract. Location carries it.
 | `id` | string | `SIR_WF Profile Change."Public Id"` | Text[50] | lookup. |
 | `personCode` | string | `."Employee No."` | Code[20] | direct. |
 | `personName` | string | — | | derived in BC from `Employee`. |
-| `field` | SelfFieldKey | `."Field Key"` | Enum `SIR_WF Self Field` | enum map: phone, address, emergencyName, emergencyPhone, bankAccount, bankSortCode. |
+| `field` | SelfFieldKey | `."Field Key"` | Enum `SIR_WF Self Field` | enum map: phone, address, emergencyFirstName, emergencyLastName, emergencyPhone, bankAccount, bankSortCode. |
 | `from` | string | `."From Value"` | Text[250] | direct. Masked for the two bank fields. |
 | `to` | string | `."To Value"` | Blob | direct. Masked on read for bank fields. Cleared for bank fields once applied. |
 | `note` | string | `.Note` | Text[500] | direct. |
@@ -227,6 +228,8 @@ The contract carries tasks as names: `OpenProject.tasks[]` and the template's `c
 | `group` | string ≤ 60 | `Job Task."SIR_WF Task Group"` | Text[50] | direct. **Mismatch**: 60 vs 50 (§11). |
 | `billable` | boolean | `Job Task."SIR_WF Billable"` | Boolean | direct. |
 | `OpenProject.tasks[]` | string[] | — | | derived in BC: the descriptions of `Job Task` rows with `Job Task Type = Posting`. |
+| `Project.tasks[]` (projects list only, read only) | string[] | — | | derived in BC, as `OpenProject.tasks[]`: the job's `Job Task` descriptions where `Job Task Type = Posting`. Shown under each project on Master data (2026-10-27); not written by Workforce. |
+| `OpenProject.costCentre` | string | `Default Dimension."Dimension Value Code"` (Table ID 167 Job, No. = the job, Dimension Code = the cost centre dimension) | Code[20] | derived; '' when the job has none. The week grid fills a row's cost centre with it when the project is chosen; the person can change it for their row (2026-10-27). |
 
 ## 4. Foundation and access
 
@@ -944,7 +947,7 @@ The line's `Start Date` and `End Date` stay blank. `Break Start Time` and `Break
 | `read` | record<policy, boolean> | `."Policies Read"` | Blob JSON | Blob JSON. |
 | `data.personal` (dob ≤ 10, gender ≤ 40, nat ≤ 60, ni ≤ 20) | | `.Data` | Blob JSON | Encrypted at rest (`EndUserIdentifiableInformation`). Never in the tracker view or the audit. |
 | `data.contact` (mob ≤ 30, alt ≤ 30, a1 ≤ 200, a2 ≤ 200, city ≤ 80, post ≤ 12) | | `.Data` | Blob JSON | as above. |
-| `data.emergency[]` (nm ≤ 120, rel ≤ 40, ph ≤ 30) ≤ 5 | | `.Data` | Blob JSON | as above. |
+| `data.emergency[]` (fn ≤ 30, ln ≤ 30, rel ≤ 40, ph ≤ 30) ≤ 5 | | `.Data` | Blob JSON | as above. |
 | `data.additional` (conv ≤ 10, convDetail ≤ 1000, wtd ≤ 60, quals[] (nm, by, exp) ≤ 10) | | `.Data` | Blob JSON | as above. |
 | `data.documents.rtwType` | ≤ 60 | `.Data` | Blob JSON | as above. |
 | `signature` | string ≤ 120 | `.Signature` | Text[120] | direct. |
@@ -969,7 +972,7 @@ The `onboardingStarts` command (or the person transition to active) copies `.Dat
 | `contact.mob` | `Employee."Mobile Phone No."` | direct. |
 | `contact.alt` | `Employee."Phone No."` | direct. |
 | `contact.a1`, `.a2`, `.city`, `.post` | `Employee.Address`, `"Address 2"`, `City`, `"Post Code"` | direct. **Mismatch**: a1 and a2 allow 200, Address is 100 and Address 2 is 50 (§11). |
-| `emergency[].nm`, `.rel`, `.ph` | `Employee Relative."First Name"`, `."SIR Relationship"` (W1), `."Phone No."`, with `"SIR_WF Emergency Contact" = true` | One row per contact. **Mismatch**: nm allows 120, First Name is 30 (§11). |
+| `emergency[].fn`, `.ln`, `.rel`, `.ph` | `Employee Relative."First Name"`, `."Last Name"`, `."SIR Relationship"` (W1), `."Phone No."`, with `"SIR_WF Emergency Contact" = true` | One row per contact. Direct: fn and ln are capped at 30 to match (was one 120-character nm, G10). |
 | `additional.quals[].nm`, `.by`, `.exp` | `Employee Qualification.Description`, `."Institution/Company"`, `."Expiration Date"` | One row per qualification. `"Qualification Code"` is `SIR_WF Setup`'s default code (§11). |
 | `additional.conv`, `.convDetail`, `.wtd` | — | Stay in the case only. Convictions are special-category data and are never copied. |
 | `documents.rtwType` | — | Stays in the case. |
@@ -1066,7 +1069,7 @@ A matching `SIR_WF Posting Line` (`Source = leave`, `State = posted`, `Target En
 | G7 | Task `group` | `Job Task."SIR_WF Task Group"` | 60 | 50 | Widen to Text[60]. **01 changed.** |
 | G8 | Bank holiday `name` | `Base Calendar Change.Description` | 80 | 30 | Refuse over 30, or add a `SIR_WF` extension field. Decide in the plan. |
 | G9 | Onboarding `contact.a1`, `.a2` | `Employee.Address` (100), `"Address 2"` (50) | 200 | 100 / 50 | Write-back cuts to length and keeps the full text in the case. |
-| G10 | Emergency contact `nm` | `Employee Relative."First Name"` | 120 | 30 | Write the first word to `First Name` and the rest to `Last Name` (30). Anything longer stays in the case. |
+| G10 | Emergency contact name | `Employee Relative."First Name"`, `."Last Name"` | 30 + 30 | 30 + 30 | **Resolved (2026-10-27).** The contact now has its own first and last name fields (`fn`, `ln`, ≤ 30 each), written directly. Nothing is split from a full name. |
 | G11 | Onboarding policy id (template) | `SIR_WF Onboarding Policy.Code` | 80, lower case | Code[20] | Template import refuses an id over 20 characters. Code fields are upper case, so the read lower-cases. |
 | G12 | Employee type `code` | `SIR_WF Employee Type.Code` | lower case | Code[32] (upper case) | Stored upper case, returned lower case. |
 | G13 | Leave request `Public Id` | `SIR Leave Register."External ID"` | Text[50] | Code[35] | Leave request Public Ids are generated at 20 characters or fewer, so the Detail's `<id>-<yyyymmdd>` fits 35. |

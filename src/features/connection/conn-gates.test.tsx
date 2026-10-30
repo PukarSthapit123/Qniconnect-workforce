@@ -41,7 +41,7 @@ const sections = async () => {
 };
 
 describe('Review focus 4: the two admin sources disagree', () => {
-  test('isAdmin with an employee persona: lands on the overview, and Setup holds the QniConnect pages only (Business Central, and People & access for its portal logins)', async () => {
+  test('isAdmin with an employee persona: lands on the overview, and Setup holds the QniConnect pages only (Business Central, and Setup · Employees for its portal logins)', async () => {
     portalAdmin(AMARA, true);
     open(AMARA, '/');
     expect(await screen.findByTestId(tid.page('aoverview'))).toBeInTheDocument();
@@ -49,8 +49,10 @@ describe('Review focus 4: the two admin sources disagree', () => {
     expect(screen.getByTestId(tid.nav.group('work'))).toBeInTheDocument();
     window.history.replaceState(null, '', '/setup/asetup');
     window.dispatchEvent(new PopStateEvent('popstate'));
-    /* Task 20: the Employees section holds People & access alone (its portal half) */
+    /* Task 20: the Employees section holds Setup · Employees alone (its portal half) */
     expect(await sections()).toEqual([tid.setup.card('conn'), tid.setup.card('employees')]);
+    /* the audit log is not theirs, so neither are its recent changes */
+    expect(screen.queryByTestId(tid.setup.recent)).toBeNull();
   });
 
   test('isAdmin with an employee persona: a Workforce setup page typed by hand is unavailable', async () => {
@@ -74,11 +76,11 @@ describe('Review focus 4: the two admin sources disagree', () => {
     expect(await sections()).toEqual(['org', 'mods', 'employees', 'gov', 'int'].map(k => tid.setup.card(k)));
   });
 
-  /* Task 20 review: the same disagreement on People & access, through the
+  /* Task 20 review: the same disagreement on Setup · Employees, through the
      whole app: the admin persona keeps the Workforce records, and without
      isAdmin there is no portal logins panel, no portal column, and no
      /bc/portalUsers read at all (N18). */
-  test('an admin persona without isAdmin: People & access shows the Workforce records only, and reads no portal users', async () => {
+  test('an admin persona without isAdmin: Setup · Employees shows the Workforce records only, and reads no portal users', async () => {
     const reads: string[] = [];
     server.events.on('request:start', ({ request }) => { if (new URL(request.url).pathname.includes('/bc/portalUsers') && request.method === 'GET') reads.push(request.url); });
     const dee = accountOf('admin').email;

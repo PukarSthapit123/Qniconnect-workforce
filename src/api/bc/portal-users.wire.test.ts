@@ -1,4 +1,4 @@
-/* People & access's portal user calls on the wire (docs/superpowers/inventory/
+/* Setup · Employees' portal user calls on the wire (docs/superpowers/inventory/
    admin.md: USERS.C1 to C4), with everything QniConnect could have sent
    stored first, so a header the row does not list would show up. bcApi runs
    against a stubbed fetch. */

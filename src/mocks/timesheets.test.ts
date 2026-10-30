@@ -66,12 +66,12 @@ describe('GET /api/v1/timesheets/:employeeId/weeks/:weekStart', () => {
   });
   test('the proxy grid seeds from the target employee, never from the manager (D6)', async () => {
     const w = TimesheetWeek.parse((await (await as('manager'))('GET', '/api/v1/timesheets/CP-1153/weeks/2026-08-10')).body);
-    expect(w.employee).toMatchObject({ code: 'CP-1153', employeeType: 'shift' });
+    expect(w.employee).toMatchObject({ code: 'CP-1153', workPattern: 'shift' });
     expect(w.days[1]?.record?.employeeCode).toBe('CP-1153');
     expect(w.capture.type?.fields.start).toBeDefined();
     expect(w.capture.capabilities).toContain('shift');
   });
-  test('a manager cannot read a week at another location', async () => {
+  test('a manager cannot read a week at another site', async () => {
     const r = await (await as('manager'))('GET', '/api/v1/timesheets/CP-1288/weeks/2026-08-10');
     expect(r.status).toBe(403);
     expect(refusal(r).code).toBe('scope');
@@ -133,6 +133,18 @@ describe('PUT /api/v1/timesheets/:employeeId/days/:date (Review Focus 2)', () =>
     const r = await put(call, 'CP-1042', '2026-08-13', { entries: [entry('07:00', '15:00')] });
     expect(r.status).toBe(422);
     expect(refusal(r)).toMatchObject({ code: 'TS_INVALID', field: 'entries.0.notes', message: 'Submission blocked. Fill in: Notes.', next: expect.any(String) });
+    expect(snapshot(...WRITES)).toEqual(before);
+  });
+  test('a mandatory field missing on a later entry is refused on that entry', async () => {
+    const cfg = Object.values(store.coll<{ types: Record<string, { fields: Record<string, { mand: boolean }> }> }>('timesheetConfig'))[0];
+    const notes = cfg?.types.shift?.fields.notes;
+    if (!notes) throw new Error('no notes field on the shift type');
+    notes.mand = true;
+    const call = await as('employee'), before = snapshot(...WRITES);
+    const r = await put(call, 'CP-1042', '2026-08-13', { entries: [
+      { ...entry('07:00', '10:00'), fields: { notes: 'Morning' } }, entry('11:00', '15:00')] });
+    expect(r.status).toBe(422);
+    expect(refusal(r)).toMatchObject({ code: 'TS_INVALID', field: 'entries.1.notes', message: 'Submission blocked. Fill in: Notes.' });
     expect(snapshot(...WRITES)).toEqual(before);
   });
   test('a closed period is refused with PERIOD_LOCKED, the lock note and who to ask', async () => {
@@ -243,7 +255,7 @@ describe('proxy entry (Review Focus 5)', () => {
     const r = await submit(await as('manager'), 'CP-1153', '2026-08-14', shiftDay());
     expect(refusal(r)).toMatchObject({ code: 'TS_INVALID', field: 'date' });
   });
-  test('proxy entry outside the manager\'s location is refused, and an employee cannot enter for anyone', async () => {
+  test('proxy entry outside the manager\'s site is refused, and an employee cannot enter for anyone', async () => {
     const out = await submit(await as('manager'), 'CP-1288', '2026-08-13', shiftDay());
     expect(out.status).toBe(403);
     expect(refusal(out).code).toBe('scope');
@@ -328,6 +340,8 @@ describe('POST /api/v1/timesheets/:employeeId/weeks/:weekStart/submit (Review Fo
 });
 
 describe('POST /api/v1/timesheets/:employeeId/multiweek/submit', () => {
+  /* the seed tenant has multi-week submit off; these tests are about the feature, so it is on */
+  beforeEach(() => { const t = store.coll<{ flags: Record<string, boolean> }>('tenant').tenant; if (t) t.flags.MULTIWEEK = true; });
   test('weeks in a closed period are held back with the lock note, and nothing changes', async () => {
     const call = await as('employee'), before = snapshot(...WRITES);
     const out = MultiweekSubmitted.parse((await call('POST', '/api/v1/timesheets/CP-1042/multiweek/submit', { weeks: ['2026-08-03', '2026-07-27'] })).body);
@@ -378,7 +392,7 @@ describe('POST /api/v1/timesheet-days/:id/transition (Review Focus 1 and 4)', ()
     expect(r.status).toBe(422);
     expect(refusal(r)).toMatchObject({ field: 'reason', message: 'A reason is required.' });
   });
-  test('403 out of scope: a day at another location', async () => {
+  test('403 out of scope: a day at another site', async () => {
     const other = plant('CP-1288', '2026-08-12');
     const call = await as('manager'), before = snapshot(...WRITES);
     const r = await decide(call, other, 'ok');
@@ -392,7 +406,7 @@ describe('POST /api/v1/timesheet-days/:id/transition (Review Focus 1 and 4)', ()
     for (const to of ['ok', 'back'] as const) {
       const r = await decide(call, own, to, 'x');
       expect(r.status).toBe(403);
-      expect(refusal(r)).toMatchObject({ code: 'SELF_APPROVAL', next: 'Ask another approver at your location.' });
+      expect(refusal(r)).toMatchObject({ code: 'SELF_APPROVAL', next: 'Ask another approver at your site.' });
     }
     expect(snapshot(...WRITES)).toEqual(before);
   });
@@ -418,7 +432,7 @@ describe('POST /api/v1/timesheet-days/:id/transition (Review Focus 1 and 4)', ()
 
 describe('GET /api/v1/approvals/timesheets and the dispatcher (Review Focus 4)', () => {
   const queue = async (call: Call, qs = '') => ApprovalQueue.parse((await call('GET', `/api/v1/approvals/timesheets${qs}`)).body);
-  test('the queue holds the pending days at the approver\'s location, with counts and the bulk set', async () => {
+  test('the queue holds the pending days at the approver\'s site, with counts and the bulk set', async () => {
     const q = await queue(await as('manager'));
     expect(q.rows.map(r => r.employeeCode)).toEqual(['CP-1042', 'CP-1153', 'CP-1266']);
     expect(q.counts).toEqual({ pend: 3, resub: 0, ok: 2, back: 1, mgrok: 0, all: 6 });
@@ -427,7 +441,7 @@ describe('GET /api/v1/approvals/timesheets and the dispatcher (Review Focus 4)',
     const all = await queue(await as('manager'), '?status=all');
     expect(all.rows.filter(r => r.state === 'ok')).toHaveLength(2);
   });
-  test('days at other locations stay out of the queue and are counted as outside', async () => {
+  test('days at other sites stay out of the queue and are counted as outside', async () => {
     plant('CP-1288', '2026-08-12');
     const q = await queue(await as('manager'));
     expect(q.rows.map(r => r.employeeCode)).not.toContain('CP-1288');
@@ -573,4 +587,46 @@ describe('a fault on each write leaves no record and no audit row (Review Focus 
       expect(snapshot(...WRITES)).toEqual(before);
     });
   }
+});
+
+describe('the timesheet switches are enforced by the server, not only the screens', () => {
+  const tenantRec = () => {
+    const t = store.coll<{ modules: Record<string, boolean>; flags: Record<string, boolean> }>('tenant').tenant;
+    if (!t) throw new Error('no tenant');
+    return t;
+  };
+  test('with no capture method on, a day save, day submit, week submit and multi-week submit are refused with module-off and nothing is written', async () => {
+    const t = tenantRec(); t.modules.A = false; t.modules.B = false;
+    const call = await as('employee'), before = snapshot(...WRITES);
+    for (const r of [await put(call, 'CP-1042', '2026-08-13', shiftDay()), await submit(call, 'CP-1042', '2026-08-13', shiftDay()),
+      await call('POST', '/api/v1/timesheets/CP-1042/weeks/2026-08-10/submit', { days: [{ date: '2026-08-10', version: 0, ...shiftDay() }] }),
+      await call('POST', '/api/v1/timesheets/CP-1042/multiweek/submit', { weeks: ['2026-08-03'] })]) {
+      expect(r.status).toBe(403);
+      expect(refusal(r)).toMatchObject({ code: 'module-off', message: 'Timesheet capture is switched off for this organisation.' });
+    }
+    expect(snapshot(...WRITES)).toEqual(before);
+  });
+  test('with the weekly grid off, a week submit is refused with feature-off', async () => {
+    tenantRec().flags.WEEKLY = false;
+    const call = await as('employee'), before = snapshot(...WRITES);
+    const r = await call('POST', '/api/v1/timesheets/CP-1042/weeks/2026-08-10/submit', { days: [{ date: '2026-08-10', version: 0, ...shiftDay() }] });
+    expect([r.status, refusal(r).code]).toEqual([403, 'feature-off']);
+    expect(snapshot(...WRITES)).toEqual(before);
+  });
+  test('with multi-week submit off, earlier weeks are refused with feature-off', async () => {
+    tenantRec().flags.MULTIWEEK = false;
+    const call = await as('employee'), before = snapshot(...WRITES);
+    const r = await call('POST', '/api/v1/timesheets/CP-1042/multiweek/submit', { weeks: ['2026-08-03'] });
+    expect([r.status, refusal(r).code]).toEqual([403, 'feature-off']);
+    expect(snapshot(...WRITES)).toEqual(before);
+  });
+  test('with break tracking off, a new break is refused but a day without one saves', async () => {
+    tenantRec().flags.BREAKS = false;
+    const call = await as('employee'), before = snapshot(...WRITES);
+    const r = await put(call, 'CP-1042', '2026-08-13', shiftDay());
+    expect(r.status).toBe(403);
+    expect(refusal(r)).toMatchObject({ code: 'feature-off', field: 'entries.0.breaks' });
+    expect(snapshot(...WRITES)).toEqual(before);
+    expect((await put(call, 'CP-1042', '2026-08-13', shiftDay('07:00', '15:00', []))).status).toBe(200);
+  });
 });

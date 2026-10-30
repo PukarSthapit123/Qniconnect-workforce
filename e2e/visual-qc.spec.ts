@@ -8,7 +8,7 @@ import { AMARA, DEE } from './support/read';
    design pass (docs/superpowers/reviews/ui-pass.md), at desktop (1440) and
    phone (390) widths, in light and dark, on the social seed against the
    frozen clock: Home, Documents and Profile for Amara Okafor; Overview,
-   Environments and People & access for Dee Fitzgerald (a portal admin); and,
+   Environments and Setup · Employees for Dee Fitzgerald (a portal admin); and,
    signed out, Landing, Registration and Pricing. Refresh them deliberately,
    with --update-snapshots, only after looking at what changed. */
 const WIDTHS = [{ w: 1440, h: 1000 }, { w: 390, h: 844 }] as const;
@@ -43,7 +43,7 @@ for (const { w, h } of WIDTHS) {
       await shot('landing');
       await visit('/register', tid.page('register'), tid.reg.step);
       await shot('register');
-      await visit('/pricing', tid.page('pricing'), tid.price.panel('basic'));
+      await visit('/pricing', tid.page('pricing'), tid.price.base);
       await shot('pricing');
 
       await signInEmail(page, AMARA);
@@ -60,7 +60,7 @@ for (const { w, h } of WIDTHS) {
       await shot('overview');
       await visit('/setup/aenv', tid.aenv.list);
       await shot('environments');
-      await visit('/setup/aemployees', tid.employees.table, tid.ausers.list, tid.people.portalCol('CP-1042'));
+      await visit('/setup/aemployees', tid.employees.table, tid.people.portalCol('CP-1042'));
       await shot('people');
     });
   }

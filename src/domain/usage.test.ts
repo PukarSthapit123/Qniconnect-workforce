@@ -2,11 +2,11 @@ import { inUseRefusal, totalUses, usageOf, type UsageWorld } from './usage';
 
 const world: UsageWorld = {
   employees: [
-    { code: 'CP-1042', name: 'Amara Okafor', location: 'WH', department: 'CARE', jobProfile: 'SW', employeeType: 'shift' },
-    { code: 'CP-1088', name: 'Marcus Reilly', location: 'WH', department: 'CARE', jobProfile: 'SW', employeeType: 'shift' },
-    { code: 'CP-1153', name: 'Jo Baptiste', location: 'WH', department: 'CARE', jobProfile: 'SSW', employeeType: 'shift' },
-    { code: 'CP-1201', name: 'Priya Shah', location: 'WH', department: 'CARE', jobProfile: 'SW', employeeType: 'casual' },
-    { code: 'CP-1288', name: 'Grace Whitmore', location: 'BC', department: 'CARE', jobProfile: 'SW', employeeType: 'shift' },
+    { code: 'CP-1042', name: 'Amara Okafor', location: 'WH', department: 'CARE', position: 'SW', workPattern: 'shift' },
+    { code: 'CP-1088', name: 'Marcus Reilly', location: 'WH', department: 'CARE', position: 'SW', workPattern: 'shift' },
+    { code: 'CP-1153', name: 'Jo Baptiste', location: 'WH', department: 'CARE', position: 'SSW', workPattern: 'shift' },
+    { code: 'CP-1201', name: 'Priya Shah', location: 'WH', department: 'CARE', position: 'SW', workPattern: 'casual' },
+    { code: 'CP-1288', name: 'Grace Whitmore', location: 'BC', department: 'CARE', position: 'SW', workPattern: 'shift' },
   ],
   locations: [
     { code: 'WH', name: 'Willow House', department: 'CARE', costCentre: 'WH-CAM-01' },
@@ -15,21 +15,21 @@ const world: UsageWorld = {
   projects: [{ code: 'PRJ-204', name: 'Camden Supported Living', costCentre: 'WH-CAM-01', location: 'WH' }],
 };
 
-test('a location in use names the employees and projects that use it, with at most three examples', () => {
+test('a site in use names the employees and projects that use it, with at most three examples', () => {
   expect(usageOf('locations', 'WH', world)).toEqual([
     { kind: 'employees', count: 4, examples: ['Amara Okafor (CP-1042)', 'Marcus Reilly (CP-1088)', 'Jo Baptiste (CP-1153)'] },
     { kind: 'projects', count: 1, examples: ['Camden Supported Living (PRJ-204)'] },
   ]);
 });
-test('a department is used by locations and employees', () => {
-  expect(usageOf('departments', 'CARE', world).map(u => [u.kind, u.count])).toEqual([['locations', 2], ['employees', 5]]);
+test('a department is used by sites and employees', () => {
+  expect(usageOf('departments', 'CARE', world).map(u => [u.kind, u.count])).toEqual([['sites', 2], ['employees', 5]]);
 });
-test('a cost centre is used by locations and projects', () => {
-  expect(usageOf('cost-centres', 'WH-CAM-01', world).map(u => [u.kind, u.count])).toEqual([['locations', 1], ['projects', 1]]);
+test('a cost centre is used by sites and projects', () => {
+  expect(usageOf('cost-centres', 'WH-CAM-01', world).map(u => [u.kind, u.count])).toEqual([['sites', 1], ['projects', 1]]);
 });
-test('a job profile and an employee type are used by employees', () => {
-  expect(usageOf('job-profiles', 'SSW', world)).toEqual([{ kind: 'employees', count: 1, examples: ['Jo Baptiste (CP-1153)'] }]);
-  expect(usageOf('employee-types', 'casual', world)).toEqual([{ kind: 'employees', count: 1, examples: ['Priya Shah (CP-1201)'] }]);
+test('a position and a work pattern are used by employees', () => {
+  expect(usageOf('positions', 'SSW', world)).toEqual([{ kind: 'employees', count: 1, examples: ['Jo Baptiste (CP-1153)'] }]);
+  expect(usageOf('work-patterns', 'casual', world)).toEqual([{ kind: 'employees', count: 1, examples: ['Priya Shah (CP-1201)'] }]);
 });
 test('a leaver still counts, because the record keeps its references', () => {
   expect(totalUses(usageOf('locations', 'BC', world))).toBe(1);
@@ -42,13 +42,13 @@ test('the refusal names what uses it and what to do', () => {
   expect(inUseRefusal('WH', usageOf('locations', 'WH', world))).toEqual({
     message: 'WH is used by 4 employees and 1 project.',
     next: 'Move those first. Removing it would leave them pointing at nothing.' });
-  expect(inUseRefusal('SSW', usageOf('job-profiles', 'SSW', world)).message).toBe('SSW is used by 1 employee.');
-  expect(inUseRefusal('CARE', usageOf('departments', 'CARE', world)).message).toBe('CARE is used by 2 locations and 5 employees.');
+  expect(inUseRefusal('SSW', usageOf('positions', 'SSW', world)).message).toBe('SSW is used by 1 employee.');
+  expect(inUseRefusal('CARE', usageOf('departments', 'CARE', world)).message).toBe('CARE is used by 2 sites and 5 employees.');
 });
 
-test('a job profile an onboarding template lists is in use, named by the template', () => {
-  const w = { employees: [], locations: [], projects: [], onboardingTemplates: [{ name: 'Senior consultants', jobProfiles: ['SCONS'] }] };
-  expect(usageOf('job-profiles', 'SCONS', w)).toEqual([{ kind: 'onboarding templates', count: 1, examples: ['Senior consultants'] }]);
-  expect(inUseRefusal('SCONS', usageOf('job-profiles', 'SCONS', w)).message).toBe('SCONS is used by the onboarding template Senior consultants.');
+test('a position an onboarding template lists is in use, named by the template', () => {
+  const w = { employees: [], locations: [], projects: [], onboardingTemplates: [{ name: 'Senior consultants', positions: ['SCONS'] }] };
+  expect(usageOf('positions', 'SCONS', w)).toEqual([{ kind: 'onboarding templates', count: 1, examples: ['Senior consultants'] }]);
+  expect(inUseRefusal('SCONS', usageOf('positions', 'SCONS', w)).message).toBe('SCONS is used by the onboarding template Senior consultants.');
   expect(inUseRefusal('X', [{ kind: 'onboarding templates', count: 2, examples: ['A', 'B'] }]).message).toBe('X is used by 2 onboarding templates.');
 });

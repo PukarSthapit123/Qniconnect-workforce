@@ -75,15 +75,15 @@ describe('who claims a code and what uses it', () => {
   test('usage counts the types, the capture fields and the timesheet days, and the refusal names them', () => {
     const u = payCodeUsage('OT15', w);
     expect(u).toEqual([
-      { kind: 'employee-types', count: 1, examples: ['Support Worker'] },
+      { kind: 'work-patterns', count: 1, examples: ['Support Worker'] },
       { kind: 'fields', count: 1, examples: ['Overtime'] },
       { kind: 'timesheet-days', count: 1, examples: [] },
     ]);
     expect(payCodeInUse('OT15', u)).toEqual({
-      message: 'OT15 is used by 1 employee type, 1 capture field and 1 timesheet day.',
+      message: 'OT15 is used by 1 work pattern, 1 capture field and 1 timesheet day.',
       next: 'Remove those references first. A rule pointing at a code that no longer exists would post nothing.',
     });
-    expect(payCodeInUse('STD', payCodeUsage('STD', w)).message).toBe('STD is used by 1 employee type and 2 timesheet days.');
+    expect(payCodeInUse('STD', payCodeUsage('STD', w)).message).toBe('STD is used by 1 work pattern and 2 timesheet days.');
     expect(payCodeUsage('OT20', w)).toEqual([]);
   });
 });

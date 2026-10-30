@@ -36,7 +36,7 @@ export const FIELD_HINTS: Readonly<Record<string, string>> = {
   travel: 'Time spent travelling that counts as working time, entered separately from the shift itself.',
   project: 'What this time is charged to. Drives cost allocation, not your pay.',
   job_task: 'The activity within the project. The list comes from that project’s own tasks.',
-  cost_c: 'Where the cost lands in the ledger. Usually inherited from the location or project.',
+  cost_c: 'Where the cost lands in the ledger. Usually inherited from the site or project.',
   billable: 'Tick when this time can be invoiced to the funder or client.',
   dept: 'Your department. Scopes who can see and approve this timesheet.',
   work_order: 'The job or work-order reference this time belongs to, if your team uses one.',
@@ -88,6 +88,8 @@ export function formGroups(c: CaptureSetup): { group: FieldGroup; fields: FormFi
 export function selectValues(code: string, opts: readonly string[] | undefined, c: CaptureSetup, chosen: Readonly<Record<string, unknown>>): string[] {
   if (code === 'project') return projectOptions(c.projects);
   if (code === 'job_task') return taskOptions(c.projects, typeof chosen.project === 'string' ? chosen.project : '');
+  /* a project's default cost centre is always offered, so a row it fills in can be read back and changed */
+  if (code === 'cost_c') return [...new Set([...(opts ?? []), ...c.projects.map(p => p.costCentre).filter(Boolean)])];
   return [...(opts ?? [])];
 }
 /* A rate type lists the pay codes marked as work types. */

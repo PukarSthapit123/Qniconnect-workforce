@@ -8,7 +8,7 @@ import { renderPage, withFakeServer } from '@/test/render-page';
 import { audits, resetTo, signInAs, snapshot } from '@/test/api-helpers';
 import { TimesheetSetupPage } from './TimesheetSetupPage';
 
-/* The qnipay seed: two employee types, Consultant (hourly, weekly grid, the
+/* The qnipay seed: two work patterns, Consultant (hourly, weekly grid, the
    first in the picker) and Project Manager (salaried, paid per day). The
    review threshold is 10 and the daily maximum 16. */
 withFakeServer();
@@ -28,7 +28,8 @@ const choose = (testId: string, value: string) => fireEvent.change(screen.getByT
 test('the page shows every card and explains weekly overtime is not built', async () => {
   await open();
   for (const k of ['fields', 'rules', 'allowances', 'boundary']) expect(screen.getByTestId(tid.mts.card(k))).toBeInTheDocument();
-  expect(screen.getByText('Modules · Timesheet · Timesheet setup')).toBeInTheDocument();
+  /* no crumb: the tab strip leads back to the module and all modules */
+  expect(screen.queryByText('Modules · Timesheet · Timesheet setup')).toBeNull();
   expect(screen.getByTestId(tid.mts.otDay)).toHaveTextContent('Future enhancement. Weekly overtime thresholds and multipliers are not yet applied by the timesheet rules.');
   expect(screen.getByTestId(tid.mts.rule('minNet'))).toHaveValue(0.25);
   expect(screen.getByTestId(tid.mts.rule('nightFrom'))).toHaveValue('20:00');

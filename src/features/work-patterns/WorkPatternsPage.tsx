@@ -1,14 +1,14 @@
 import { useState } from 'react';
-import { Puzzle } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { tid } from '@/testids';
-import type { EmployeeType, EmployeeTypeRow } from '@/contract/employee-types';
-import { AdminCard, Button, Card, CardHead, Chip, ConfirmModal, ChipPicker, FormWarn, NavLink, Page, PageHead, SelectBox, SettingRow, Small, SwitchField, TextInput, toastInfo } from '@/ui';
+import type { WorkPattern, WorkPatternRow } from '@/contract/work-patterns';
+import { Button, Card, CardHead, ConfirmModal, FormWarn, NavLink, Page, PageHead, SelectBox, SettingRow, Small, SwitchField, TextInput, toastInfo } from '@/ui';
 import { buttonVariants } from '@/ui/shadcn/button';
 import { cn } from '@/lib/utils';
-import { useDimension, useEmployeeTypes } from '@/api/reference';
-import { useRemoveType, useTypeLibrary, useUpdateType } from '@/api/employee-types';
+import { useDimension, useWorkPatterns } from '@/api/reference';
+import { useRemoveType, useTypeLibrary, useUpdateType } from '@/api/work-patterns';
 import { useShellData } from '@/shell/shellData';
-import { CATEGORIES, MODES, NewTypeModal, UOMS, pick } from './NewTypeModal';
+import { EMPLOYMENT_TYPES, MODES, NewTypeModal, UOMS, pick } from './NewTypeModal';
 
 const SUB = 'mt-lg mb-sm border-b pb-xs text-xs font-[650] tracking-normal text-text-secondary first:mt-0';
 
@@ -16,49 +16,54 @@ const SUB = 'mt-lg mb-sm border-b pb-xs text-xs font-[650] tracking-normal text-
    v15.html:9099-9107, 8105-8180): pick a type, then how it captures time and
    what its forms offer, one setting to a row. The prototype wrote each
    setting as it changed; here the type is saved once, with If-Match and one
-   audit row. Capture fields are set in Timesheet setup. Job profiles live under Dimensions. */
-export function EmployeeTypesPage() {
-  const types = useEmployeeTypes(), jobs = useDimension('job-profiles');
+   audit row. Capture fields are set in Timesheet setup. Positions live under Dimensions. */
+export function WorkPatternsPage() {
+  const types = useWorkPatterns(), jobs = useDimension('positions');
   const [selected, setSelected] = useState<string | null>(null);
   const [adding, setAdding] = useState(false);
   const current = types.data?.find(t => t.code === selected) ?? types.data?.[0];
   return (
     <Page testId={tid.page('atypes')}>
-      <PageHead title="Employee types" crumb="Setup · Employee types" tipTestId={tid.head.tip('atypes')}
-        tip="What somebody is: how they capture time, which fields they see, and what they may claim." />
-      {types.isError && <p data-testid={tid.types.error} role="alert" className="text-err">The employee types could not be loaded. Reload the page.</p>}
+      {/* The card's own "Work patterns" title repeated the page's, so it went,
+         and its line and tip moved up to the page (taste review 2026-10-27). */}
+      <PageHead title="Work patterns" tipTestId={tid.head.tip('atypes')}
+        tip="How somebody works: how they capture time, which fields they see, what they may claim. Not their job (their position) nor their access (their access role)."
+        context="A work pattern is how somebody works, not their job: each one owns how its employees capture time and what they are paid per." />
+      {types.isError && <p data-testid={tid.types.error} role="alert" className="text-err">The work patterns could not be loaded. Reload the page.</p>}
       {types.data && (
-        <AdminCard icon={<Puzzle />} title="Employee types" tipTestId={tid.types.tip}
-          tip="A type is a configuration template, not a permission level. Roles stay Employee, Manager and Admin.">
-          <Small className="-mt-sm mb-md">Roles are identity. Employee types are yours to shape: each one owns how its employees capture time and what they are paid per.</Small>
-          <ChipPicker testId={tid.types.list}>
-            {types.data.map(t => (
-              <Chip key={t.code} testId={tid.types.chip(t.code)} on={t.code === current?.code} onClick={() => setSelected(t.code)}>
-                {t.name} <span className="text-xs font-bold tracking-[.05em] opacity-70">{t.uom === 'day' ? 'DAY' : 'HR'}</span></Chip>))}
-            <Chip testId={tid.types.add} add onClick={() => setAdding(true)}>+ New employee type</Chip>
-          </ChipPicker>
+        <Card>
+          {/* one dropdown rather than a chip per type, so the list stays one row however many types a tenant adds (user, 2026-10-27) */}
+          <div className="mb-md flex flex-wrap items-center gap-sm">
+            <label htmlFor="types-list" className="text-sm font-semibold">Work pattern</label>
+            {/* the trigger fills what holds it; 320px keeps New work pattern beside it */}
+            <div className="w-[320px] max-md:w-full">
+              <SelectBox testId={tid.types.list} id="types-list" value={current?.code ?? ''} onValueChange={setSelected}
+                options={types.data.map(t => ({ value: t.code, label: `${t.name} · ${t.uom === 'day' ? 'per day' : 'per hour'}` }))} />
+            </div>
+            <Button testId={tid.types.add} small onClick={() => setAdding(true)}><Plus aria-hidden />New work pattern</Button>
+          </div>
           {current && <TypeDetail key={`${current.code}-${current.version}`} type={current} onRemoved={() => setSelected(null)} />}
-        </AdminCard>)}
+        </Card>)}
       <Card testId={tid.types.jobs}>
-        <CardHead title="Job profiles" actions={
-          <NavLink testId={tid.types.jobsLink} to="/setup/aloc?d=job-profiles" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>Open Dimensions</NavLink>} />
+        <CardHead title="Positions" actions={
+          <NavLink testId={tid.types.jobsLink} to="/setup/aloc?d=positions" className={cn(buttonVariants({ variant: 'ghost', size: 'sm' }))}>Open Dimensions</NavLink>} />
         <Small>{jobs.data?.length ?? 0} profiles, held once under Dimensions and referenced here. {(jobs.data ?? []).map(j => j.name).join(' · ')}</Small>
       </Card>
       {adding && <NewTypeModal onClose={() => setAdding(false)} onCreated={t => setSelected(t.code)} />}
     </Page>);
 }
 
-function TypeDetail({ type, onRemoved }: { type: EmployeeTypeRow; onRemoved(): void }) {
+function TypeDetail({ type, onRemoved }: { type: WorkPatternRow; onRemoved(): void }) {
   const lib = useTypeLibrary();
-  const [v, setV] = useState<Pick<EmployeeType, 'name' | 'category' | 'mode' | 'uom' | 'capabilities'>>(
-    { name: type.name, category: type.category, mode: type.mode, uom: type.uom, capabilities: type.capabilities });
+  const [v, setV] = useState<Pick<WorkPattern, 'name' | 'employmentType' | 'mode' | 'uom' | 'fieldGroups'>>(
+    { name: type.name, employmentType: type.employmentType, mode: type.mode, uom: type.uom, fieldGroups: type.fieldGroups });
   const update = useUpdateType(), remove = useRemoveType();
   const [last, setLast] = useState<'update' | 'remove'>('update');
   const refusal = (last === 'update' ? update : remove).refusal;
   /* Remove is asked about first: it cannot be undone */
   const [asking, setAsking] = useState(false);
-  const toggle = (c: EmployeeType['capabilities'][number]) =>
-    setV(x => ({ ...x, capabilities: x.capabilities.includes(c) ? x.capabilities.filter(y => y !== c) : [...x.capabilities, c] }));
+  const toggle = (c: WorkPattern['fieldGroups'][number]) =>
+    setV(x => ({ ...x, fieldGroups: x.fieldGroups.includes(c) ? x.fieldGroups.filter(y => y !== c) : [...x.fieldGroups, c] }));
   const save = () => { setLast('update'); update.mutate({ type, body: v }, { onSuccess: d =>
     toastInfo(d.changed.length ? `${d.record.name} updated · ${d.changed.length} field(s) changed` : `${d.record.name} · nothing changed`) }); };
   /* a type employees hold is not offered for removal only to be refused
@@ -67,23 +72,23 @@ function TypeDetail({ type, onRemoved }: { type: EmployeeTypeRow; onRemoved(): v
   /* the count is on the line beside it ("Held by N employees"), so this says only what follows from it */
   const held = type.inUse > 0 ? 'It cannot be removed while employees hold it. Move them to another type first.' : '';
   const drop = () => { setAsking(false); setLast('remove'); remove.mutate(type, { onSuccess: () => { toastInfo(`${type.name} removed`); onRemoved(); } }); };
-  const select = <T extends string>(key: 'category' | 'mode' | 'uom', label: string, options: { value: T; label: string }[]) => (
+  const select = <T extends string>(key: 'employmentType' | 'mode' | 'uom', label: string, options: { value: T; label: string }[]) => (
     <div className="w-[250px] max-md:w-full">
       <SelectBox testId={tid.types.field(key)} aria-label={label} options={options} value={v[key]}
         onValueChange={x => { const p = pick(options, x); if (p) setV(y => ({ ...y, [key]: p })); }} /></div>);
   return (
     <div data-testid={tid.types.detail}>
       <h3 className={SUB}>How this type captures time</h3>
-      <SettingRow title="Type name" desc="What employees and managers see">
-        <TextInput testId={tid.types.field('name')} aria-label="Type name" className="w-[270px] max-md:w-full" value={v.name}
+      <SettingRow title="Pattern name" desc="What employees and managers see">
+        <TextInput testId={tid.types.field('name')} aria-label="Pattern name" className="w-[270px] max-md:w-full" value={v.name}
           onChange={e => setV(x => ({ ...x, name: e.target.value }))} /></SettingRow>
-      <SettingRow title="Usual basis" desc="What a new employee of this type is employed on">{select('category', 'Usual basis', CATEGORIES)}</SettingRow>
+      <SettingRow title="Usual employment type" desc="What a new employee with this pattern is employed on">{select('employmentType', 'Usual employment type', EMPLOYMENT_TYPES)}</SettingRow>
       <SettingRow title="Entry mode" desc="Day form, weekly grid, or a live clock">{select('mode', 'Entry mode', MODES)}</SettingRow>
       <SettingRow title="Pay basis" desc="Hourly types record hours for payroll; day-rate types are paid per worked day">{select('uom', 'Pay basis', UOMS)}</SettingRow>
-      <h3 className={SUB}>Capabilities <span className="font-normal text-text-muted">· what the field catalogue offers this type</span></h3>
-      {(lib.data?.capabilities ?? []).map(c => (
+      <h3 className={SUB}>Field groups <span className="font-normal text-text-muted">· the timesheet fields this pattern is offered</span></h3>
+      {(lib.data?.fieldGroups ?? []).map(c => (
         <SettingRow key={c.code} title={c.label} desc={c.desc}>
-          <SwitchField testId={tid.types.cap(c.code)} aria-label={c.label} checked={v.capabilities.includes(c.code)} onCheckedChange={() => toggle(c.code)} />
+          <SwitchField testId={tid.types.cap(c.code)} aria-label={c.label} checked={v.fieldGroups.includes(c.code)} onCheckedChange={() => toggle(c.code)} />
         </SettingRow>))}
       <h3 className={SUB}>Capture fields</h3>
       <SetupPointers />
@@ -96,7 +101,7 @@ function TypeDetail({ type, onRemoved }: { type: EmployeeTypeRow; onRemoved(): v
       </div>
       {held && <Small testId={tid.types.removeWhy} id={tid.types.removeWhy} className="mt-sm text-right max-md:text-left">{held}</Small>}
       <ConfirmModal open={asking} onOpenChange={setAsking} title={`Remove ${type.name}?`} danger confirmLabel="Remove" cancelLabel="Keep it"
-        body={`${type.name} will be removed from your employee types. This cannot be undone.`} onConfirm={drop} />
+        body={`${type.name} will be removed from your work patterns. This cannot be undone.`} onConfirm={drop} />
     </div>);
 }
 

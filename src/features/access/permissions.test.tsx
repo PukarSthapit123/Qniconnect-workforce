@@ -180,7 +180,7 @@ test('the required Capability picker carries its hint and required state to assi
 });
 
 /* M2: a matrix cell names what it controls, for whom, and its state. */
-test('each matrix cell is named by capability, user type and state', async () => {
+test('each matrix cell is named by capability, access role and state', async () => {
   mount();
   const cell = await screen.findByTestId(tid.access.cell('proxy', 'employee'));
   expect(cell).toHaveAccessibleName('Enter time on behalf of someone, Employee: not granted');

@@ -124,9 +124,9 @@ test('each module card carries its own icon and says its count in words, under n
   expect(screen.getByTestId(tid.page('amods'))).not.toHaveTextContent(/Setup · Modules/);
 });
 
-test('a module’s features page names the module in its crumb, and its head has no N of M on pill', async () => {
+test('a module’s features page names the module in its title (the tab strip leads back to all modules), and its head has no N of M on pill', async () => {
   await open('ON');
-  expect(screen.getByText('Modules · Onboarding · Onboarding features')).toBeInTheDocument();
+  expect(screen.queryByText('Modules · Onboarding · Onboarding features')).toBeNull();
   const head = screen.getByRole('heading', { level: 1, name: /Onboarding features/ }).parentElement?.parentElement;
   expect(head).not.toHaveTextContent(/\d+ of \d+ on/);
   expect(screen.getAllByTestId(/^amods-flag-/).length).toBeGreaterThan(0);

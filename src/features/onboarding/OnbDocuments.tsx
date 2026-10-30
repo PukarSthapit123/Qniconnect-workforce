@@ -52,7 +52,7 @@ export function DocumentsStep({ v, set, error, today, disabled, features, docume
       </FieldGrid></div>}
       <Table data-testid={tid.onb.docs} variant="records" dense>
         <TableHeader><TableRow>
-          <TableHead>Document</TableHead><TableHead>Needed</TableHead><TableHead>What you sent</TableHead><TableHead>State</TableHead>
+          <TableHead>Document</TableHead><TableHead>Needed</TableHead><TableHead>What you sent</TableHead><TableHead>Status</TableHead>
           <TableHead><span className="sr-only">Actions</span></TableHead>
         </TableRow></TableHeader>
         <TableBody>
@@ -63,7 +63,7 @@ export function DocumentsStep({ v, set, error, today, disabled, features, docume
                 <TableCell kind="title"><b className="font-bold">{d.label}</b><span className="block text-xs font-normal text-text-muted">{d.hint}</span></TableCell>
                 <TableCell label="Needed">{d.req ? <Pill tone="warn">Required</Pill> : <span className="text-xs text-text-muted">Optional</span>}</TableCell>
                 <TableCell label="What you sent"><FileCell f={d.file} testId={tid.onb.docFile(d.id)} /></TableCell>
-                <TableCell label="State">
+                <TableCell label="Status">
                   <span className="block">
                     <Pill testId={tid.onb.docState(d.id)} tone={d.tone} glyph={d.glyph}>{d.stateLabel}</Pill>
                     {d.state === 'rejected' && d.rejection && <span data-testid={tid.onb.docReason(d.id)} className="mt-xs block text-xs text-err">

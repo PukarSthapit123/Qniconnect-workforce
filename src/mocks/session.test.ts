@@ -260,7 +260,7 @@ test('viewing as someone whose role was renamed carries the new role name', asyn
   expect((await r.json()).viewingAs).toMatchObject({ userType: 'employee', roleName: 'Employee' });
   const types = store.coll<{ name: string }>('userTypes');
   const employee = types.employee;
-  if (!employee) throw new Error('no seeded employee user type');
+  if (!employee) throw new Error('no seeded employee access role');
   employee.name = 'Colleague';
   const again = await fetch('/api/v1/session', { headers: { Authorization: `Bearer ${token}` } });
   expect((await again.json()).viewingAs).toMatchObject({ userType: 'employee', roleName: 'Colleague' });

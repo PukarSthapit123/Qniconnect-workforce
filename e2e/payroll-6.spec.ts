@@ -45,7 +45,7 @@ test('admin: a pay code is created and is at once a rate type, an edit says how 
   await expect(box.getByTestId(tid.mpay.inUse)).toContainText('In use by');
   /* a code in use is not offered for removal (Task 24): Remove is off and names what uses it */
   await expect(box.getByTestId(tid.mpay.remove)).toBeDisabled();
-  await expect(box.getByTestId(tid.mpay.removeWhy)).toContainText(/In use by 2 employee types and \d+ timesheet days, so it cannot be removed\./);
+  await expect(box.getByTestId(tid.mpay.removeWhy)).toContainText(/In use by 2 work patterns and \d+ timesheet days, so it cannot be removed\./);
   await box.getByTestId(tid.mpay.cancel).click();
   await expect(page.getByTestId(tid.mpay.row('STD'))).toBeVisible();
   expect((await auditRows(page, 'payCode')).map(a => a.act)).toEqual(['Pay code created', 'Pay code edited']);

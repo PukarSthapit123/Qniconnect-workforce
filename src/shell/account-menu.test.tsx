@@ -37,7 +37,7 @@ async function openMenu() {
   return screen.findByTestId(tid.shell.menuAccount);
 }
 
-test('the menu names the account you are on: name, email, role, location and ID, and a Your account line', async () => {
+test('the menu names the account you are on: name, email, role, site and ID, and a Your account line', async () => {
   const { account } = await signedInAs('admin');
   render(<App />);
   const header = await openMenu();

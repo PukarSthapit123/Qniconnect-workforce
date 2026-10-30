@@ -52,7 +52,7 @@ const open = async () => {
 beforeEach(() => resetTo('qnipay'));
 
 describe('Team onboarding', () => {
-  test('the starters at the manager\'s location with progress, state and what blocks them, Invite only for the candidate, with full test id coverage', async () => {
+  test('the starters at the manager\'s site with progress, state and what blocks them, Invite only for the candidate, with full test id coverage', async () => {
     await signIn();
     await open();
     expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Onboarding');
@@ -174,7 +174,8 @@ describe('Team onboarding: starting, adding and who sees which action', () => {
     await userEvent.click(screen.getByTestId(tid.tonb.add));
     await screen.findByTestId(tid.employeeForm.root);
     expect(screen.getByTestId(tid.employeeForm.field('state'))).toHaveTextContent('Candidate');
-    fireEvent.change(screen.getByTestId(tid.employeeForm.field('name')), { target: { value: 'Sarah Lindqvist' } });
+    fireEvent.change(screen.getByTestId(tid.employeeForm.field('firstName')), { target: { value: 'Sarah' } });
+    fireEvent.change(screen.getByTestId(tid.employeeForm.field('lastName')), { target: { value: 'Lindqvist' } });
     fireEvent.change(screen.getByTestId(tid.employeeForm.field('email')), { target: { value: 'sarah.lindqvist@dogmagroup.co.uk' } });
     await userEvent.click(screen.getByTestId(tid.employeeForm.save));
     await waitFor(() => expect(screen.queryByTestId(tid.employeeForm.root)).toBeNull());
@@ -220,18 +221,18 @@ describe('Team onboarding: starting, adding and who sees which action', () => {
 
 describe('Team onboarding: the template each starter is judged against', () => {
   beforeEach(() => resetTo('social'));
-  /* a Support workers template for the SW job profile, asking the shared list as it stands */
+  /* a Support workers template for the SW position, asking the shared list as it stands */
   const supportTemplate = () => {
     const cfg = Object.values(store.coll<{ steps: { id: string; on: boolean }[]; documents: { id: string; on: boolean; req: boolean; blocks: boolean }[]; policies: string[] }>('onboardingConfig'))[0];
     if (!cfg) throw new Error('no onboarding config');
     store.coll('onboardingTemplates')['onbt-support-workers'] = {
-      id: 'onbt-support-workers', version: 1, updatedAt: AT, name: 'Support workers', jobProfiles: ['SW'],
+      id: 'onbt-support-workers', version: 1, updatedAt: AT, name: 'Support workers', positions: ['SW'],
       steps: cfg.steps.map(x => ({ id: x.id, on: x.on })), documents: cfg.documents.map(x => ({ id: x.id, on: x.on, req: x.req, blocks: x.blocks })), policies: cfg.policies,
     };
   };
   const openAs = async () => { await signInAs('manager'); return open(); };
 
-  test('each starter\'s row names their onboarding template, Default when none lists their job profile', async () => {
+  test('each starter\'s row names their onboarding template, Default when none lists their position', async () => {
     await openAs();
     expect(await screen.findByTestId(tid.tonb.template('CP-1502'))).toHaveTextContent('Default');
     cleanup();

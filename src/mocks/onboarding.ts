@@ -67,7 +67,7 @@ const starters = () => Object.values(employees()).filter(p => isStarterState(p.s
 function starterAt(s: Signed, code: string): StoredEmployee {
   const p = employeeByCode(code) ?? NOT_FOUND('That employee record no longer exists.');
   if (!inOnbScope(s)(p))
-    refuse(403, { code: 'scope', message: `You can look after onboarding for employees at ${locName(myLocation(s))} only.`, next: 'Ask a manager at their location, or HR.' });
+    refuse(403, { code: 'scope', message: `You can look after onboarding for employees at ${locName(myLocation(s))} only.`, next: 'Ask a manager at their site, or HR.' });
   if (!isStarterState(p.state))
     refuse(409, { code: 'NOT_ONBOARDING', message: `${p.name} is not onboarding. Onboarding is for candidates and employees preboarding.`, next: 'Reload the page to see who is onboarding.' });
   return p;
@@ -84,7 +84,7 @@ function me(s: Signed): StoredEmployee {
 function employeeOf(p: StoredEmployee): OnbEmployee {
   const st = isEmployeeState(p.state) ? LIFECYCLE[p.state] : LIFECYCLE.candidate;
   return { code: p.code, id: p.id, name: p.name, first: firstName(p.name), email: p.email, start: p.start, state: p.state, stateLabel: st.label, stateTone: st.tone,
-    stateGlyph: st.glyph, location: p.location, locationName: locName(p.location), employeeType: p.employeeType, employeeTypeName: nameOf('employeeTypes', p.employeeType),
+    stateGlyph: st.glyph, location: p.location, locationName: locName(p.location), workPattern: p.workPattern, workPatternName: nameOf('workPatterns', p.workPattern),
     manager: managerName(p.manager, p.code, Object.values(employees())) };
 }
 const shown = (s: unknown) => { const t = taskState(s); return { stateLabel: t.label, tone: t.tone, glyph: t.glyph }; };
@@ -272,7 +272,7 @@ export const onboardingHandlers = [
       }
     }
     return { rows, queue, toVerify: queue.length, verify: f.verify, all: seesAll(session),
-      locationName: seesAll(session) ? 'every location' : locName(myLocation(session)), location: myLocation(session) };
+      locationName: seesAll(session) ? 'every site' : locName(myLocation(session)), location: myLocation(session) };
   }),
 
   serve(getStarterOnboarding, ({ session, params }) => {
@@ -342,33 +342,33 @@ export const onboardingHandlers = [
     const c = Object.values(casesColl()).find(x => x.id === params.id) ?? NOT_FOUND('That onboarding case no longer exists.');
     const p = employeeByCode(c.employeeCode) ?? NOT_FOUND('That employee record no longer exists.');
     if (!inOnbScope(session)(p))
-      refuse(403, { code: 'scope', message: `You can look after onboarding for employees at ${locName(myLocation(session))} only.`, next: 'Ask a manager at their location, or HR.' });
+      refuse(403, { code: 'scope', message: `You can look after onboarding for employees at ${locName(myLocation(session))} only.`, next: 'Ask a manager at their site, or HR.' });
     checkVersion(c);
     if (!c.startedAt || p.state !== 'active')
       refuse(409, { code: 'NOT_STARTED', message: `${p.name} has not started yet. The portal invite is sent once they are active.`, next: 'Start them first.' });
     if (c.portalInvitedAt)
-      refuse(409, { code: 'ALREADY_INVITED', message: `The portal invite for ${p.name} is already recorded.`, next: 'Add their portal login on People & access if they still need one.' });
+      refuse(409, { code: 'ALREADY_INVITED', message: `The portal invite for ${p.name} is already recorded.`, next: 'Add their portal login on Setup · Employees if they still need one.' });
     if (!p.email.trim()) refuse(409, { code: 'NO_EMAIL', field: 'email', message: noEmailText(p.name), next: 'Open their record and add a work email.' });
     const saved = putCase(c, { ...c, portalInvitedAt: store.now() });
     const auditId = writeAudit({ who: actor(session), act: 'Portal invite recorded', entity: 'onboardingCase', entityId: c.id,
       before: { portalInvitedAt: '' }, after: { portalInvitedAt: saved.portalInvitedAt, email: p.email, sentToPortal: false } });
     return { record: caseView(saved), auditId,
-      summary: `The portal invite for ${p.name} is recorded. Onboarding is not yet connected to the portal, so add their login on People & access.` };
+      summary: `The portal invite for ${p.name} is recorded. Onboarding is not yet connected to the portal, so add their login on Setup · Employees.` };
   }),
 
   /* ---------------------------------------------------------------- setup */
   serve(getOnboardingSetup, () => {
     requireOnboarding();
     const cfg = onbConfig(), f = featuresNow(), templates = templatesNow();
-    const profiles = Object.values(store.coll<{ code: string; name: string }>('jobProfiles')).sort((a, b) => a.name.localeCompare(b.name) || a.code.localeCompare(b.code));
+    const profiles = Object.values(store.coll<{ code: string; name: string }>('positions')).sort((a, b) => a.name.localeCompare(b.name) || a.code.localeCompare(b.code));
     return {
       config: cfg, policies: policiesNow().map(policySetupView), features: f,
       steps: cfg.steps.map(s => ({ id: s.id, available: stepAvailable(s.id, f), needs: STEP_NEEDS[s.id] ?? '' })),
       verifiers: VERIFIERS.map(([value, label]) => ({ value, label })),
       inProgress: starters().filter(p => recordAt(casesColl(), `onb_${p.code}`)).length,
-      templates: templates.map(t => ({ id: t.id, name: t.name, version: t.version, jobProfiles: t.jobProfiles.flatMap(code => { const j = profiles.find(x => x.code === code); return j ? [{ code, name: j.name }] : []; }),
-        starters: starters().filter(p => templateFor(p.jobProfile, templates)?.id === t.id).length })),
-      jobProfiles: profiles.map(j => ({ code: j.code, name: j.name })),
+      templates: templates.map(t => ({ id: t.id, name: t.name, version: t.version, positions: t.positions.flatMap(code => { const j = profiles.find(x => x.code === code); return j ? [{ code, name: j.name }] : []; }),
+        starters: starters().filter(p => templateFor(p.position, templates)?.id === t.id).length })),
+      positions: profiles.map(j => ({ code: j.code, name: j.name })),
     };
   }),
 

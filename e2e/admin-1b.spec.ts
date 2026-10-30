@@ -4,7 +4,7 @@ import { tid } from '../src/testids';
 import { answered, auditOf, everyone, employeeByCode, pick, rows } from './support/read';
 
 /* Plan 1b, the admin's journey: keep the one employees record, move someone
-   through the lifecycle, keep the dimensions, the contracts and the employee
+   through the lifecycle, keep the master data, the contracted hours and the employee
    types. Every outcome is read back through the API (spec §10.2). */
 test.beforeEach(async ({ api }) => { await api.reset(); await api.setClock(FROZEN); });
 
@@ -13,14 +13,15 @@ const openEmployee = async (page: Page, code: string) => {
   await page.getByTestId(tid.employee.record).waitFor();
 };
 
-test('CR A valid record is created; the new employee appears in the list; creation is audited with type, location and hours; the new record can be edited; the edit is audited as a before → after diff', async ({ page, api, signInAs }) => {
+test('CR A valid record is created; the new employee appears in the list; creation is audited with type, site and hours; the new record can be edited; the edit is audited as a before → after diff', async ({ page, api, signInAs }) => {
   await signInAs('admin');
   await page.goto('/setup/aemployees');
   await page.getByTestId(tid.employees.add).click();
   const code = page.getByTestId(tid.employeeForm.field('code'));
   await expect(code).not.toHaveValue('');
   const id = await code.inputValue();
-  await page.getByTestId(tid.employeeForm.field('name')).fill('Test Employee');
+  await page.getByTestId(tid.employeeForm.field('firstName')).fill('Test');
+  await page.getByTestId(tid.employeeForm.field('lastName')).fill('Employee');
   await page.getByTestId(tid.employeeForm.field('email')).fill('test.employee@brightpath.org');
   await pick(page, tid.employeeForm.field('location'), 'WH');
   await page.getByTestId(tid.employeeForm.field('contractedHours')).fill('30');
@@ -33,11 +34,12 @@ test('CR A valid record is created; the new employee appears in the list; creati
   await expect(page.getByTestId(tid.employees.row(id))).toBeVisible();
   expect(await employeeByCode(api, id)).toMatchObject({ name: 'Test Employee', state: 'active', location: 'WH', contractedHours: 30 });
   expect((await auditOf(api, 'employee'))[0]).toMatchObject({ act: 'Employee created', entityId: id,
-    after: expect.objectContaining({ location: 'WH', contractedHours: 30, employeeType: expect.any(String) }) });
+    after: expect.objectContaining({ location: 'WH', contractedHours: 30, workPattern: expect.any(String) }) });
   /* PS Accounts follow the roster: the new employee can sign in */
   expect((await rows<{ email: string }>(api, '/api/v1/session/accounts')).map(a => a.email)).toContain('test.employee@brightpath.org');
 
-  await page.getByTestId(tid.employees.edit(id)).click();
+  await openEmployee(page, id);
+  await page.getByTestId(tid.employee.edit).click();
   await expect(page.getByTestId(tid.employeeForm.field('code'))).toBeDisabled();
   await page.getByTestId(tid.employeeForm.field('contractedHours')).fill('32');
   await page.getByTestId(tid.employeeForm.save).click();
@@ -77,13 +79,13 @@ test('DM A valid entry is created, it lands on that dimension’s page, and crea
   await expect(page.getByTestId(tid.dims.row('TQ'))).toBeVisible();
   await expect(page).toHaveURL(/\/setup\/aloc\?d=locations$/);
   expect((await rows<{ code: string }>(api, '/api/v1/locations')).map(l => l.code)).toContain('TQ');
-  expect((await auditOf(api, 'location'))[0]).toMatchObject({ act: 'Location created', entityId: 'TQ' });
+  expect((await auditOf(api, 'location'))[0]).toMatchObject({ act: 'Site created', entityId: 'TQ' });
 
   await page.getByTestId(tid.dims.edit('TQ')).click();
   await page.getByTestId(tid.dims.field('name')).fill('Test Quay North');
   await page.getByTestId(tid.dims.save).click();
   await expect(page.getByTestId(tid.toast.info).filter({ hasText: 'Test Quay North updated' })).toBeVisible();
-  expect((await auditOf(api, 'location'))[0]).toMatchObject({ act: 'Location edited', before: { name: 'Test Quay' }, after: { name: 'Test Quay North' } });
+  expect((await auditOf(api, 'location'))[0]).toMatchObject({ act: 'Site edited', before: { name: 'Test Quay' }, after: { name: 'Test Quay North' } });
 
   const before = await rows(api, '/api/v1/locations');
   /* an entry in use is not offered for removal (Task 24): Remove is off and says why */
@@ -100,37 +102,43 @@ test('DM A valid entry is created, it lands on that dimension’s page, and crea
   expect((await rows<{ code: string }>(api, '/api/v1/locations')).map(l => l.code)).not.toContain('TQ');
 });
 
-test('DM Job profiles no longer live on the Employee types page; ET A type is created, it appears in the type list, and it can be removed; a type employees hold cannot be removed, and says why; a contract is edited through the employee record', async ({ page, api, signInAs }) => {
+test('DM Positions no longer live on the Work patterns page; ET A type is created, it appears in the type list, and it can be removed; a type employees hold cannot be removed, and says why; a contract is edited through the employee record', async ({ page, api, signInAs }) => {
   await signInAs('admin');
   await page.goto('/setup/atypes');
   await page.getByTestId(tid.types.jobsLink).click();
-  await expect(page).toHaveURL(/\/setup\/aloc\?d=job-profiles$/);
+  await expect(page).toHaveURL(/\/setup\/aloc\?d=positions$/);
   await page.getByTestId(tid.dims.table).waitFor();
 
   await page.goto('/setup/atypes');
   await page.getByTestId(tid.types.add).click();
   await page.getByTestId(tid.types.newField('name')).fill('Waking Night Support');
   await page.getByTestId(tid.types.newSave).click();
-  await expect(page.getByTestId(tid.types.chip('waking_night_support'))).toHaveAttribute('aria-pressed', 'true');
-  expect((await rows<{ code: string }>(api, '/api/v1/employee-types')).map(t => t.code)).toContain('waking_night_support');
-  expect((await auditOf(api, 'employeeType'))[0]).toMatchObject({ act: 'Employee type created', entityId: 'waking_night_support' });
+  await expect(page.getByTestId(tid.types.list)).toContainText('Waking Night Support');
+  expect((await rows<{ code: string }>(api, '/api/v1/work-patterns')).map(t => t.code)).toContain('waking_night_support');
+  expect((await auditOf(api, 'workPattern'))[0]).toMatchObject({ act: 'Work pattern created', entityId: 'waking_night_support' });
   await page.getByTestId(tid.types.remove).click();
   await page.getByTestId(tid.modal.confirm).click();
+  await expect(page.getByTestId(tid.types.list)).not.toContainText('Waking Night Support');
+  await page.getByTestId(tid.types.list).click();
   await expect(page.getByTestId(tid.types.chip('waking_night_support'))).toHaveCount(0);
-  expect((await rows<{ code: string }>(api, '/api/v1/employee-types')).map(t => t.code)).not.toContain('waking_night_support');
+  await page.keyboard.press('Escape');
+  expect((await rows<{ code: string }>(api, '/api/v1/work-patterns')).map(t => t.code)).not.toContain('waking_night_support');
 
-  const held = await rows(api, '/api/v1/employee-types');
+  const held = await rows(api, '/api/v1/work-patterns');
   /* a type employees hold is not offered for removal (Task 24): Remove is off and says why */
-  await page.getByTestId(tid.types.chip('shift')).click();
+  await pick(page, tid.types.list, 'shift');
   await expect(page.getByTestId(tid.types.remove)).toBeDisabled();
   await expect(page.getByTestId(tid.types.removeWhy)).toContainText('It cannot be removed while employees hold it.');
-  expect(await rows(api, '/api/v1/employee-types')).toEqual(held);
+  expect(await rows(api, '/api/v1/work-patterns')).toEqual(held);
 
+  /* Working hours became the Hours column on Employees (2026-10-27): hours change on the record, and an old link lands on Employees */
   await page.goto('/setup/acon');
-  await page.getByTestId(tid.contracts.edit('CP-1088')).click();
-  await page.getByTestId(tid.contracts.hours).fill('25');
-  await page.getByTestId(tid.contracts.save).click();
-  await expect(page.getByTestId(tid.contracts.row('CP-1088'))).toContainText('25 h');
+  await expect(page).toHaveURL(/\/setup\/aemployees$/);
+  await openEmployee(page, 'CP-1088');
+  await page.getByTestId(tid.employee.edit).click();
+  await page.getByTestId(tid.employeeForm.field('contractedHours')).fill('25');
+  await page.getByTestId(tid.employeeForm.save).click();
+  await expect(page.getByTestId(tid.employees.row('CP-1088'))).toContainText('25 h');
   expect(await employeeByCode(api, 'CP-1088')).toMatchObject({ contractedHours: 25 });
 });
 
@@ -157,7 +165,8 @@ test.describe('the professional-services tenant', () => {
     await pick(page, tid.employees.stateFilter, 'here');
     const emp = await employeeByCode(api, 'EMP001');
     expect(emp.resource).not.toBe(emp.code);
-    await page.getByTestId(tid.employees.edit('EMP001')).click();
+    await page.getByTestId(tid.employees.open('EMP001')).click();
+    await page.getByTestId(tid.employee.edit).click();
     await expect(page.getByTestId(tid.employeeForm.field('resource'))).toHaveValue(emp.resource);
     await expect(page.getByTestId(tid.employeeForm.field('code'))).toHaveValue('EMP001');
     await page.getByTestId(tid.employeeForm.cancel).click();

@@ -20,16 +20,16 @@ const SENIOR = 'onbt-senior-consultants', POLICIES = ['pol_conduct', 'pol_privac
 const URL = '/api/v1/onboarding/templates';
 type Call = Awaited<ReturnType<typeof as>>;
 const read = async (call: Call, id: string) => OnbTemplateRecord.parse((await call('GET', `${URL}/${id}`)).body);
-const draft = (r: OnbTemplateRecord) => ({ name: r.name, jobProfiles: r.jobProfiles, steps: r.steps, documents: r.documents, policies: r.policies });
+const draft = (r: OnbTemplateRecord) => ({ name: r.name, positions: r.positions, steps: r.steps, documents: r.documents, policies: r.policies });
 const tenant = () => store.coll<{ modules: Record<string, boolean> }>('tenant').tenant;
 const setModule = (k: string, on: boolean) => { const t = tenant(); if (t) t.modules[k] = on; };
 
 describe('onboarding templates: reads', () => {
-  test('the setup lists the templates with their job profiles, starters and version; a tenant with none lists none', async () => {
+  test('the setup lists the templates with their positions, starters and version; a tenant with none lists none', async () => {
     resetTo('qnipay');
     const s = OnboardingSetup.parse((await (await as('admin'))('GET', '/api/v1/onboarding/config')).body);
-    expect(s.templates).toEqual([{ id: SENIOR, name: 'Senior consultants', version: 1, jobProfiles: [{ code: 'SCONS', name: 'Senior Consultant' }], starters: 0 }]);
-    expect(s.jobProfiles.map(j => j.code)).toEqual(['ADM', 'CONS', 'PM', 'SCONS']);
+    expect(s.templates).toEqual([{ id: SENIOR, name: 'Senior consultants', version: 1, positions: [{ code: 'SCONS', name: 'Senior Consultant' }], starters: 0 }]);
+    expect(s.positions.map(j => j.code)).toEqual(['ADM', 'CONS', 'PM', 'SCONS']);
     expect(s.config.policies).toEqual(POLICIES);
     resetTo('social');
     expect(OnboardingSetup.parse((await (await as('admin'))('GET', '/api/v1/onboarding/config')).body).templates).toEqual([]);
@@ -44,19 +44,19 @@ describe('onboarding templates: reads', () => {
 });
 
 describe('onboarding templates: writes', () => {
-  test('creating copies the default steps, documents and policies with no job profiles, in one audit row; copyFrom copies another template', async () => {
+  test('creating copies the default steps, documents and policies with no positions, in one audit row; copyFrom copies another template', async () => {
     const call = await as('admin'), before = onbAudits().length;
     const r = await call('POST', URL, { name: 'Consultants' });
     expect(r.status).toBe(200);
     const saved = OnbTemplateSaved.parse(r.body);
-    expect(saved.record).toMatchObject({ id: 'onbt-consultants', version: 1, jobProfiles: [], policies: POLICIES });
+    expect(saved.record).toMatchObject({ id: 'onbt-consultants', version: 1, positions: [], policies: POLICIES });
     expect(saved.summary).toBe(templateCreatedText('Consultants'));
     expect(onbAudits().slice(before).map(a => ({ act: a.act, entity: a.entity, entityId: a.entityId })))
       .toEqual([{ act: 'Onboarding template created', entity: 'onboardingTemplate', entityId: 'onbt-consultants' }]);
     const leads = OnbTemplateSaved.parse((await call('POST', URL, { name: 'Leads', copyFrom: SENIOR })).body).record;
     expect(leads.steps.find(s => s.id === 'additional')?.on).toBe(false);
     expect(leads.policies).not.toContain('pol_handbook');
-    expect(leads.jobProfiles).toEqual([]);
+    expect(leads.positions).toEqual([]);
     const snap = snapshot(...WRITES);
     expect((await call('POST', URL, { name: 'Other', copyFrom: 'onbt-gone' })).status).toBe(404);
     expect(snapshot(...WRITES)).toEqual(snap);
@@ -68,22 +68,22 @@ describe('onboarding templates: writes', () => {
     expect((await call('DELETE', `${URL}/${SENIOR}`)).status).toBe(428);
     expect(snapshot(...WRITES)).toEqual(before);
   });
-  test('a template is not refused for holding its own job profiles: saving it unchanged is accepted', async () => {
+  test('a template is not refused for holding its own positions: saving it unchanged is accepted', async () => {
     const call = await as('admin'), row = draft(await read(call, SENIOR));
     const r = await call('PUT', `${URL}/${SENIOR}`, row, 1);
     expect(r.status).toBe(200);
     expect(OnbTemplateSaved.parse(r.body)).toMatchObject({ summary: 'Nothing has changed.', auditId: null });
   });
-  test('a job profile another template holds is refused with a field error naming it, and nothing is written', async () => {
+  test('a position another template holds is refused with a field error naming it, and nothing is written', async () => {
     const call = await as('admin');
     const made = OnbTemplateSaved.parse((await call('POST', URL, { name: 'Consultants' })).body).record, before = snapshot(...WRITES);
-    const r = await call('PUT', `${URL}/${made.id}`, { ...draft(made), jobProfiles: ['SCONS'] }, 1);
+    const r = await call('PUT', `${URL}/${made.id}`, { ...draft(made), positions: ['SCONS'] }, 1);
     expect(r.status).toBe(409);
-    expect(refusal(r)).toMatchObject({ code: 'PROFILE_TAKEN', field: 'jobProfiles',
+    expect(refusal(r)).toMatchObject({ code: 'PROFILE_TAKEN', field: 'positions',
       message: 'Senior Consultant (SCONS) is already in Senior consultants. Take it out of Senior consultants first.' });
     expect(snapshot(...WRITES)).toEqual(before);
   });
-  test('names are needed, at most 60 characters, unique ignoring case and not Default; an unknown job profile is refused', async () => {
+  test('names are needed, at most 60 characters, unique ignoring case and not Default; an unknown position is refused', async () => {
     const call = await as('admin');
     const made = OnbTemplateSaved.parse((await call('POST', URL, { name: 'Consultants' })).body).record, before = snapshot(...WRITES);
     const named = (name: string) => call('PUT', `${URL}/${made.id}`, { ...draft(made), name }, 1);
@@ -92,15 +92,15 @@ describe('onboarding templates: writes', () => {
       expect(r.status, name).toBe(422);
       expect(refusal(r), name).toMatchObject({ code: 'invalid', field: 'name', message });
     }
-    const unknown = await call('PUT', `${URL}/${made.id}`, { ...draft(made), jobProfiles: ['XX'] }, 1);
+    const unknown = await call('PUT', `${URL}/${made.id}`, { ...draft(made), positions: ['XX'] }, 1);
     expect(unknown.status).toBe(422);
-    expect(refusal(unknown)).toMatchObject({ code: 'invalid', field: 'jobProfiles', message: 'There is no job profile with the code XX.' });
+    expect(refusal(unknown)).toMatchObject({ code: 'invalid', field: 'positions', message: 'There is no position with the code XX.' });
     expect(snapshot(...WRITES)).toEqual(before);
   });
   test('a save writes one audit row with what changed, and an unchanged save writes none', async () => {
     const call = await as('admin');
     const made = OnbTemplateSaved.parse((await call('POST', URL, { name: 'Consultants' })).body).record, rows = onbAudits().length;
-    const body = { ...draft(made), jobProfiles: ['CONS'], documents: made.documents.map(d => (d.id === 'addr' ? { ...d, on: false } : d)) };
+    const body = { ...draft(made), positions: ['CONS'], documents: made.documents.map(d => (d.id === 'addr' ? { ...d, on: false } : d)) };
     const r = await call('PUT', `${URL}/${made.id}`, body, 1);
     expect(r.status).toBe(200);
     const saved = OnbTemplateSaved.parse(r.body);
@@ -108,8 +108,8 @@ describe('onboarding templates: writes', () => {
     const written = onbAudits().slice(rows);
     expect(written).toHaveLength(1);
     expect(written[0]).toMatchObject({ act: 'Onboarding template saved', entity: 'onboardingTemplate', entityId: made.id,
-      before: { jobProfiles: [], documents: { addr: { on: true, req: true, blocks: false } } },
-      after: { jobProfiles: ['CONS'], documents: { addr: { on: false, req: true, blocks: false } } } });
+      before: { positions: [], documents: { addr: { on: true, req: true, blocks: false } } },
+      after: { positions: ['CONS'], documents: { addr: { on: false, req: true, blocks: false } } } });
     const again = await call('PUT', `${URL}/${made.id}`, body, 2);
     expect(OnbTemplateSaved.parse(again.body)).toMatchObject({ summary: 'Nothing has changed.', auditId: null, record: { version: 2 } });
     expect(onbAudits()).toHaveLength(rows + 1);
@@ -123,23 +123,23 @@ describe('onboarding templates: writes', () => {
     expect(r.status).toBe(200);
     expect((await read(call, SENIOR)).documents.find(d => d.id === 'dbs-check')).toEqual({ id: 'dbs-check', on: false, req: false, blocks: false });
   });
-  test('a template with several hundred job profiles saves', async () => {
-    const call = await as('admin'), jp = store.coll<Record<string, unknown>>('jobProfiles');
+  test('a template with several hundred positions saves', async () => {
+    const call = await as('admin'), jp = store.coll<Record<string, unknown>>('positions');
     const codes = Array.from({ length: 300 }, (_, i) => `JP${String(i + 1).padStart(3, '0')}`);
     for (const code of codes) jp[code] = { id: code, code, name: `Profile ${code}`, version: 1, updatedAt: '2026-08-13T14:30:00.000Z' };
     const made = OnbTemplateSaved.parse((await call('POST', URL, { name: 'Many' })).body).record;
-    const r = await call('PUT', `${URL}/${made.id}`, { ...draft(made), jobProfiles: codes }, 1);
+    const r = await call('PUT', `${URL}/${made.id}`, { ...draft(made), positions: codes }, 1);
     expect(r.status).toBe(200);
-    expect((await read(call, made.id)).jobProfiles).toHaveLength(300);
+    expect((await read(call, made.id)).positions).toHaveLength(300);
   });
-  test('deleting needs If-Match, writes one audit row, and its job profiles fall back to the default', async () => {
+  test('deleting needs If-Match, writes one audit row, and its positions fall back to the default', async () => {
     const call = await as('admin'), rows = onbAudits().length;
     const r = await call('DELETE', `${URL}/${SENIOR}`, undefined, 1);
     expect(r.status).toBe(200);
     expect(OnbTemplateDeleted.parse(r.body).summary).toBe(templateDeletedText('Senior consultants'));
     const written = onbAudits().slice(rows);
     expect(written).toHaveLength(1);
-    expect(written[0]).toMatchObject({ act: 'Onboarding template deleted', entityId: SENIOR, before: { name: 'Senior consultants', jobProfiles: ['SCONS'] }, after: null });
+    expect(written[0]).toMatchObject({ act: 'Onboarding template deleted', entityId: SENIOR, before: { name: 'Senior consultants', positions: ['SCONS'] }, after: null });
     expect(OnboardingSetup.parse((await call('GET', '/api/v1/onboarding/config')).body).templates).toEqual([]);
     expect((await call('GET', `${URL}/${SENIOR}`)).status).toBe(404);
   });
@@ -209,7 +209,7 @@ const finished = (code: string) => putCase(code, { steps: { personal: 'done', co
 async function supportTemplate(patch: Record<string, unknown> = {}) {
   const call = await as('admin');
   const made = OnbTemplateSaved.parse((await call('POST', URL, { name: 'Support workers' })).body).record, row = draft(made);
-  const body = { ...row, jobProfiles: ['SW'], steps: row.steps.map(s => (s.id === 'additional' ? { ...s, on: false } : s)),
+  const body = { ...row, positions: ['SW'], steps: row.steps.map(s => (s.id === 'additional' ? { ...s, on: false } : s)),
     documents: row.documents.map(d => (d.id === 'addr' ? { ...d, on: false } : d)), policies: row.policies.filter(p => p !== 'pol_itsec'), ...patch };
   const r = await call('PUT', `${URL}/${made.id}`, body, 1);
   expect(r.status).toBe(200);
@@ -220,7 +220,7 @@ const detailOf = async (email: string) => OnboardingDetail.parse((await (await a
 
 describe('each case is judged against its own template', () => {
   beforeEach(() => resetTo('social'));
-  test('a starter whose job profile a template lists is asked what it asks, and the case view names the template', async () => {
+  test('a starter whose position a template lists is asked what it asks, and the case view names the template', async () => {
     await supportTemplate();
     const d = await detailOf(TOM);
     expect(d.template).toEqual({ id: SUPPORT, name: 'Support workers' });
@@ -229,15 +229,15 @@ describe('each case is judged against its own template', () => {
     expect(d.policies.map(p => p.id)).toEqual(['pol_conduct', 'pol_privacy', 'pol_handbook']);
   });
   test('a starter on a profile no template lists gets the default, and the tracker says Default', async () => {
-    await supportTemplate(); setEmployee('CP-1501', { jobProfile: 'SSW' });
+    await supportTemplate(); setEmployee('CP-1501', { position: 'SSW' });
     const s = StarterOnboarding.parse((await (await as('manager'))('GET', '/api/v1/onboarding/team/CP-1501')).body);
     expect(s.template).toEqual({ id: null, name: 'Default' });
     expect(s.documents.map(x => x.id)).toContain('addr');
   });
-  test('a job profile change before submission switches what is asked', async () => {
+  test('a position change before submission switches what is asked', async () => {
     await supportTemplate();
     expect((await detailOf(TOM)).documents.map(x => x.id)).not.toContain('addr');
-    setEmployee('CP-1502', { jobProfile: 'SSW' });
+    setEmployee('CP-1502', { position: 'SSW' });
     const d = await detailOf(TOM);
     expect(d.template).toEqual({ id: null, name: 'Default' });
     expect(d.documents.map(x => x.id)).toContain('addr');
@@ -248,7 +248,7 @@ describe('each case is judged against its own template', () => {
     const call = await asEmail(TOM);
     const sub = await call('POST', '/api/v1/onboarding/me/submit', { consent: true, signature: 'Tom Achterberg' }, caseOf('CP-1502')?.version);
     expect(sub.status).toBe(200);
-    setEmployee('CP-1502', { jobProfile: 'SSW' });
+    setEmployee('CP-1502', { position: 'SSW' });
     const t = TeamOnboarding.parse((await (await as('manager'))('GET', '/api/v1/onboarding/team')).body);
     const row = t.rows.find(r => r.employee.code === 'CP-1502');
     expect(row?.blockers.map(b => b.why)).not.toContain('Proof of address not uploaded');
@@ -274,14 +274,14 @@ describe('each case is judged against its own template', () => {
     expect(r.status).toBe(200);
   });
   test('the team list names each starter\'s template', async () => {
-    await supportTemplate(); setEmployee('CP-1501', { jobProfile: 'SSW' });
+    await supportTemplate(); setEmployee('CP-1501', { position: 'SSW' });
     const t = TeamOnboarding.parse((await (await as('manager'))('GET', '/api/v1/onboarding/team')).body);
     expect(t.rows.map(r => [r.employee.code, r.template.name])).toEqual(expect.arrayContaining([['CP-1501', 'Default'], ['CP-1502', 'Support workers']]));
   });
   test('a new policy version asks again only those whose template asks for it', async () => {
     putCase('CP-1501', { acks: { pol_itsec: 'v3.2' }, read: { pol_itsec: true } });
     putCase('CP-1502', { acks: { pol_itsec: 'v3.2' }, read: { pol_itsec: true } });
-    await supportTemplate(); setEmployee('CP-1501', { jobProfile: 'SSW' });
+    await supportTemplate(); setEmployee('CP-1501', { position: 'SSW' });
     const pol = store.coll<{ version: number }>('onboardingPolicies').pol_itsec;
     const r = await (await as('admin'))('POST', '/api/v1/onboarding/policies/pol_itsec/file', { name: 'it.pdf', size: 1000, type: 'application/pdf' }, pol?.version);
     expect(r.status).toBe(200);
@@ -390,13 +390,13 @@ describe('a save that only reorders changes nothing', () => {
     expect(OnboardingConfigSaved.parse(r.body)).toMatchObject({ summary: 'Nothing has changed.', auditId: null, record: { version: s.config.version } });
     expect(onbAudits()).toHaveLength(rows);
   });
-  test('a template with its job profiles and policies in another order is "Nothing has changed"', async () => {
-    const call = await as('admin'), jp = store.coll<Record<string, unknown>>('jobProfiles');
+  test('a template with its positions and policies in another order is "Nothing has changed"', async () => {
+    const call = await as('admin'), jp = store.coll<Record<string, unknown>>('positions');
     jp.CONS2 = { id: 'CONS2', code: 'CONS2', name: 'Consultant Two', version: 1, updatedAt: '2026-08-13T14:30:00.000Z' };
     const made = OnbTemplateSaved.parse((await call('POST', URL, { name: 'Consultants' })).body).record;
-    const first = OnbTemplateSaved.parse((await call('PUT', `${URL}/${made.id}`, { ...draft(made), jobProfiles: ['CONS', 'CONS2'] }, 1)).body).record;
+    const first = OnbTemplateSaved.parse((await call('PUT', `${URL}/${made.id}`, { ...draft(made), positions: ['CONS', 'CONS2'] }, 1)).body).record;
     const rows = onbAudits().length;
-    const r = await call('PUT', `${URL}/${made.id}`, { ...draft(first), jobProfiles: ['CONS2', 'CONS'], policies: [...first.policies].reverse() }, first.version);
+    const r = await call('PUT', `${URL}/${made.id}`, { ...draft(first), positions: ['CONS2', 'CONS'], policies: [...first.policies].reverse() }, first.version);
     expect(r.status).toBe(200);
     expect(OnbTemplateSaved.parse(r.body)).toMatchObject({ summary: 'Nothing has changed.', auditId: null, record: { version: first.version } });
     expect(onbAudits()).toHaveLength(rows);

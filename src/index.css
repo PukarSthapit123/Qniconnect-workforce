@@ -55,7 +55,17 @@
   --qp-color-shell-ink: #D9E9D2;                 /* .iconbtn, 309 */
   --qp-color-text-on-inverse: #EAF4E6;           /* .avbtn, .toast, #tipbubble */
   --qp-color-shell-hover: rgba(255,255,255,.10); /* .modsw, .iconbtn, .avbtn :hover */
-  --qp-color-accent-line: rgba(173,238,104,.4);  /* .rolepill border, 305 */
+  --qp-color-accent-line: rgba(173,238,104,.4);  /* .rolepill border, 305; now the viewing-as edge only */
+  /* The current area in the top bar: a deliberate deviation from v15:287-306
+     (taste review 2026-10-26, decision D1). The prototype filled it in the
+     lime accent; lime now marks only what needs attention (the avatar, the
+     bell's count, the focus ring), so the current area is a faint white
+     pill. Its 1px edge carries the state at 4.8:1 against the bar (the fill
+     alone is 1.5:1), with the white label in weight 600 beside the muted
+     green of the other areas. The bar is the inverse surface in both
+     themes, so one value serves both. */
+  --qp-color-shell-current: rgba(255,255,255,.14);
+  --qp-color-shell-current-line: rgba(255,255,255,.40);
   --qp-color-scrim: rgba(10,36,16,.55);          /* .scrim, 574 */
   --qp-color-brand-primary-subtle-hover: #CFEFC2;/* .btn.sec:hover, 438 */
   /* .fld.bad (506): a soft halo in the error colour, which follows that
@@ -123,6 +133,8 @@
   --color-shell-ink-muted: var(--qp-color-shell-ink-muted);
   --color-shell-hover: var(--qp-color-shell-hover);
   --color-accent-line: var(--qp-color-accent-line);
+  --color-shell-current: var(--qp-color-shell-current);
+  --color-shell-current-line: var(--qp-color-shell-current-line);
   --color-scrim: var(--qp-color-scrim);
   --color-text-on-inverse: var(--qp-color-text-on-inverse);
   --color-ring-track: var(--qp-color-ring-track);

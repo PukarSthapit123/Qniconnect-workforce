@@ -1,4 +1,4 @@
-/* Onboarding templates: what a starter is asked can differ by job profile. A
+/* Onboarding templates: what a starter is asked can differ by position. A
    template holds only the switches (steps on or off; each document's on,
    Required and Blocks start; the policies asked). Labels, verifiers and the
    other shared settings stay on the one config. Every function is pure. */
@@ -14,7 +14,7 @@ export const ONB_TEMPLATE_NAME_MAX = 60;
 export interface OnbTemplateStep { id: OnbStepId; on: boolean }
 export interface OnbTemplateDocument { id: string; on: boolean; req: boolean; blocks: boolean }
 export interface OnbTemplate {
-  id: string; name: string; jobProfiles: string[]; steps: OnbTemplateStep[]; documents: OnbTemplateDocument[]; policies: string[];
+  id: string; name: string; positions: string[]; steps: OnbTemplateStep[]; documents: OnbTemplateDocument[]; policies: string[];
 }
 export type OnbTemplateDraft = Omit<OnbTemplate, 'id'>;
 export interface ResolvedOnboarding { config: OnboardingConfig; policies: string[] }
@@ -22,14 +22,14 @@ export type BaseConfig = OnboardingConfig & { policies: readonly string[] };
 
 export const TEMPLATE_NAME_NEEDED = 'A template needs a name.';
 export const TEMPLATE_NAME_LONG = 'Keep the name to 60 characters.';
-export const TEMPLATE_NAME_RESERVED = 'Default is the template every other job profile uses. Choose another name.';
+export const TEMPLATE_NAME_RESERVED = 'Default is the template every other position uses. Choose another name.';
 export const TEMPLATE_NAME_TAKEN = 'A template with that name already exists.';
 export const profileTakenText = (profileName: string, code: string, templateName: string) =>
   `${profileName} (${code}) is already in ${templateName}. Take it out of ${templateName} first.`;
-export const unknownProfileText = (code: string) => `There is no job profile with the code ${code}.`;
-export const templateCreatedText = (name: string) => `${name} created. It applies to nobody until you add a job profile and save.`;
+export const unknownProfileText = (code: string) => `There is no position with the code ${code}.`;
+export const templateCreatedText = (name: string) => `${name} created. It applies to nobody until you add a position and save.`;
 export const templateSavedText = (name: string) => `${name} saved. Starters who have not submitted are asked what it asks from now on.`;
-export const templateDeletedText = (name: string) => `${name} deleted. Its job profiles use the Default template from now on.`;
+export const templateDeletedText = (name: string) => `${name} deleted. Its positions use the Default template from now on.`;
 
 const invalid = (field: string, message: string, next: string): OnbRefusal => ({ code: 'VALIDATION', message, next, field });
 
@@ -37,9 +37,9 @@ const invalid = (field: string, message: string, next: string): OnbRefusal => ({
 export const withPolicies = (base: OnboardingConfig, allPolicyIds: readonly string[]): BaseConfig =>
   ({ ...base, policies: base.policies ?? [...allPolicyIds] });
 
-/* The template listing the starter's job profile, or null for the default. */
-export const templateFor = <T extends OnbTemplate>(jobProfile: string, templates: readonly T[]): T | null =>
-  (jobProfile ? templates.find(t => t.jobProfiles.includes(jobProfile)) : undefined) ?? null;
+/* The template listing the starter's position, or null for the default. */
+export const templateFor = <T extends OnbTemplate>(position: string, templates: readonly T[]): T | null =>
+  (position ? templates.find(t => t.positions.includes(position)) : undefined) ?? null;
 
 export function configFor(template: OnbTemplate | null, base: BaseConfig): ResolvedOnboarding {
   const { policies, ...shared } = base;
@@ -65,16 +65,16 @@ export function normaliseTemplate<T extends OnbTemplate>(t: T, base: OnboardingC
   };
 }
 
-/* A copy of the source (the default when null), with a new id and name and no job profiles. */
+/* A copy of the source (the default when null), with a new id and name and no positions. */
 export function newTemplateFrom(id: string, name: string, source: OnbTemplate | null, base: BaseConfig): OnbTemplate {
   const from: OnbTemplate = source ?? {
-    id: DEFAULT_KEY, name: DEFAULT_TEMPLATE, jobProfiles: [],
+    id: DEFAULT_KEY, name: DEFAULT_TEMPLATE, positions: [],
     steps: base.steps.map(s => ({ id: s.id, on: s.on })),
     documents: base.documents.map(d => ({ id: d.id, on: d.on, req: d.req, blocks: d.blocks })),
     policies: [...base.policies],
   };
   return normaliseTemplate({
-    id, name, jobProfiles: [],
+    id, name, positions: [],
     steps: from.steps.map(s => ({ ...s })),
     documents: from.documents.map(d => ({ ...d })),
     policies: [...from.policies],
@@ -103,7 +103,7 @@ export interface TemplateRuleContext {
   base: BaseConfig;
   was: OnbTemplate | null;
   others: readonly OnbTemplate[];
-  jobProfiles: readonly { code: string; name: string }[];
+  positions: readonly { code: string; name: string }[];
   policyIds: readonly string[];
   features: OnbFeatures;
 }
@@ -111,11 +111,11 @@ export interface TemplateRuleContext {
 export function onbTemplateProblem(next: OnbTemplateDraft, ctx: TemplateRuleContext): OnbRefusal | null {
   const name = onbTemplateNameProblem(next.name, ctx.others, ctx.was?.id);
   if (name) return name;
-  for (const code of next.jobProfiles) {
-    const profile = ctx.jobProfiles.find(p => p.code === code);
-    if (!profile) return invalid('jobProfiles', unknownProfileText(code), 'Choose a job profile from the list.');
-    const holder = ctx.others.find(t => t.jobProfiles.includes(code));
-    if (holder) return { code: 'PROFILE_TAKEN', field: 'jobProfiles', message: profileTakenText(profile.name, code, holder.name), next: 'Reload the page to see who holds it.' };
+  for (const code of next.positions) {
+    const profile = ctx.positions.find(p => p.code === code);
+    if (!profile) return invalid('positions', unknownProfileText(code), 'Choose a position from the list.');
+    const holder = ctx.others.find(t => t.positions.includes(code));
+    if (holder) return { code: 'PROFILE_TAKEN', field: 'positions', message: profileTakenText(profile.name, code, holder.name), next: 'Reload the page to see who holds it.' };
   }
   if (next.steps.map(s => s.id).join() !== STEP_IDS.join())
     return invalid('steps', 'Steps can be switched on or off, not added, removed or reordered.', 'Reload the page and switch the steps you need.');

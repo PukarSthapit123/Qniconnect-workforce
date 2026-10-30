@@ -129,7 +129,7 @@ describe('own only and the gates (Review Focus 1, D4)', () => {
     const manager = await as('manager');
     expect((await mine(manager)).gates).toMatchObject({ mode: 'grid', show: false });
     const r = await move(manager, 'in', 0);
-    expect(refusal(r)).toMatchObject({ code: 'NOT_CLOCK_TYPE', message: 'Service Manager records time on the day form, not the clock.' });
+    expect(refusal(r)).toMatchObject({ code: 'NOT_CLOCK_TYPE', message: 'Salaried records time on the day form, not the clock.' });
   });
   test('a submitted day is blocked with module 2\'s refusal', async () => {
     const call = await as('employee');
@@ -217,6 +217,21 @@ describe('clock out goes through the day save (Review Focus 3, D3)', () => {
     expect(c.record).toMatchObject({ state: 'clockedOut', closedLate: { finish: '21:00' } });
     expect(c.day?.entries[0]).toMatchObject({ start: '06:00', finish: '21:00' });
     expect(clockAudits()).toEqual(['Clocked in', 'Clocked out at a chosen time']);
+  });
+  test('clock in again after a same-day close at a chosen time runs the clock again, with the gap from that finish as a break', async () => {
+    const call = await as('employee');
+    at('07:00:00'); await move(call, 'in');
+    at('12:30:00');
+    moved(await call('POST', '/api/v1/clock/2026-08-13/close', { finish: '12:00' }, (await mine(call)).version));
+    at('13:00:00');
+    const again = moved(await move(call, 'in'));
+    expect(again.record).toMatchObject({ state: 'running', closedLate: null });
+    expect(again.record.events.map(e => e.kind)).toEqual(['in', 'out', 'in']);
+    expect(again.record.elapsedSeconds).toBe(5 * 3600);
+    at('16:00:00');
+    const out = moved(await move(call, 'out'));
+    expect(out.record.state).toBe('clockedOut');
+    expect(out.day?.entries[0]).toMatchObject({ start: '07:00', finish: '16:00', breaks: [{ start: '12:00', end: '13:00' }] });
   });
   test('the day keeps what the employee changed on the form, the clock fills the first empty break pair (the gap before Clock in again first), and a submitted day refuses the clock', async () => {
     const call = await as('employee');

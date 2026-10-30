@@ -40,11 +40,9 @@ for (const { w, h } of WIDTHS) {
       await shot('dimensions');
       await at('/setup/aloc?d=locations', tid.dims.table);
       await shot('locations');
-      await at('/setup/acon', tid.contracts.table);
-      await shot('contracts');
       await at('/setup/atypes', tid.types.detail);
       await page.getByTestId(tid.types.cap('vehicle')).waitFor();
-      await shot('employee-types');
+      await shot('work-patterns');
 
       await signInAs('manager');
       await at('/team/temployees', tid.employees.table);

@@ -1,64 +1,52 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { KeyRound, MoreHorizontal, Plus } from 'lucide-react';
 import { useQueryClient } from '@tanstack/react-query';
 import { tid } from '@/testids';
-import type { Employee } from '@/contract/employees';
 import { logger } from '@/lib/logger';
 import { AdminCard, Avatar, Banner, Button, CheckboxField, CheckRow, ChipButton, Empty, Field, FilterBar, Modal, Pill, Row, SearchFilter, SelectBox, Small, TextInput } from '@/ui';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/ui/shadcn/table';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/ui/shadcn/dropdown-menu';
 import { createPortalUser, setPortalUserStatus, updatePortalUser, updatePortalUsersList, usePortalUsers } from '@/api/bc/portal-users';
 import {
-  applyCreated, applyEdited, EMPTY_PORTAL_USER, filterPortalUsers, joinPeople, lastLoginText, portalStatus, portalUserFormError, ROLES,
+  applyCreated, applyEdited, EMPTY_PORTAL_USER, filterPortalUsers, lastLoginText, portalStatus, portalUserFormError, ROLES,
   rowActions, sanitisePortalUser, tabCounts, USERS_TABS, withAdminFlag, type PortalUserForm, type PortalUserRow, type UsersTab,
 } from '@/domain/people-access';
-import { NotConnected } from '@/features/profile/NotConnected';
 
 const LOAD_FAILED = 'Failed to load users. Please try again.';
 const STATUS_FAILED = { activate: 'Failed to activate user. Please try again.', deactivate: 'Failed to deactivate user. Please try again.' } as const;
 const errorText = (e: unknown, fallback: string) => (e instanceof Error && e.message) || fallback;
 
-/* People & access › Portal logins: QniConnect's user management
-   (docs/superpowers/inventory/admin.md, USERS) on the design system, shown
-   only to a portal admin (N18). Who can sign in to QniConnect, live from
-   Business Central: add (invite), activate, deactivate, the administrator
-   flag and whether they have signed in yet.
+/* Portal logins: QniConnect's user management (docs/superpowers/inventory/
+   admin.md, USERS), for a portal admin only (N18). Who can sign in to
+   QniConnect, live from Business Central: add (invite), activate,
+   deactivate, the administrator flag and whether they have signed in yet.
+   Setup · Employees shows them in its one table beside each Workforce
+   record; a portal admin without master_data gets PortalLoginPanel alone.
 
    The list loads once (USERS.R1) and every change is made to it in place
-   from the answer (R5, R10, R12). Each login is matched to its Workforce
-   record by employee number in the browser only (N19); `employees` is null
-   when the Workforce side is not this person's to see, and then no match is
-   shown at all.
+   from the answer (R5, R10, R12).
 
    Changed on the way (Ruling Q2, listed in the Task 20 report): an
    administrator's row says it cannot be changed instead of opening a menu
    that says so (R4); a new attempt clears the last failure's banner (R5);
    Enter and the button run the same checks (R9); the form keeps what was
    typed while the list behind it changes (R14). */
-export function PortalLoginPanel({ employees, invite, onInviteClose, onOpenRecord }: {
-  /* null: not this person's to see (no column); undefined: still loading */
-  employees: readonly Employee[] | null | undefined;
-  /* a Workforce record's "Invite to the portal": the add form, filled in from it */
-  invite?: PortalUserForm | null; onInviteClose?(): void;
-  onOpenRecord?(employeeCode: string): void;
-}) {
+export interface PortalLogins {
+  users: readonly PortalUserRow[] | undefined; pending: boolean;
+  /* the last failure, or the list's own: shown above whichever table lists the logins */
+  banner: ReactNode;
+  /* a login's menu, or what an administrator's says instead; `beforeEdit` closes what it sits in (the record) before the edit form opens */
+  menu(u: PortalUserRow, beforeEdit?: () => void): ReactNode;
+  openCreate(initial?: PortalUserForm): void;
+  /* the add or edit form, while one is open */
+  dialog: ReactNode;
+}
+export function usePortalLogins(): PortalLogins {
   const q = usePortalUsers(true);
   const queryClient = useQueryClient();
-  const [tab, setTab] = useState<UsersTab>('all');
-  const [search, setSearch] = useState('');
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [form, setForm] = useState<{ mode: 'create' } | { mode: 'edit'; user: PortalUserRow } | null>(null);
-  const users = useMemo(() => q.data ?? [], [q.data]);
-  const matched = useMemo(() => {
-    if (employees === null) return null;
-    const m = new Map<PortalUserRow, Employee>();
-    if (!employees) return { m, loading: true };
-    for (const r of joinPeople(employees, users)) if (r.portal && r.employee) m.set(r.portal, r.employee);
-    return { m, loading: false };
-  }, [employees, users]);
-  const shown = filterPortalUsers(users, tab, search);
-  const counts = tabCounts(users);
+  const [form, setForm] = useState<{ mode: 'create'; initial: PortalUserForm | null } | { mode: 'edit'; user: PortalUserRow } | null>(null);
   const banner = error ?? (q.isError ? LOAD_FAILED : null);
 
   /* USERS.R5: the row's status changes in place; nothing is read again */
@@ -74,14 +62,67 @@ export function PortalLoginPanel({ employees, invite, onInviteClose, onOpenRecor
       setError(STATUS_FAILED[action]);
     } finally { setBusy(null); }
   };
-  const creating = form?.mode === 'create' || Boolean(invite);
-  const closeForm = () => { setForm(null); if (invite) onInviteClose?.(); };
+  return {
+    users: q.data, pending: q.isPending,
+    banner: banner && <Banner testId={tid.ausers.error} tone="err" title={banner} />,
+    menu: (u, beforeEdit) => <LoginMenu u={u} busy={busy === u.id} onStatus={a => void setStatus(u, a)} onEdit={() => { beforeEdit?.(); setError(null); setForm({ mode: 'edit', user: u }); }} />,
+    openCreate: initial => { setError(null); setForm({ mode: 'create', initial: initial ?? null }); },
+    dialog: form && (
+      <UserDialog key={form.mode === 'edit' ? `edit-${form.user.id}` : `create-${form.initial?.email ?? ''}`}
+        user={form.mode === 'edit' ? form.user : null} initial={form.mode === 'edit' ? null : form.initial} onClose={() => setForm(null)}
+        onSaved={(typed, result, user) => {
+          /* USERS.R10 and R12: the list changes in place, the dialog closes */
+          updatePortalUsersList(queryClient, list => (user ? applyEdited(list, user.id, typed, result) : applyCreated(list, result ?? {})));
+          setForm(null);
+        }} />),
+  };
+}
 
-  const add = <Button testId={tid.ausers.add} kind="primary" small onClick={() => setForm({ mode: 'create' })}><Plus aria-hidden="true" />Add user</Button>;
+/* A login's status and administrator flag, and when it last signed in. */
+export function LoginStatus({ u }: { u: PortalUserRow }) {
+  const s = portalStatus(u.status);
+  return (
+    <span className="inline-flex flex-col gap-[2px]">
+      <span className="inline-flex flex-wrap gap-xs">
+        <Pill testId={tid.ausers.status(u.id)} tone={s.tone}>{s.label}</Pill>
+        {u.isAdmin && <Pill testId={tid.ausers.admin(u.id)} tone="info">Admin</Pill>}
+      </span>
+      <Small>Last login <span data-testid={tid.ausers.lastLogin(u.id)} className="tabular-nums">{lastLoginText(u.lastLogin)}</span></Small>
+    </span>);
+}
+
+function LoginMenu({ u, busy, onStatus, onEdit }: { u: PortalUserRow; busy: boolean; onStatus(a: 'activate' | 'deactivate'): void; onEdit(): void }) {
+  const actions = rowActions(u), who = u.name || u.email || 'this user';
+  /* USERS.R4: the menu's place in the row, disabled and saying why, rather than a sentence wrapping beside Edit and Open */
+  if (actions === 'locked') return (
+    <Button testId={tid.ausers.locked(u.id)} kind="ghost" small disabled title="Admin logins cannot be changed here">
+      <MoreHorizontal aria-hidden="true" /><span className="sr-only">Admin logins cannot be changed here</span></Button>);
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button testId={tid.ausers.menu(u.id)} kind="ghost" small pending={busy} aria-label={`Portal login actions for ${who}`}><MoreHorizontal aria-hidden="true" /></Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="min-w-[180px]">
+        {actions.map(a => a === 'edit'
+          ? <DropdownMenuItem key={a} data-testid={tid.ausers.edit(u.id)} onSelect={onEdit} className="min-h-touch md:min-h-0">Edit login</DropdownMenuItem>
+          : <DropdownMenuItem key={a} data-testid={a === 'activate' ? tid.ausers.activate(u.id) : tid.ausers.deactivate(u.id)} onSelect={() => onStatus(a)}
+              className="min-h-touch md:min-h-0">{a === 'activate' ? 'Activate login' : 'Deactivate login'}</DropdownMenuItem>)}
+      </DropdownMenuContent>
+    </DropdownMenu>);
+}
+
+/* A portal admin who may not see the Workforce records: the logins alone, with QniConnect's tabs and search. */
+export function PortalLoginPanel() {
+  const logins = usePortalLogins();
+  const [tab, setTab] = useState<UsersTab>('all');
+  const [search, setSearch] = useState('');
+  const users = logins.users ?? [];
+  const shown = filterPortalUsers(users, tab, search);
+  const counts = tabCounts(users);
   return (
     <AdminCard testId={tid.ausers.panel} icon={<KeyRound />} title="Portal logins"
       desc="Who can sign in to QniConnect, from Business Central. An administrator also manages these logins, the environments and the authorization.">
-      {banner && <Banner testId={tid.ausers.error} tone="err" title={banner} />}
+      {logins.banner}
       <FilterBar>
         <div role="group" aria-label="Show" className="inline-flex flex-wrap gap-xs">
           {/* USERS.R3: the counts are the whole list's, whatever the search */}
@@ -91,96 +132,50 @@ export function PortalLoginPanel({ employees, invite, onInviteClose, onOpenRecor
             </ChipButton>))}
         </div>
         <SearchFilter testId={tid.ausers.search} label="Search portal users" placeholder="Search by name or email" value={search} onChange={e => setSearch(e.target.value)} />
-        <span className="ml-auto max-md:ml-0">{add}</span>
+        <span className="ml-auto max-md:ml-0"><AddLogin onClick={() => logins.openCreate()} /></span>
       </FilterBar>
-
-      {q.isPending
+      {logins.pending
         ? <p data-testid={tid.ausers.loading} role="status" className="text-text-secondary">Loading the portal users&hellip;</p>
         : shown.length === 0
           ? <Empty testId={tid.ausers.empty}>No users found matching your criteria.{' '}
               <Button testId={tid.ausers.clear} kind="link" onClick={() => { setSearch(''); setTab('all'); }}>Clear filters</Button></Empty>
           : (
             <Table data-testid={tid.ausers.list} variant="records" dense>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>User</TableHead>
-                  {matched && <TableHead><span className="inline-flex items-center gap-xs">Workforce record<span className="normal-case tracking-normal"><NotConnected testId={tid.people.notConnected} note={NOT_CONNECTED} /></span></span></TableHead>}
-                  <TableHead>Last login</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead><span className="sr-only">Actions</span></TableHead>
-                </TableRow>
-              </TableHeader>
+              <TableHeader><TableRow>
+                <TableHead>User</TableHead><TableHead>Portal login</TableHead><TableHead><span className="sr-only">Actions</span></TableHead>
+              </TableRow></TableHeader>
               <TableBody>
-                {shown.map(u => <UserRow key={u.id || u.email} u={u} employee={matched ? (matched.loading ? 'loading' : matched.m.get(u) ?? null) : undefined} busy={busy === u.id}
-                  onOpenRecord={onOpenRecord} onStatus={a => void setStatus(u, a)} onEdit={() => { setError(null); setForm({ mode: 'edit', user: u }); }} />)}
+                {shown.map(u => (
+                  <Row key={u.id || u.email} testId={tid.ausers.row(u.id)}>
+                    <TableCell kind="title"><LoginName u={u} /></TableCell>
+                    <TableCell label="Portal login"><LoginStatus u={u} /></TableCell>
+                    <TableCell kind="foot" className="text-right whitespace-nowrap">{logins.menu(u)}</TableCell>
+                  </Row>))}
               </TableBody>
             </Table>)}
-
-      {(creating || form?.mode === 'edit') && (
-        <UserDialog key={form?.mode === 'edit' ? `edit-${form.user.id}` : `create-${invite?.email ?? ''}`}
-          user={form?.mode === 'edit' ? form.user : null} initial={form?.mode === 'edit' ? null : invite ?? null} onClose={closeForm}
-          onSaved={(typed, result, user) => {
-            /* USERS.R10 and R12: the list changes in place, the dialog closes */
-            updatePortalUsersList(queryClient, list => (user ? applyEdited(list, user.id, typed, result) : applyCreated(list, result ?? {})));
-            closeForm();
-          }} />)}
+      {logins.dialog}
     </AdminCard>);
 }
 
-const NOT_CONNECTED = 'Matched by employee number to the Workforce records, which run on sample data until the workforce service is connected. The portal logins are live.';
+export const AddLogin = ({ onClick }: { onClick(): void }) =>
+  <Button testId={tid.ausers.add} kind="ghost" small onClick={onClick}><Plus aria-hidden="true" />Add portal login</Button>;
 
-function UserRow({ u, employee, busy, onOpenRecord, onStatus, onEdit }: {
-  /* the matched record; null: none matches; 'loading': the records are being read; undefined: no column */
-  u: PortalUserRow; employee: Employee | null | 'loading' | undefined; busy: boolean;
-  onOpenRecord?(code: string): void; onStatus(a: 'activate' | 'deactivate'): void; onEdit(): void;
-}) {
-  const s = portalStatus(u.status), actions = rowActions(u), who = u.name || u.email || 'this user';
+function EmailParts({ email }: { email: string }) {
+  const at = email.indexOf('@');
+  return at < 1 ? <>{email}</> : <>{email.slice(0, at)}<wbr />{email.slice(at)}</>;
+}
+
+/* a login's person: the name, or that it has none, over the email */
+export function LoginName({ u }: { u: PortalUserRow }) {
   return (
-    <Row testId={tid.ausers.row(u.id)}>
-      <TableCell kind="title">
-        <span className="flex min-w-0 items-center gap-sm">
-          <Avatar name={u.name || u.email || '?'} />
-          <span className="min-w-0">
-            <span className="block font-semibold">{u.name || <span className="text-text-muted">No name</span>}</span>
-            <span className="block text-xs font-normal break-all text-text-muted">{u.email}</span>
-          </span>
-        </span>
-      </TableCell>
-      {employee !== undefined && (
-        <TableCell label="Workforce record"><span data-testid={tid.ausers.record(u.id)}>
-          {employee === 'loading'
-            ? <span className="text-text-muted">—</span>
-            : employee
-            ? onOpenRecord
-              ? <Button testId={tid.ausers.recordOpen(u.id)} kind="link" onClick={() => onOpenRecord(employee.code)}
-                  aria-label={`Open the Workforce record of ${employee.name}, ${employee.code}`}><span className="tabular-nums">{employee.code}</span></Button>
-              : <span className="tabular-nums">{employee.code}</span>
-            : <Pill testId={tid.ausers.noRecord(u.id)} tone="neu" className="border bg-surface-card" note={u.employeeNo.trim() ? `No Workforce record has the employee number ${u.employeeNo}.` : 'This login has no employee number, so it matches no Workforce record.'}>No Workforce record</Pill>}
-        </span></TableCell>)}
-      <TableCell label="Last login"><span data-testid={tid.ausers.lastLogin(u.id)} className="tabular-nums">{lastLoginText(u.lastLogin)}</span></TableCell>
-      <TableCell label="Status">
-        <span className="inline-flex flex-wrap gap-xs">
-          <Pill testId={tid.ausers.status(u.id)} tone={s.tone}>{s.label}</Pill>
-          {u.isAdmin && <Pill testId={tid.ausers.admin(u.id)} tone="info">Admin</Pill>}
-        </span>
-      </TableCell>
-      <TableCell kind="foot" className="text-right whitespace-nowrap">
-        {actions === 'locked'
-          ? <Small testId={tid.ausers.locked(u.id)}>Admin users cannot be modified</Small>
-          : (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button testId={tid.ausers.menu(u.id)} kind="ghost" small pending={busy} aria-label={`Actions for ${who}`}><MoreHorizontal aria-hidden="true" /></Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="min-w-[180px]">
-                {actions.map(a => a === 'edit'
-                  ? <DropdownMenuItem key={a} data-testid={tid.ausers.edit(u.id)} onSelect={onEdit} className="min-h-touch md:min-h-0">Edit user</DropdownMenuItem>
-                  : <DropdownMenuItem key={a} data-testid={a === 'activate' ? tid.ausers.activate(u.id) : tid.ausers.deactivate(u.id)} onSelect={() => onStatus(a)}
-                      className="min-h-touch md:min-h-0">{a === 'activate' ? 'Activate user' : 'Deactivate user'}</DropdownMenuItem>)}
-              </DropdownMenuContent>
-            </DropdownMenu>)}
-      </TableCell>
-    </Row>);
+    <span className="flex min-w-0 items-center gap-sm">
+      <Avatar name={u.name || u.email || '?'} />
+      <span className="min-w-0">
+        <span className="block font-semibold">{u.name || <span className="text-text-muted">No name</span>}</span>
+        {/* an address breaks before its @ when it must, never mid-word */}
+        <span className="block text-xs font-normal break-normal text-text-muted"><EmailParts email={u.email} /></span>
+      </span>
+    </span>);
 }
 
 /* USERS' create and edit modals: QniConnect's fields and checks (R6 to R9),

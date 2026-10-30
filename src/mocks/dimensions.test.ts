@@ -8,17 +8,17 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' })); afterAll(() => 
 beforeEach(() => resetTo('social'));
 const as = async (p: Persona) => caller(await tokenFor(p));
 
-const COLLECTION: Record<DimensionKind, string> = { locations: 'locations', departments: 'departments', 'cost-centres': 'costCentres', 'job-profiles': 'jobProfiles', projects: 'projects' };
-const LABEL: Record<DimensionKind, string> = { locations: 'Location', departments: 'Department', 'cost-centres': 'Cost centre', 'job-profiles': 'Job profile', projects: 'Project' };
+const COLLECTION: Record<DimensionKind, string> = { locations: 'locations', departments: 'departments', 'cost-centres': 'costCentres', 'positions': 'positions', projects: 'projects' };
+const LABEL: Record<DimensionKind, string> = { locations: 'Site', departments: 'Department', 'cost-centres': 'Cost centre', 'positions': 'Position', projects: 'Project' };
 const SAMPLE: Record<DimensionKind, Record<string, unknown>> = {
   locations: { code: 'tq', name: 'Test Quay', area: 'Docklands', department: 'CARE', costCentre: 'WH-CAM-01', manager: '', address: '', active: true },
   departments: { code: 'TST', name: 'Testing', manager: '' },
   'cost-centres': { code: 'CC-999', name: 'Test centre' },
-  'job-profiles': { code: 'TJ', name: 'Test job', night: true },
+  'positions': { code: 'TJ', name: 'Test job', night: true },
   projects: { code: 'PRJ-999', name: 'Test project', client: '', costCentre: 'CC-220', manager: '', status: 'Active', start: '', end: '', budgetHours: '', billable: false, location: '' },
 };
 /* a seed code each dimension uses; projects have no users until sub-project 2 */
-const IN_USE: Record<DimensionKind, string | null> = { locations: 'WH', departments: 'CARE', 'cost-centres': 'WH-CAM-01', 'job-profiles': 'SW', projects: null };
+const IN_USE: Record<DimensionKind, string | null> = { locations: 'WH', departments: 'CARE', 'cost-centres': 'WH-CAM-01', 'positions': 'SW', projects: null };
 const rowByCode = (kind: DimensionKind, code: string) => {
   const r = Object.values(store.coll<{ id: string; version: number; code: string }>(COLLECTION[kind])).find(x => x.code === code);
   if (!r) throw new Error(`no ${kind} ${code}`);
@@ -123,23 +123,23 @@ for (const kind of DIMENSION_KINDS) {
   });
 }
 
-test('a location must point at a department and cost centre that exist', async () => {
+test('a site must point at a department and cost centre that exist', async () => {
   const r = await (await as('admin'))('POST', '/api/v1/locations', { ...SAMPLE.locations, department: 'NOPE' });
   expect(r.status).toBe(422);
   expect(Refusal.parse(r.body)).toMatchObject({ field: 'department', message: 'There is no department with the code NOPE.' });
 });
-test('a location\'s refusal names both the employees and the projects at it', async () => {
+test('a site\'s refusal names both the employees and the projects at it', async () => {
   const row = rowByCode('locations', 'WH');
   const r = await (await as('admin'))('DELETE', `/api/v1/locations/${row.id}`, undefined, row.version);
   expect(Refusal.parse(r.body).usedBy?.map(u => u.kind)).toEqual(['employees', 'projects']);
 });
 
-test('a job profile an onboarding template lists cannot be removed, and the refusal names the template', async () => {
+test('a position an onboarding template lists cannot be removed, and the refusal names the template', async () => {
   resetTo('qnipay');
-  const call = await as('admin'), row = rowByCode('job-profiles', 'SCONS'), before = snapshot('jobProfiles', 'onboardingTemplates', 'audit');
-  const r = await call('DELETE', `/api/v1/job-profiles/${row.id}`, undefined, row.version);
+  const call = await as('admin'), row = rowByCode('positions', 'SCONS'), before = snapshot('positions', 'onboardingTemplates', 'audit');
+  const r = await call('DELETE', `/api/v1/positions/${row.id}`, undefined, row.version);
   expect(r.status).toBe(409);
   expect(Refusal.parse(r.body)).toMatchObject({ code: 'in-use', message: 'SCONS is used by the onboarding template Senior consultants.',
     usedBy: [{ kind: 'onboarding templates', count: 1, examples: ['Senior consultants'] }] });
-  expect(snapshot('jobProfiles', 'onboardingTemplates', 'audit')).toEqual(before);
+  expect(snapshot('positions', 'onboardingTemplates', 'audit')).toEqual(before);
 });

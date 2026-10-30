@@ -36,10 +36,15 @@ const currentOther = () => {
   if (!first) throw new Error('no other current employee');
   return first;
 };
+/* a row's one action is View; Edit is on the record (user ruling 2026-10-27) */
+const editFromRecord = async (code: string) => {
+  await userEvent.click(await screen.findByTestId(tid.employees.open(code)));
+  await userEvent.click(await screen.findByTestId(tid.employee.edit));
+  await screen.findByTestId(tid.employeeForm.root);
+};
 const openEdit = async (Page: () => React.JSX.Element, code = 'CP-1042') => {
   renderPage(<Page />);
-  await userEvent.click(await screen.findByTestId(tid.employees.edit(code)));
-  await screen.findByTestId(tid.employeeForm.root);
+  await editFromRecord(code);
 };
 
 describe('adding someone, as an admin', () => {
@@ -61,25 +66,25 @@ describe('adding someone, as an admin', () => {
   test('CR It uses the design system field pattern', async () => {
     await openAdd();
     expect(screen.getByTestId(tid.employeeForm.root).querySelectorAll('label').length).toBeGreaterThan(6);
-    expect(screen.getByTestId(tid.employeeForm.field('name-field'))).toHaveTextContent('required');
+    expect(screen.getByTestId(tid.employeeForm.field('firstName-field'))).toHaveTextContent('required');
   });
   test('CR A name is required, and nothing is written', async () => {
     await openAdd();
     const before = snapshot('employees', 'audit');
     await save();
-    expect(await screen.findByTestId(tid.employeeForm.warn)).toHaveTextContent('A full name is required.');
+    expect(await screen.findByTestId(tid.employeeForm.warn)).toHaveTextContent('A first name is required.');
     expect(snapshot('employees', 'audit')).toEqual(before);
   });
   test('CR A duplicate employee ID is refused, because payroll maps on it', async () => {
     await openAdd();
-    await type('name', 'Test Employee'); await type('email', 'test.employee@brightpath.org');
+    await type('firstName', 'Test'); await type('lastName', 'Employee'); await type('email', 'test.employee@brightpath.org');
     await type('code', 'CP-1042');
     await save();
     expect(await screen.findByTestId(tid.employeeForm.warn)).toHaveTextContent('CP-1042 is already in use');
   });
   test('CR Contracted hours are bounded, and cannot exceed the maximum', async () => {
     await openAdd();
-    await type('name', 'Test Employee'); await type('email', 'test.employee@brightpath.org');
+    await type('firstName', 'Test'); await type('lastName', 'Employee'); await type('email', 'test.employee@brightpath.org');
     await type('contractedHours', '90'); await save();
     expect(await screen.findByTestId(tid.employeeForm.warn)).toHaveTextContent('between 0 and 80');
     await type('contractedHours', '50'); await type('maxHours', '40'); await save();
@@ -87,7 +92,7 @@ describe('adding someone, as an admin', () => {
   });
   test('CR A valid record is created, and says what it can do straight away', async () => {
     await openAdd();
-    await type('name', 'Test Employee'); await type('email', 'test.employee@brightpath.org');
+    await type('firstName', 'Test'); await type('lastName', 'Employee'); await type('email', 'test.employee@brightpath.org');
     await pick('location', 'WH'); await pick('state', 'active');
     await save();
     expect(await screen.findByTestId(tid.toast.info)).toHaveTextContent('Test Employee created');
@@ -206,13 +211,12 @@ describe('editing someone', () => {
     expect(screen.getByTestId(tid.employeeForm.root)).toBeInTheDocument();
     expect(snapshot('employees')).toEqual(before);
   });
-  test('a manager is offered Add someone and Edit, but not the user type, because that needs Permissions', async () => {
+  test('a manager is offered Add someone and, on the record, Edit, but not the access role, because that needs Permissions', async () => {
     await signInAs('manager');
     renderPage(<TeamEmployeesPage />);
     await screen.findByTestId(tid.employees.table);
     expect(screen.getByTestId(tid.employees.add)).toHaveTextContent('Add someone');
-    await userEvent.click(screen.getByTestId(tid.employees.edit('CP-1042')));
-    await screen.findByTestId(tid.employeeForm.root);
+    await editFromRecord('CP-1042');
     expect(screen.queryByTestId(tid.employeeForm.field('userType'))).toBeNull();
     expect(screen.getByTestId(tid.employeeForm.root)).toHaveTextContent('Setup · Permissions');
   });
@@ -225,8 +229,7 @@ describe('editing someone', () => {
     renderPage(<AdminEmployeesPage />);
     await userEvent.click(await screen.findByTestId(tid.employees.stateFilter));
     await userEvent.click(await screen.findByTestId(`${tid.employees.stateFilter}-option-all`));
-    await userEvent.click(await screen.findByTestId(tid.employees.edit('EMP015')));
-    await screen.findByTestId(tid.employeeForm.root);
+    await editFromRecord('EMP015');
     const form = screen.getByTestId(tid.employeeForm.root);
     expect(form).toHaveTextContent(`${shared} already signs in to another account`);
     expect(form).not.toHaveTextContent('Give them a work email');

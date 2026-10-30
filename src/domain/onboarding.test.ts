@@ -130,10 +130,12 @@ describe('step validation (onbSaveStep)', () => {
     expect(refusal(save('contact', { contact: { ...full, post: '' } }))).toBe('A postcode is required.');
     expect(must(save('contact', { contact: full })).steps.contact).toBe('done');
   });
-  test('emergency: only the first contact is required, name then phone', () => {
+  test('emergency: only the first contact is required, first name, last name, then phone; each name fits payroll (30)', () => {
     expect(refusal(save('emergency', {}))).toBe('At least one emergency contact is required.');
-    expect(refusal(save('emergency', { emergency: [{ nm: 'Anita Raman' }] }))).toBe('The emergency contact needs a phone number.');
-    const c = must(save('emergency', { emergency: [{ nm: 'Anita Raman', rel: 'Parent', ph: '07700 900456' }, {}] }));
+    expect(refusal(save('emergency', { emergency: [{ fn: 'Anita' }] }))).toBe('The emergency contact needs a last name.');
+    expect(refusal(save('emergency', { emergency: [{ fn: 'Anita', ln: 'Raman' }] }))).toBe('The emergency contact needs a phone number.');
+    expect(refusal(save('emergency', { emergency: [{ fn: 'A'.repeat(31), ln: 'Raman', ph: '07700 900456' }] }))).toBe('First name can be at most 30 characters.');
+    const c = must(save('emergency', { emergency: [{ fn: 'Anita', ln: 'Raman', rel: 'Parent', ph: '07700 900456' }, {}] }));
     expect(c.data.emergency).toHaveLength(2);
   });
   test('additional: convictions answered, details when Yes, working time answered; switched-off questions are not asked', () => {

@@ -5,7 +5,7 @@ import { Tip } from './Affordances';
 
 /* The prototype's record-display pieces, used wherever one record or one
    list of records is shown: the employee record, My profile, the approval
-   queues, the dimension and employee-type pages. Each names the prototype
+   queues, the dimension and work-pattern pages. Each names the prototype
    rule it ports (qnipay-workforce-v15.html). */
 
 /* .avs (v15:702-704): initials on the brand's subtle tint in brand ink, the

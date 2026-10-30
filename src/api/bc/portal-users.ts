@@ -1,4 +1,4 @@
-/* People & access's portal user calls (docs/superpowers/inventory/admin.md,
+/* Setup · Employees' portal user calls (docs/superpowers/inventory/admin.md,
    USERS). QniConnect's UserManagement used the admin pages' shared service
    instance (BCS.R12), so its calls carry X-BC-Environment only once Set as
    default has given that instance an environment (ENV.R6d), as Environments'

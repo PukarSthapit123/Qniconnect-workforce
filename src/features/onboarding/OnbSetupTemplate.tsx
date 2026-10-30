@@ -15,13 +15,13 @@ import { PoliciesCard } from './OnbSetupPolicies';
 /* A named template: its own draft, saved whole with If-Match. The labels,
    descriptions and checks of steps and documents stay on the shared config. */
 const draftOf = (t: OnbTemplateRecord): UpdateOnbTemplate => ({
-  name: t.name, jobProfiles: [...t.jobProfiles], steps: t.steps.map(s => ({ ...s })), documents: t.documents.map(d => ({ ...d })), policies: [...t.policies],
+  name: t.name, positions: [...t.positions], steps: t.steps.map(s => ({ ...s })), documents: t.documents.map(d => ({ ...d })), policies: [...t.policies],
 });
 
-/* What a draft means once read against the shared lists: a document it lacks is off, policies follow the shared order and job profiles are a set.
+/* What a draft means once read against the shared lists: a document it lacks is off, policies follow the shared order and positions are a set.
    A draft and the saved row are compared in this form, so reordering or a row the draft has not met yet is no change. */
 const normal = (t: UpdateOnbTemplate, setup: OnboardingSetup) => JSON.stringify({
-  name: t.name, jobProfiles: [...new Set(t.jobProfiles)].sort(),
+  name: t.name, positions: [...new Set(t.positions)].sort(),
   steps: setup.config.steps.map(s => [s.id, s.fixed || (t.steps.find(x => x.id === s.id)?.on ?? false)]),
   documents: setup.config.documents.map(d => { const r = t.documents.find(x => x.id === d.id); return [d.id, r?.on ?? false, r?.req ?? false, r?.blocks ?? false]; }),
   policies: inListOrder(t.policies, setup.policies.map(p => p.id)),

@@ -23,5 +23,5 @@ test('a module switch is written once the server answers, and every module reade
   /* no optimistic update: the tenant changes only after the re-read */
   await waitFor(() => expect(hook.result.current.tenant.data?.modules.ON).toBe(false));
   expect(store.coll<{ modules: Record<string, boolean> }>('tenant').tenant?.modules.ON).toBe(false);
-  expect(keys).toEqual(expect.arrayContaining([['tenant'], ['timesheets'], ['timesheet-config'], ['onboarding'], ['employee-types'], ['audit']]));
+  expect(keys).toEqual(expect.arrayContaining([['tenant'], ['timesheets'], ['timesheet-config'], ['onboarding'], ['work-patterns'], ['audit']]));
 });

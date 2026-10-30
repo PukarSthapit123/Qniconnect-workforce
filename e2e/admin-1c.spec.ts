@@ -24,20 +24,20 @@ test('a template is saved from this tenant, another is previewed and applied, an
   await page.getByTestId(tid.aorg.save).click();
   await expect(info(page, 'Brightpath as it runs saved.')).toBeVisible();
   await expect(page.getByTestId(tid.aorg.savedRow('tpl_brightpath_as_it_runs'))).toContainText('Saved from Brightpath Support Services');
-  expect((await auditRows(page, 'template')).map(a => [a.act, a.entityId])).toEqual([['Template saved', 'tpl_brightpath_as_it_runs']]);
+  expect((await auditRows(page, 'setupPreset')).map(a => [a.act, a.entityId])).toEqual([['Setup preset saved', 'tpl_brightpath_as_it_runs']]);
 
   /* apply M&E: the preview first, and nothing changes until it is confirmed */
   await page.getByTestId(tid.aorg.template('mne')).click();
   const box = page.getByTestId(tid.modal.root);
   await expect(box.getByTestId(tid.modal.title)).toHaveText('Apply M&E / Building Services?');
   await expect(box.getByTestId(tid.aorg.plan('changes'))).toContainText('Activity reads as Cost code.');
-  await expect(box.getByTestId(tid.aorg.plan('added'))).toContainText('Employee type Site Engineer (driver).');
+  await expect(box.getByTestId(tid.aorg.plan('added'))).toContainText('Work pattern Mobile (driver).');
   await expect(box.getByTestId(tid.aorg.plan('leftAlone'))).toContainText('Brightpath Support Services keeps its name');
-  expect((await tenantOf(api)).template).toBe('social');
+  expect((await tenantOf(api)).preset).toBe('social');
   await box.getByTestId(tid.aorg.apply).click();
   await expect(info(page, /^M&E \/ Building Services applied\./)).toBeVisible();
   await expect(page.getByTestId(tid.aorg.template('mne'))).toHaveAttribute('aria-pressed', 'true');
-  expect(await tenantOf(api)).toMatchObject({ template: 'mne', name: 'Brightpath Support Services' });
+  expect(await tenantOf(api)).toMatchObject({ preset: 'mne', name: 'Brightpath Support Services' });
   expect(await everyone(api)).toEqual(employees);
 
   /* and the saved one back: employees still untouched */
@@ -45,12 +45,12 @@ test('a template is saved from this tenant, another is previewed and applied, an
   await box.getByTestId(tid.aorg.plan('changes')).waitFor();
   await box.getByTestId(tid.aorg.apply).click();
   await expect(info(page, /^Brightpath as it runs applied\./)).toBeVisible();
-  expect(await tenantOf(api)).toMatchObject({ template: 'tpl_brightpath_as_it_runs', name: 'Brightpath Support Services' });
+  expect(await tenantOf(api)).toMatchObject({ preset: 'tpl_brightpath_as_it_runs', name: 'Brightpath Support Services' });
   expect(await everyone(api)).toEqual(employees);
-  expect((await auditRows(page, 'template')).map(a => [a.act, a.entityId])).toEqual([
-    ['Template saved', 'tpl_brightpath_as_it_runs'], ['Template applied', 'mne'], ['Template applied', 'tpl_brightpath_as_it_runs']]);
+  expect((await auditRows(page, 'setupPreset')).map(a => [a.act, a.entityId])).toEqual([
+    ['Setup preset saved', 'tpl_brightpath_as_it_runs'], ['Setup preset applied', 'mne'], ['Setup preset applied', 'tpl_brightpath_as_it_runs']]);
   /* an apply is one row, not one per thing it set */
-  expect(await auditRows(page, 'tenant', 'userType', 'employeeType', 'approvalChain')).toEqual([]);
+  expect(await auditRows(page, 'tenant', 'userType', 'workPattern', 'approvalChain')).toEqual([]);
 });
 
 test('renamed roles show in the view-as switcher, the role pill (also while viewing as someone), the permission matrix and the audit log; what each may do is unchanged', async ({ page, api }) => {
@@ -64,7 +64,7 @@ test('renamed roles show in the view-as switcher, the role pill (also while view
   await page.getByTestId(tid.roleNames.field('employee')).fill('Support Worker');
   await page.getByTestId(tid.roleNames.field('admin')).fill('Setup lead');
   await page.getByTestId(tid.roleNames.save).click();
-  await expect(info(page, 'Roles renamed: Support Worker, Manager, Setup lead.')).toBeVisible();
+  await expect(info(page, 'Access roles renamed: Support Worker, Manager, Setup lead.')).toBeVisible();
   await expect(page.getByTestId(tid.modal.root)).toHaveCount(0);
 
   /* the matrix and the pill */
@@ -86,7 +86,7 @@ test('renamed roles show in the view-as switcher, the role pill (also while view
   /* the audit log: one row per user type renamed */
   await page.goto('/setup/iaudit');
   await page.getByTestId(tid.audit.table).waitFor();
-  const renamed = page.getByTestId(tid.audit.table).locator('tr').filter({ hasText: 'Roles renamed' });
+  const renamed = page.getByTestId(tid.audit.table).locator('tr').filter({ hasText: 'Access roles renamed' });
   await expect(renamed).toHaveCount(2);
   await expect(renamed.filter({ hasText: 'Support Worker' })).toHaveCount(1);
   expect((await auditRows(page, 'userType')).map(a => [a.entityId, a.after])).toEqual([['employee', { name: 'Support Worker' }], ['admin', { name: 'Setup lead' }]]);

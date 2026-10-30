@@ -182,10 +182,10 @@ test('an admin capability set produces exactly one top-level group: setup, not t
   });
   expect(g.map(x => x.key)).toEqual(['setup']);
 });
-test('plan 1b builds the employees, profile, dimensions, contracts and employee types pages', () => {
+test('plan 1b builds the employees, profile, dimensions, contracts and work patterns pages', () => {
   const g = buildNav({ caps: caps('own_home', 'master_data', 'team_employees', 'type_cfg'), modules: ALL_MODULES, flags, onboarding: false, portalAdmin: false });
   const tabs = g.flatMap(x => x.tabs);
-  for (const view of ['aemployees', 'temployees', 'profile', 'aloc', 'acon', 'atypes']) expect(tabs.find(t => t.view === view), view).toMatchObject({ built: true });
+  for (const view of ['aemployees', 'temployees', 'profile', 'aloc', 'atypes']) expect(tabs.find(t => t.view === view), view).toMatchObject({ built: true });
   expect(tabs.filter(t => t.subProject?.includes('plan 1b'))).toEqual([]);
 });
 
@@ -252,11 +252,11 @@ test('nav: Business Central section needs portalAdmin', () => {
   /* still onboarding: nothing but onboarding, whatever the portal says */
   expect(buildNav({ caps: caps('own_home', 'own_onb'), modules: ALL_MODULES, flags, onboarding: true, portalAdmin: true }).flatMap(g => g.tabs).map(t => t.view)).toEqual(['onb']);
 });
-/* Task 20 (D12, N18): People & access is one page with two halves. Its
+/* Task 20 (D12, N18): Setup · Employees is one page with two halves. Its
    portal-login half is a QniConnect page, so isAdmin alone reaches it (D8:
    isAdmin wins for QniConnect admin access); its Workforce half still needs
    master_data, which the page checks. */
-test('nav: isAdmin with employee persona shows only the QniConnect pages: the Business Central section and People & access', () => {
+test('nav: isAdmin with employee persona shows only the QniConnect pages: the Business Central section and Setup · Employees', () => {
   const g = buildNav({ caps: caps(...EMPLOYEE_CAPS), modules: ALL_MODULES, flags, onboarding: false, portalAdmin: true });
   expect(g.map(x => x.key)).toEqual(['work', 'setup']);
   const setup = must(g.find((x): x is NavGroup => x.key === 'setup'));
@@ -274,12 +274,12 @@ test('nav: admin persona without isAdmin has no Business Central section', () =>
   const both = must(buildNav({ caps: caps(...ADMIN_CAPS), modules: ALL_MODULES, flags, onboarding: false, portalAdmin: true }).find((x): x is NavGroup => x.key === 'setup'));
   expect(both.tabs.map(t => t.view)).toEqual(['asetup', ...CONN, ...setup.tabs.map(t => t.view).slice(1)]);
 });
-test('nav: People & access is the aemployees view, reached with master_data or isAdmin, and with neither it is not offered', () => {
+test('nav: Setup · Employees is the aemployees view, reached with master_data or isAdmin, and with neither it is not offered', () => {
   const people = (c: string[], portalAdmin: boolean) => buildNav({ caps: caps(...c), modules: ALL_MODULES, flags, onboarding: false, portalAdmin })
     .flatMap(g => g.tabs).find(t => t.view === 'aemployees');
-  expect(people(['master_data'], false)).toMatchObject({ label: 'People & access', path: '/setup/aemployees', section: 'Employees', sectionKey: 'employees', built: true });
-  expect(people(EMPLOYEE_CAPS, true)).toMatchObject({ label: 'People & access', path: '/setup/aemployees' });
-  expect(people(['master_data'], true)).toMatchObject({ label: 'People & access' });
+  expect(people(['master_data'], false)).toMatchObject({ label: 'Employees', path: '/setup/aemployees', section: 'Employees', sectionKey: 'employees', built: true });
+  expect(people(EMPLOYEE_CAPS, true)).toMatchObject({ label: 'Employees', path: '/setup/aemployees' });
+  expect(people(['master_data'], true)).toMatchObject({ label: 'Employees' });
   expect(people(EMPLOYEE_CAPS, false)).toBeUndefined();
   /* a team Employees tab keeps its name */
   expect(buildNav({ caps: caps('team_employees'), modules: ALL_MODULES, flags, onboarding: false, portalAdmin: true }).flatMap(g => g.tabs)

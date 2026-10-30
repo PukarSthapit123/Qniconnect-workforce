@@ -45,7 +45,7 @@ test('a started employee\'s portal invite is recorded on their case, once, and n
   expect(r.status).toBe(200);
   const body = CaseChanged.parse(r.body);
   expect(body.record.portalInvitedAt).toBe(store.now());
-  expect(body.summary).toBe('The portal invite for Tom Achterberg is recorded. Onboarding is not yet connected to the portal, so add their login on People & access.');
+  expect(body.summary).toBe('The portal invite for Tom Achterberg is recorded. Onboarding is not yet connected to the portal, so add their login on Setup · Employees.');
   expect(audits().find(a => a.id === body.auditId)).toMatchObject({ act: 'Portal invite recorded', entity: 'onboardingCase', entityId: 'onb_EMP003' });
   const before = snapshot(...WRITES);
   const again = await pukar('POST', URL_OF('onb_EMP003'), undefined, caseOf('EMP003').version);
@@ -71,11 +71,11 @@ test('refused, writing nothing: not started yet, a stale or missing If-Match, an
   expect(bc).toEqual([]);
 });
 
-test('refused for a starter at another location: a manager looks after onboarding at their own', async () => {
+test('refused for a starter at another site: a manager looks after onboarding at their own', async () => {
   const pukar = await started();
   const tom = Object.values(store.coll<{ code: string; location: string }>('employees')).find(p => p.code === 'EMP003');
   const elsewhere = Object.keys(store.coll('locations')).find(code => code !== tom?.location);
-  if (!tom || !elsewhere) throw new Error('no second location in the qnipay seed');
+  if (!tom || !elsewhere) throw new Error('no second site in the qnipay seed');
   tom.location = elsewhere;
   const r = await pukar('POST', URL_OF('onb_EMP003'), undefined, caseOf('EMP003').version);
   expect(r.status).toBe(403);

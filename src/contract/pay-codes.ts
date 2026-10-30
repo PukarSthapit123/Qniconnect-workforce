@@ -34,7 +34,7 @@ const UsedByRow = z.object({ kind: z.string(), count: z.number().int().nonnegati
 const Claimant = z.object({ code: z.string(), name: z.string() });
 export const PayCodeRow = RecordMeta.extend({
   ...FIELDS,
-  /* the employee types that claim it (P's Claimed by) */
+  /* the work patterns that claim it (P's Claimed by) */
   claimedBy: z.array(Claimant),
   /* everything that uses it; empty when it can be removed */
   usedBy: z.array(UsedByRow),
@@ -66,4 +66,4 @@ export const updatePayCode = defineEndpoint({ method: 'PATCH', path: '/api/v1/pa
   summary: 'Edit a pay code (If-Match). The code cannot change. Says which fields changed; one audit row with the diff, none when nothing changed.' });
 export const removePayCode = defineEndpoint({ method: 'DELETE', path: '/api/v1/pay-codes/:id', params: IdParams,
   response: z.object({ auditId: z.string() }), capability: 'master_data', versioned: true, errors: [404, 409],
-  summary: 'Remove a pay code (If-Match). 409 with usedBy while an employee type, a capture field or a timesheet day uses it. One audit row.' });
+  summary: 'Remove a pay code (If-Match). 409 with usedBy while a work pattern, a capture field or a timesheet day uses it. One audit row.' });

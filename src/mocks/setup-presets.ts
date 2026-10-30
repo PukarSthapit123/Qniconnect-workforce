@@ -3,11 +3,11 @@
    the setting's own home: modules and features on the tenant through the
    group 1 rules (switchModule, switchFlag, with Sites' capability taken
    off as a switch does), labels and the weekly grid
-   on timesheetConfig, employee types on employeeTypes, role names on
+   on timesheetConfig, work patterns on workPatterns, role names on
    userTypes, structure in its five collections, and the onboarding setup on
    onboardingConfig and onboardingPolicies (module 5, D12). One audit row per
    request; a refusal or a fault writes nothing, because serve() restores the
-   store. Saved and imported templates are kept in `templates`. */
+   store. Saved and imported presets are kept in `setupPresets`. */
 import { store } from './store';
 import { bump, refuse } from './http';
 import { serve } from './serve';
@@ -22,22 +22,22 @@ import { caseId, reaskPolicy } from '@/domain/onboarding';
 import { onbTemplateId } from '@/domain/onboarding-templates';
 import { CHAIN_MODULES, type ChainModule, type ChainStep } from '@/domain/approvals';
 import {
-  Template as TemplateSchema, applyTemplate, exportTemplate, getTemplatePlan, importTemplate, listTemplates, removeTemplate, saveTemplate,
-  type TemplatePlan, type TemplateRow,
-} from '@/contract/templates';
+  SetupPreset as PresetSchema, applyPreset, exportPreset, getPresetPlan, importPreset, listPresets, removePreset, savePreset,
+  type PresetPlan, type PresetRow,
+} from '@/contract/setup-presets';
 import type { TimesheetConfig } from '@/contract/timesheets';
-import type { EmployeeType } from '@/contract/employee-types';
+import type { WorkPattern } from '@/contract/work-patterns';
 import type { UserType } from '@/contract/access';
 import type { Refusal as DomainRefusal } from '@/domain/modules';
 import {
-  NOT_A_TEMPLATE, NO_SUCH_TEMPLATE, ROLE_KEYS, SHIPPED_KEYS, STRUCTURE_KINDS, captureTemplate, isShipped, planApply, planSummary, readTemplateFile,
-  removeProblem, roleNamesProblem, shippedTemplate, templateFile, templateKey, templateNameProblem, templateSummary,
-  type ApplyPlan, type RoleKey, type StructureKind, type Template, type TemplateStructure, type TemplateType, type TenantState,
-} from '@/domain/templates';
+  NOT_A_PRESET, NO_SUCH_PRESET, ROLE_KEYS, SHIPPED_KEYS, STRUCTURE_KINDS, capturePreset, isShipped, planApply, planSummary, readPresetFile,
+  removeProblem, roleNamesProblem, shippedPreset, presetFile, presetKey, presetNameProblem, presetSummary,
+  type ApplyPlan, type RoleKey, type StructureKind, type SetupPreset, type PresetStructure, type PresetType, type TenantState,
+} from '@/domain/setup-presets';
 
 interface Meta { id: string; version: number; updatedAt: string }
 interface Saved extends Meta {
-  key: string; source: 'saved' | 'imported'; savedAt: string; savedBy: string; from: string; template: Template;
+  key: string; source: 'saved' | 'imported'; savedAt: string; savedBy: string; from: string; preset: SetupPreset;
 }
 interface Row extends Meta { code: string; name: string }
 interface Task extends Meta { projectCode: string; name: string; group: string; billable: boolean }
@@ -49,34 +49,34 @@ const applyOpts = (session: Signed) => ({ mayRenameRoles: session.caps.includes(
   /* review I5: a chain that would strand items waiting part-way along it stays as it is */
   chainBlocked: (m: ChainModule, steps: readonly ChainStep[]) => chainStrands(m, steps)?.message ?? null });
 
-const COLL = 'templates';
+const COLL = 'setupPresets';
 const saved = () => store.coll<Saved>(COLL);
 const refuseWith = (r: DomainRefusal): never =>
   refuse(r.status, { code: r.code, message: r.message, next: r.next, ...(r.field ? { field: r.field } : {}) });
 /* The store's collection and the id prefix for each kind of structure. */
 const HOME: Readonly<Record<StructureKind, { coll: string; prefix: string }>> = {
   departments: { coll: 'departments', prefix: 'dep' }, costCentres: { coll: 'costCentres', prefix: 'cc' }, locations: { coll: 'locations', prefix: 'loc' },
-  jobProfiles: { coll: 'jobProfiles', prefix: 'job' }, contracts: { coll: 'projects', prefix: 'prj' },
+  positions: { coll: 'positions', prefix: 'job' }, projects: { coll: 'projects', prefix: 'prj' },
 };
 const DEFAULT_LABELS: Record<string, string> = Object.fromEntries(meta.timesheetFields.map(f => [f.c, f.label]));
 const strip = <T extends Meta>(r: T) => { const { id: _i, version: _v, updatedAt: _u, ...rest } = r; void _i; void _v; void _u; return rest; };
 
-function templateAt(key: string): Template {
-  return shippedTemplate(key) ?? recordAt(saved(), key)?.template ?? refuseWith(NO_SUCH_TEMPLATE);
+function presetAt(key: string): SetupPreset {
+  return shippedPreset(key) ?? recordAt(saved(), key)?.preset ?? refuseWith(NO_SUCH_PRESET);
 }
-function rowOf(key: string, t: Template, inUse: string, s?: Saved): TemplateRow {
-  const sum = templateSummary(t);
+function rowOf(key: string, t: SetupPreset, inUse: string, s?: Saved): PresetRow {
+  const sum = presetSummary(t);
   return { key, name: t.name, description: t.description, scope: t.scope, source: s?.source ?? 'shipped', inUse: key === inUse, types: sum.types, modules: sum.modules,
     savedAt: s?.savedAt ?? null, savedBy: s?.savedBy ?? null, from: s?.from ?? null, version: s?.version ?? null };
 }
 /* Structure needs Master data, as every other structure write does (D4). */
-const hasStructure = (t: Template) => t.scope === 'structure' && STRUCTURE_KINDS.some(k => (t.structure?.[k]?.length ?? 0) > 0);
+const hasStructure = (t: SetupPreset) => t.scope === 'structure' && STRUCTURE_KINDS.some(k => (t.structure?.[k]?.length ?? 0) > 0);
 
 /* ----------------------------------------------------- the tenant, read */
 const labelsNow = (): Record<string, string> =>
   Object.fromEntries(Object.entries(tsConfig()?.fieldDefaults ?? {}).map(([c, f]) => [c, f.label]));
-const typesNow = (): TemplateType[] => Object.values(store.coll<EmployeeType>('employeeTypes'))
-  .map(t => ({ code: t.code, name: t.name, category: t.category, mode: t.mode, uom: t.uom, capabilities: [...t.capabilities] }));
+const typesNow = (): PresetType[] => Object.values(store.coll<WorkPattern>('workPatterns'))
+  .map(t => ({ code: t.code, name: t.name, employmentType: t.employmentType, mode: t.mode, uom: t.uom, fieldGroups: [...t.fieldGroups] }));
 function roleNamesNow(): Record<RoleKey, string> {
   const types = store.coll<UserType>('userTypes');
   return Object.fromEntries(ROLE_KEYS.map(k => [k, recordAt(types, k)?.name ?? k])) as Record<RoleKey, string>;
@@ -95,7 +95,7 @@ function stateOf(t: StoredTenant): TenantState {
   const v = view(t);
   return {
     name: t.name, employees: Object.keys(employees()).length, modules: t.modules, restore: t.restore ?? {}, flags: v.flags,
-    extras: v.extras, labels: labelsNow(), employeeTypes: typesNow(), roleNames: roleNamesNow(),
+    extras: v.extras, labels: labelsNow(), workPatterns: typesNow(), roleNames: roleNamesNow(),
     tenantSettings: {
       timezone: t.timezone, dateFormat: t.dateFormat, clock: t.clock, weekStart: t.weekStart,
       fullTimeWeeklyHours: t.fullTimeWeeklyHours,
@@ -106,19 +106,19 @@ function stateOf(t: StoredTenant): TenantState {
     onboarding: onboardingNow(),
   };
 }
-function structureNow(): TemplateStructure {
+function structureNow(): PresetStructure {
   const rows = <T,>(kind: StructureKind) => Object.values(store.coll<Row>(HOME[kind].coll)).sort((a, b) => a.code.localeCompare(b.code)).map(r => strip(r) as T);
   const tasks = Object.values(store.coll<Task>('projectTasks'));
   return {
-    departments: rows('departments'), costCentres: rows('costCentres'), locations: rows('locations'), jobProfiles: rows('jobProfiles'),
-    contracts: Object.values(store.coll<Row & Record<string, unknown>>('projects')).sort((a, b) => a.code.localeCompare(b.code)).map(p => ({
+    departments: rows('departments'), costCentres: rows('costCentres'), locations: rows('locations'), positions: rows('positions'),
+    projects: Object.values(store.coll<Row & Record<string, unknown>>('projects')).sort((a, b) => a.code.localeCompare(b.code)).map(p => ({
       code: p.code, name: p.name, client: String(p.client ?? ''), costCentre: String(p.costCentre ?? ''), manager: String(p.manager ?? ''),
       status: String(p.status ?? ''), start: String(p.start ?? ''), end: String(p.end ?? ''), billable: p.billable === true, location: String(p.location ?? ''),
       tasks: tasks.filter(x => x.projectCode === p.code).sort((a, b) => a.id.localeCompare(b.id)).map(x => ({ name: x.name, group: x.group, billable: x.billable })),
     })),
   };
 }
-const planView = (key: string, t: Template, p: ApplyPlan): TemplatePlan =>
+const planView = (key: string, t: SetupPreset, p: ApplyPlan): PresetPlan =>
   ({ key, name: t.name, changes: p.changes, added: p.added, leftAlone: p.leftAlone, summary: planSummary(p) });
 
 /* ----------------------------------------------------- the tenant, written */
@@ -147,11 +147,11 @@ function carryOut(t: StoredTenant, plan: ApplyPlan, key: string): { tenant: Stor
     if (!tc) throw new Error('the store has no timesheet config');
     store.coll<TimesheetConfig>('timesheetConfig')[tc.id] = bump(tc, tcChange);
   }
-  const types = store.coll<EmployeeType>('employeeTypes');
+  const types = store.coll<WorkPattern>('workPatterns');
   for (const x of s.typesAdded) types[`typ_${x.code}`] = { ...x, id: `typ_${x.code}`, version: 1, updatedAt: store.now() };
   for (const u of s.typesUpdated) {
     const have = Object.values(types).find(x => x.code === u.code);
-    if (have) types[have.id] = bump<EmployeeType>(have, u.change);
+    if (have) types[have.id] = bump<WorkPattern>(have, u.change);
   }
   const userTypes = store.coll<UserType>('userTypes');
   for (const [k, name] of Object.entries(s.roleNames)) {
@@ -164,7 +164,7 @@ function carryOut(t: StoredTenant, plan: ApplyPlan, key: string): { tenant: Stor
     const coll = store.coll<Record<string, unknown>>(HOME[kind].coll);
     for (const row of s.structure[kind]) {
       const id = `${HOME[kind].prefix}_${row.code}`;
-      if (kind === 'contracts' && 'tasks' in row) {
+      if (kind === 'projects' && 'tasks' in row) {
         const { tasks, ...rest } = row;
         coll[id] = { ...rest, budgetHours: '', id, version: 1, updatedAt: store.now() };
         tasks.forEach((x, i) => {
@@ -197,27 +197,27 @@ function carryOut(t: StoredTenant, plan: ApplyPlan, key: string): { tenant: Stor
   }
   let order = policiesNow().reduce((m, x) => Math.max(m, x.order + 1), 0);
   for (const a of o.policiesAdded) pols[a.id] = { ...a, order: order++, id: a.id, version: 1, updatedAt: store.now() };
-  /* the Default's policies, then the onboarding templates: each created row at version 1, each set row bumped, and a job profile another template held comes off it */
+  /* the Default's policies, then the onboarding templates: each created row at version 1, each set row bumped, and a position another template held comes off it */
   const base = recordAt(store.coll<StoredConfig>('onboardingConfig'), 'onboardingConfig');
   if (base && o.defaultPolicies) store.coll<StoredConfig>('onboardingConfig')[base.id] = bump(base, { policies: o.defaultPolicies });
   const tcoll = templatesColl();
   const set = new Set(o.templates.flatMap(x => x.id ?? []));
   for (const x of o.templates) {
-    const { id, name, jobProfiles, steps, documents, policies } = x, row = { name, jobProfiles, steps, documents, policies };
+    const { id, name, positions, steps, documents, policies } = x, row = { name, positions, steps, documents, policies };
     const have = id ? tcoll[id] : undefined;
     if (have) tcoll[have.id] = bump(have, row);
     else { const nid = onbTemplateId(row.name, Object.keys(tcoll)); tcoll[nid] = { ...row, id: nid, version: 1, updatedAt: store.now() }; }
   }
   for (const id of new Set(o.templates.flatMap(x => x.takeFrom.map(t => t.id)))) {
     const have = tcoll[id], taken = o.templates.flatMap(x => x.takeFrom).filter(t => t.id === id).map(t => t.code);
-    if (have && !set.has(id)) tcoll[id] = bump(have, { jobProfiles: have.jobProfiles.filter(c => !taken.includes(c)) });
+    if (have && !set.has(id)) tcoll[id] = bump(have, { positions: have.positions.filter(c => !taken.includes(c)) });
   }
   const fy = s.tenantSettings.financialYear;
   const financialYear = fy
     ? { ...fy, label: `${fy.start.slice(0, 4)}/${fy.end.slice(2, 4)}` }
     : t.financialYear;
   const saved = saveTenant(t, {
-    modules: s.finalModules, restore: s.finalRestore, flags, extras, template: key, financialYear,
+    modules: s.finalModules, restore: s.finalRestore, flags, extras, preset: key, financialYear,
     ...(s.tenantSettings.timezone ? { timezone: s.tenantSettings.timezone } : {}),
     ...(s.tenantSettings.dateFormat ? { dateFormat: s.tenantSettings.dateFormat } : {}),
     ...(s.tenantSettings.clock ? { clock: s.tenantSettings.clock } : {}),
@@ -227,96 +227,96 @@ function carryOut(t: StoredTenant, plan: ApplyPlan, key: string): { tenant: Stor
   return { tenant: saved };
 }
 
-export const templateHandlers = [
-  serve(listTemplates, () => {
-    const inUse = tenantRec().template;
+export const presetHandlers = [
+  serve(listPresets, () => {
+    const inUse = tenantRec().preset;
     const mine = Object.values(saved()).sort((a, b) => a.savedAt.localeCompare(b.savedAt) || a.key.localeCompare(b.key));
-    return { inUse, templates: [
-      ...SHIPPED_KEYS.map(k => rowOf(k, templateAt(k), inUse)),
-      ...mine.map(s => rowOf(s.key, s.template, inUse, s))] };
+    return { inUse, presets: [
+      ...SHIPPED_KEYS.map(k => rowOf(k, presetAt(k), inUse)),
+      ...mine.map(s => rowOf(s.key, s.preset, inUse, s))] };
   }),
 
-  serve(saveTemplate, ({ session, body }) => {
+  serve(savePreset, ({ session, body }) => {
     if (body.scope === 'structure') requireCapability(session, 'master_data');
-    const problem = templateNameProblem(body.name, Object.values(saved()).map(s => s.template.name));
+    const problem = presetNameProblem(body.name, Object.values(saved()).map(s => s.preset.name));
     if (problem) return refuseWith(problem);
     const t = tenantRec(), v = view(t);
-    const template = captureTemplate(body.name, body.description || `Saved from ${t.name}`, body.scope, {
+    const template = capturePreset(body.name, body.description || `Saved from ${t.name}`, body.scope, {
       modules: t.modules, flags: v.flags, extras: v.extras, labels: labelsNow(), defaultLabels: DEFAULT_LABELS,
-      employeeTypes: typesNow(), roleNames: roleNamesNow(), chain: chainsNow(), structure: structureNow(), onboarding: onboardingNow(),
+      workPatterns: typesNow(), roleNames: roleNamesNow(), chain: chainsNow(), structure: structureNow(), onboarding: onboardingNow(),
       tenantSettings: {
         timezone: t.timezone, dateFormat: t.dateFormat, clock: t.clock, weekStart: t.weekStart,
         fullTimeWeeklyHours: t.fullTimeWeeklyHours,
         financialYear: { start: t.financialYear.start, end: t.financialYear.end },
       },
     });
-    const key = templateKey(template.name);
+    const key = presetKey(template.name);
     const who = actor(session);
-    const rec: Saved = { id: key, version: 1, updatedAt: store.now(), key, source: 'saved', savedAt: store.now(), savedBy: who.name, from: t.name, template };
+    const rec: Saved = { id: key, version: 1, updatedAt: store.now(), key, source: 'saved', savedAt: store.now(), savedBy: who.name, from: t.name, preset: template };
     saved()[key] = rec;
-    const auditId = writeAudit({ who, act: 'Template saved', entity: 'template', entityId: key, before: null,
+    const auditId = writeAudit({ who, act: 'Setup preset saved', entity: 'setupPreset', entityId: key, before: null,
       after: { name: template.name, scope: template.scope, from: t.name } });
-    return { record: rowOf(key, template, t.template, rec), auditId };
+    return { record: rowOf(key, template, t.preset, rec), auditId };
   }),
 
-  serve(getTemplatePlan, ({ session, params }) => {
-    const template = templateAt(params.key);
+  serve(getPresetPlan, ({ session, params }) => {
+    const template = presetAt(params.key);
     return planView(params.key, template, planApply(template, stateOf(tenantRec()), applyOpts(session)));
   }),
 
-  serve(applyTemplate, ({ session, params, checkVersion }) => {
+  serve(applyPreset, ({ session, params, checkVersion }) => {
     const t = tenantRec();
     checkVersion(t);
-    const template = templateAt(params.key);
+    const template = presetAt(params.key);
     if (hasStructure(template)) requireCapability(session, 'master_data');
     const plan = planApply(template, stateOf(t), applyOpts(session));
     if (plan.steps.tenantSettings.weekStart) requireWeekStartChangeAllowed(t, plan.steps.tenantSettings.weekStart);
     const pv = planView(params.key, template, plan);
     const message = `${template.name} applied. ${pv.summary}`;
-    if (!plan.changes.length && !plan.added.length && t.template === params.key) return { record: view(t), auditId: null, plan: pv, message };
+    if (!plan.changes.length && !plan.added.length && t.preset === params.key) return { record: view(t), auditId: null, plan: pv, message };
     const { tenant: done } = carryOut(t, plan, params.key);
-    const auditId = writeAudit({ who: actor(session), act: 'Template applied', entity: 'template', entityId: params.key,
-      before: { template: t.template },
-      after: { template: params.key, name: template.name, detail: pv.summary,
+    const auditId = writeAudit({ who: actor(session), act: 'Setup preset applied', entity: 'setupPreset', entityId: params.key,
+      before: { preset: t.preset },
+      after: { preset: params.key, name: template.name, detail: pv.summary,
         changed: plan.changes.map(l => l.text), added: plan.added.map(l => l.text), leftAlone: plan.leftAlone.map(l => l.text) } });
     return { record: view(done), auditId, plan: pv, message };
   }),
 
-  serve(exportTemplate, ({ params }) => templateFile(params.key, templateAt(params.key))),
+  serve(exportPreset, ({ params }) => presetFile(params.key, presetAt(params.key))),
 
-  serve(importTemplate, ({ session, body }) => {
-    const read = readTemplateFile(body.text);
+  serve(importPreset, ({ session, body }) => {
+    const read = readPresetFile(body.text);
     if (!read.ok) return refuseWith(read.refusal);
-    const parsed = TemplateSchema.safeParse(read.template);
+    const parsed = PresetSchema.safeParse(read.preset);
     if (!parsed.success) {
       const issue = parsed.error.issues[0];
-      return refuseWith({ ...NOT_A_TEMPLATE, next: `${issue ? `It has ${issue.path.join('.') || 'a part'} that QniConnect cannot use. ` : ''}${NOT_A_TEMPLATE.next}` });
+      return refuseWith({ ...NOT_A_PRESET, next: `${issue ? `It has ${issue.path.join('.') || 'a part'} that QniConnect cannot use. ` : ''}${NOT_A_PRESET.next}` });
     }
-    const template: Template = parsed.data;
+    const template: SetupPreset = parsed.data;
     const roles = template.roleNames ? roleNamesProblem(template.roleNames) : null;
-    if (roles) return refuseWith({ ...NOT_A_TEMPLATE, next: `Its role names cannot be used. ${roles}` });
+    if (roles) return refuseWith({ ...NOT_A_PRESET, next: `Its role names cannot be used. ${roles}` });
     if (hasStructure(template)) requireCapability(session, 'master_data');
-    const problem = templateNameProblem(template.name, Object.values(saved()).map(s => s.template.name));
+    const problem = presetNameProblem(template.name, Object.values(saved()).map(s => s.preset.name));
     if (problem) return refuseWith(problem);
-    const key = templateKey(template.name);
+    const key = presetKey(template.name);
     const who = actor(session), t = tenantRec();
-    const rec: Saved = { id: key, version: 1, updatedAt: store.now(), key, source: 'imported', savedAt: store.now(), savedBy: who.name, from: '', template };
+    const rec: Saved = { id: key, version: 1, updatedAt: store.now(), key, source: 'imported', savedAt: store.now(), savedBy: who.name, from: '', preset: template };
     saved()[key] = rec;
-    const auditId = writeAudit({ who, act: 'Template imported', entity: 'template', entityId: key, before: null,
+    const auditId = writeAudit({ who, act: 'Setup preset imported', entity: 'setupPreset', entityId: key, before: null,
       after: { name: template.name, scope: template.scope, ...(read.ignored.length ? { ignored: read.ignored } : {}) } });
-    return { record: rowOf(key, template, t.template, rec), auditId, ignored: read.ignored };
+    return { record: rowOf(key, template, t.preset, rec), auditId, ignored: read.ignored };
   }),
 
-  serve(removeTemplate, ({ session, params, checkVersion }) => {
+  serve(removePreset, ({ session, params, checkVersion }) => {
     const rec = recordAt(saved(), params.key);
     const shipped = isShipped(params.key);
-    if (shipped || !rec) return refuseWith(removeProblem(params.key, Boolean(rec), '') ?? NO_SUCH_TEMPLATE);
+    if (shipped || !rec) return refuseWith(removeProblem(params.key, Boolean(rec), '') ?? NO_SUCH_PRESET);
     checkVersion(rec);
-    const problem = removeProblem(params.key, true, tenantRec().template);
+    const problem = removeProblem(params.key, true, tenantRec().preset);
     if (problem) return refuseWith(problem);
     Reflect.deleteProperty(saved(), params.key);
-    const auditId = writeAudit({ who: actor(session), act: 'Template removed', entity: 'template', entityId: params.key,
-      before: { name: rec.template.name, scope: rec.template.scope }, after: null });
+    const auditId = writeAudit({ who: actor(session), act: 'Setup preset removed', entity: 'setupPreset', entityId: params.key,
+      before: { name: rec.preset.name, scope: rec.preset.scope }, after: null });
     return { auditId };
   }),
 ];

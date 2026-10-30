@@ -5,6 +5,7 @@ import { queryClient } from '@/api/query';
 import { tid } from '@/testids';
 import { App } from '@/App';
 import { signInEmail, clearStubAccount } from '@/test/api-helpers';
+import { writeAudit } from '@/mocks/audit';
 
 beforeAll(() => server.listen({ onUnhandledRequest: 'error' }));
 afterAll(() => server.close());
@@ -53,4 +54,28 @@ test('the setup index has no crumb that would only repeat its title', async () =
   expect(heading).toHaveTextContent('Setup');
   expect(page.firstElementChild).toContainElement(heading);
   expect(within(page).getAllByText(/^Setup$/)).toEqual([heading]);
+});
+
+/* Taste review 2026-10-26, Phase 2: the index answers "what changed lately?"
+   with the audit log's five newest entries, in the log's own words, and the
+   way to the whole log. */
+test('Recent changes: the five newest audit entries, newest first, and the way to the audit log', async () => {
+  const admin = Object.values(store.db.accounts as unknown as Record<string, { email: string; userType: string }>).find(a => a.userType === 'admin');
+  if (!admin) throw new Error('no seeded admin');
+  await signInEmail(admin.email);
+  /* a minute apart, after the sign-in, so the order is the log's own: newest first */
+  for (let i = 1; i <= 7; i++) {
+    store.setClock(new Date(Date.UTC(2030, 0, 1, 9, i)).toISOString());
+    writeAudit({ who: { employeeCode: 'CP-1002', name: 'Dee Fitzgerald' }, act: `Change ${i}`, entity: 'location', entityId: `LOC-${i}` });
+  }
+  /* the app's own sign-in writes an entry too, stamped now, whichever clock it reads: earlier than these, so not among the five */
+  store.setClock(new Date(Date.UTC(2026, 9, 26, 8, 0)).toISOString());
+  window.history.pushState({}, '', '/setup/asetup');
+  render(<App />);
+  const recent = await screen.findByTestId(tid.setup.recent);
+  const rows = await within(recent).findAllByTestId(/^setup-recent-row-/);
+  expect(rows).toHaveLength(5);
+  expect(rows[0]).toHaveTextContent(/^Change 7Site: LOC-7Dee Fitzgerald · /);
+  expect(rows.map(r => r.querySelector('b')?.textContent)).toEqual(['Change 7', 'Change 6', 'Change 5', 'Change 4', 'Change 3']);
+  expect(within(recent).getByTestId(tid.setup.recentAll)).toHaveAttribute('href', '/setup/iaudit');
 });

@@ -42,7 +42,7 @@ export function TimesheetPage() {
   if (shown === 'day' && !dayOk) shown = 'week';
   return (
     <Page testId={tid.page('ts')}>
-      <PageHead title="My timesheet" crumb="My work · Timesheet" actions={<>
+      <PageHead title="Timesheet" actions={<>
         <GuideButton view="ts" />
         {c && <Seg label="Show the day or the week" value={shown} onChange={setView} testId={v => tid.ts.view(v)}
           options={[{ value: 'day', label: 'Day', disabled: !dayOk }, { value: 'week', label: 'Week', disabled: !weekOk }]} />}

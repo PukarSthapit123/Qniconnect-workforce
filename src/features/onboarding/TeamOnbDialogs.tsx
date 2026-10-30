@@ -12,7 +12,7 @@ import { FileRecordView } from './OnbDocuments';
 /* Once a starter has started, the portal invite is offered (spec N19, plan
    step 5). While Onboarding runs on the fake server the invite is recorded
    on their case there, never sent to /bc/portalUsers, so it says so; the
-   login itself is added on People & access until the two are connected. */
+   login itself is added on Setup · Employees until the two are connected. */
 export interface PortalOffer { name: string; email: string; case: { id: string; version: number } }
 export function PortalInviteOffer({ offer, onClose }: { offer: PortalOffer; onClose(): void }) {
   const send = useInviteToPortal();
@@ -26,7 +26,7 @@ export function PortalInviteOffer({ offer, onClose }: { offer: PortalOffer; onCl
       <p className="mb-md text-sm">{offer.name} is active. A QniConnect portal login lets them see their payslips and tax documents{offer.email ? <>, signing in with <b className="font-semibold">{offer.email}</b></> : null}.</p>
       <div className="flex flex-wrap items-center gap-sm">
         <NotConnected testId={tid.tonb.portalNotConnected}
-          note="Onboarding runs on sample data until the workforce service is connected, so the invite is recorded here. Add their login on People & access." />
+          note="Onboarding runs on sample data until the workforce service is connected, so the invite is recorded here. Add their login on Setup · Employees." />
         <Small>The invite is recorded here. Their login is added on People &amp; access.</Small>
       </div>
     </Modal>);

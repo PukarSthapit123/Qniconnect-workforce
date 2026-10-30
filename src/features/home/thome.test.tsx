@@ -19,7 +19,8 @@ test('Team Home: one card per My Team page, each with the count its own page rea
   const queue = await body<{ counts: { pend: number; resub: number } }>('/api/v1/approvals/timesheets?status=pend');
   renderPage(<TeamHomePage />, '/team/thome');
   const grid = await screen.findByTestId(tid.thome.grid);
-  expect(screen.getByText('My Team · Team Home · Willow House')).toBeInTheDocument();
+  /* the manager's location: the line under the title */
+  expect(screen.getByRole('heading', { level: 1 }).nextElementSibling).toHaveTextContent(/^Willow House$/);
   expect(within(grid).queryByTestId(tid.thome.card('thome'))).toBeNull();
   expect(within(grid).getByTestId(tid.thome.card('tteam'))).toHaveAttribute('href', '/team/tteam');
   await waitFor(() => expect(screen.getByTestId(tid.thome.count('tteam'))).toHaveTextContent(shown(queue.counts.pend + queue.counts.resub)));

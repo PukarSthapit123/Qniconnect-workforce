@@ -19,7 +19,8 @@ test('social: the title, the who-line, the month painted from the timesheet, the
   await open();
   expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('My Calendar');
   expect(screen.getByTestId(tid.page('cal'))).toBeInTheDocument();
-  expect(screen.getByText('My work · My Calendar · Support Worker · Willow House')).toBeInTheDocument();
+  /* the who-line is the line under the title: the shell already says My work · My Calendar */
+  expect(screen.getByRole('heading', { level: 1 }).nextElementSibling).toHaveTextContent(/^Support Worker · Shift · Willow House$/);
   expect(month()).toBe('August 2026');
   expect(within(screen.getByTestId(tid.cal.grid)).getAllByRole('button')).toHaveLength(31);
   expect(cell('2026-08-03')).toHaveAttribute('data-glyph', 'draft');
@@ -116,7 +117,10 @@ test('the day dialog says what is on the day and links to the page that owns it'
 test('my calendar: no shift, leave or notice layer', async () => {
   await open();
   const page = screen.getByTestId(tid.page('cal'));
-  expect(page).not.toHaveTextContent(/shift|rota|leave|time off|sick|notice/i);
+  /* the who-line names the work pattern, which may be called Shift; the month itself carries no such layer */
+  const month = page.cloneNode(true) as HTMLElement;
+  month.querySelector('h1')?.nextElementSibling?.remove();
+  expect(month).not.toHaveTextContent(/shift|rota|leave|time off|sick|notice/i);
   expect(page.querySelectorAll('[data-testid*="shift"], [data-testid*="leave"], [data-testid*="notice"], [data-testid*="rota"]')).toHaveLength(0);
   /* what a day does carry: the timesheet's state, a bank holiday, and today */
   expect(cell('2026-08-12')).toHaveAttribute('data-glyph', 'pend');

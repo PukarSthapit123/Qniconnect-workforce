@@ -17,7 +17,7 @@ function exceptionsSummary(typeName: string, grants: readonly string[], revocati
   return `${typeName} + ${n} exception${n === 1 ? '' : 's'}`;
 }
 
-const HEAD = { title: 'Permissions', crumb: 'Setup · Permissions',
+const HEAD = { title: 'Permissions',
   tip: 'Personas over one application. A manager is an employee record with extra capabilities.' };
 /* The capabilities the prototype lists as a persona's extra actions, beyond
    the pages it can reach (admPermissions, v15:8352). */
@@ -80,7 +80,7 @@ export function PermissionsPage() {
         actions={/* Ported from the prototype's admPermissions head (v15:8334-8335): Rename
             roles, then the caution. There the checks ran in the browser; here the server enforces them. */
           <>
-            <Button testId={tid.roleNames.open} kind="ghost" small onClick={() => setRenaming(true)}>Rename roles</Button>
+            <Button testId={tid.roleNames.open} kind="ghost" small onClick={() => setRenaming(true)}>Rename access roles</Button>
             <Caution testId={tid.access.caution} text="These switches are live and apply to everyone at once. The API enforces each one, so hiding a control is never the only thing refusing the request, and every change is recorded in the audit log." />
             {changed
               ? <Pill testId={tid.accessState.pill} tone="warn" glyph={<TriangleAlert />}>{changed} changed from default</Pill>

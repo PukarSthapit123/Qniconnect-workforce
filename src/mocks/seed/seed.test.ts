@@ -17,7 +17,7 @@ for (const [name, seed] of Object.entries({ social, qnipay }) as [string, { tena
         expect(r.id && typeof r.version === 'number' && typeof r.updatedAt === 'string', `${c}/${r.id}`).toBe(true);
     });
     test('codes are unique within each dimension', () => {
-      for (const c of ['employees', 'locations', 'departments', 'costCentres', 'jobProfiles', 'projects']) {
+      for (const c of ['employees', 'locations', 'departments', 'costCentres', 'positions', 'projects']) {
         const codes = vals(seed, c).map(r => r.code);
         expect(new Set(codes).size, c).toBe(codes.length);
       }

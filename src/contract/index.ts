@@ -6,16 +6,17 @@ export * from './tenant';
 export * from './access';
 export * from './employees';
 export * from './dimensions';
-export * from './employee-types';
+export * from './work-patterns';
 export * from './profile';
 export * from './timesheets';
 
 export * from './saved-data';
 /* feature contracts register themselves on import; each later task adds one line */
-export * from './templates';
+export * from './setup-presets';
 export * from './notifications';
 export * from './approvals';
 export * from './home';
 export * from './clock';
 export * from './onboarding';
 export * from './pay-codes';
+export * from './pay-grades';

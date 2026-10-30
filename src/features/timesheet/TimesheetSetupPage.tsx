@@ -8,10 +8,10 @@ import {
   SettingRow, SettingSelect as Asel, SettingText, Small, SubHead, SwitchField, TextInput, Tip, UnitInput, toastInfo,
 } from '@/ui';
 import { useSaveTimesheetConfig, useTimesheetConfig, type TimesheetConfig, type TimesheetSetup } from '@/api/timesheets';
-import { useEmployeeTypes } from '@/api/reference';
+import { useWorkPatterns } from '@/api/reference';
 import { useShellData, useTenant } from '@/shell/shellData';
 import { buttonVariants } from '@/ui/shadcn/button';
-import type { EmployeeTypeRow } from '@/contract/employee-types';
+import type { WorkPatternRow } from '@/contract/work-patterns';
 import type { CaptureRules, PayCode, TypeCapture } from '@/contract/timesheets';
 import type { TypeRule } from '@/domain/timesheet';
 import { PAY_BASIS, RATE_TRIGGERS, WEEK_GRID_LABEL, WEEK_LAYOUT_LABEL, payBasisOf, payCodeList, payElement } from '@/domain/timesheet';
@@ -22,7 +22,7 @@ import {
 } from './setup';
 
 /* Timesheet setup: the prototype's admTimesheet and admCaptureFields
-   (qnipay-workforce-v15.html:8680-8764, 8085-8104). What each employee type
+   (qnipay-workforce-v15.html:8680-8764, 8085-8104). What each work pattern
    captures, what the system refuses, the allowances and automatic pay rules
    per type, overtime, and the Business Central boundary. The prototype wrote
    each change as it was made; here every change edits one draft, Save sends
@@ -30,7 +30,7 @@ import {
    Pay codes are read here and kept on Pay codes (module 6, mpay), which the
    pay rules link to; nothing carries an amount (D11). */
 export function TimesheetSetupPage() {
-  const setup = useTimesheetConfig(), types = useEmployeeTypes(), tenant = useTenant();
+  const setup = useTimesheetConfig(), types = useWorkPatterns(), tenant = useTenant();
   const { hash } = useLocation();
   const [picked, setPicked] = useState<string | null>(null);
   const ready = setup.data && types.data && tenant.data;
@@ -50,8 +50,8 @@ export function TimesheetSetupPage() {
 }
 
 function Head() {
-  return <PageHead title="Timesheet setup" crumb="Modules · Timesheet · Timesheet setup" tipTestId={tid.head.tip('mts')}
-    tip="What each employee type captures, what the system refuses, and how time reaches payroll"
+  return <PageHead title="Timesheet setup" tipTestId={tid.head.tip('mts')}
+    tip="What each work pattern captures, what the system refuses, and how time reaches payroll"
     actions={<GuideButton view="mts" />} />;
 }
 
@@ -75,7 +75,7 @@ const TRIGGER_LABEL = (when: string) => {
 
 interface Env { modules: Record<string, boolean>; flags: Record<string, boolean> }
 function SetupDraftView({ setup, types, env, picked, onPick }: {
-  setup: TimesheetSetup; types: EmployeeTypeRow[]; env: Env; picked: string | null; onPick(code: string): void;
+  setup: TimesheetSetup; types: WorkPatternRow[]; env: Env; picked: string | null; onPick(code: string): void;
 }) {
   const { config, fields, payCodes } = setup;
   const [draft, setDraft] = useState<SetupDraft>(() => draftOf(config));
@@ -91,7 +91,7 @@ function SetupDraftView({ setup, types, env, picked, onPick }: {
   const [cutoffDay = 'Monday', cutoffTime = '12:00'] = draft.cutoff.split(' ');
   const setCutoff = (day: string, time: string) => setDraft(d => ({ ...d, cutoff: `${day} ${time}` }));
   const fe = save.fieldError;
-  /* a refusal about one employee type opens that type, so the field it names is on screen */
+  /* a refusal about one work pattern opens that type, so the field it names is on screen */
   const refusedType = /^types\.([^.]+)/.exec(save.refusal?.field ?? '')?.[1];
   useEffect(() => { if (refusedType) onPick(refusedType); }, [refusedType, onPick]);
 
@@ -105,13 +105,13 @@ function SetupDraftView({ setup, types, env, picked, onPick }: {
       {save.refusal && <FormWarn testId={tid.mts.warn}>{save.refusal.message} {save.refusal.next}</FormWarn>}
 
       <AdminCard testId={tid.mts.card('fields')} icon={<SlidersHorizontal />} title="Capture fields" tipTestId={tid.mts.tip('fields')}
-        tip="Which fields each employee type fills in, and which are required. A field must be switched on under Features before a type can be given it.">
+        tip="Which fields each work pattern fills in, and which are required. A field must be switched on under Features before a type can be given it.">
         <ChipPicker>
           {types.map(t => (
-            <EmployeeTypeChip key={t.code} type={t} testId={tid.mts.fieldType(t.code)} selected={t.code === code} onClick={() => onPick(t.code)} />))}
+            <WorkPatternChip key={t.code} type={t} testId={tid.mts.fieldType(t.code)} selected={t.code === code} onClick={() => onPick(t.code)} />))}
         </ChipPicker>
         {current && <SubHead>Capture fields for {current.name}</SubHead>}
-        {current && <CaptureFields fields={fields} env={{ ...env, capabilities: current.capabilities }} labels={config.fieldDefaults} type={type}
+        {current && <CaptureFields fields={fields} env={{ ...env, capabilities: current.fieldGroups }} labels={config.fieldDefaults} type={type}
           onChange={map => setType(t => ({ ...t, fields: map }))} />}
       </AdminCard>
 
@@ -188,11 +188,11 @@ function SetupDraftView({ setup, types, env, picked, onPick }: {
         </SettingRow>}
       </AdminCard>
 
-      <AdminCard testId={tid.mts.card('allowances')} icon={<FlaskConical />} title="Allowances & rules by employee type" tipTestId={tid.mts.tip('allowances')}
+      <AdminCard testId={tid.mts.card('allowances')} icon={<FlaskConical />} title="Allowances & rules by work pattern" tipTestId={tid.mts.tip('allowances')}
         tip="Allowances are declared by the employee on the day. Rules derive pay automatically in Business Central.">
         <ChipPicker>
           {types.map(t => (
-            <EmployeeTypeChip key={t.code} type={t} testId={tid.mts.type(t.code)} selected={t.code === code} onClick={() => onPick(t.code)} />))}
+            <WorkPatternChip key={t.code} type={t} testId={tid.mts.type(t.code)} selected={t.code === code} onClick={() => onPick(t.code)} />))}
         </ChipPicker>
         {current && <>
           <SubHead>Allowances this type can claim <span className={SUB_NOTE}>· the employee ticks these on the day; the value is what Business Central posts</span></SubHead>
@@ -205,7 +205,7 @@ function SetupDraftView({ setup, types, env, picked, onPick }: {
             <TableBody>
             {/* Keep unavailable allowances legible; disable only their claim switch and explain why. */}
             {Object.values(draft.allowances).map(a => {
-              const need = allowanceNeed(a.tier), blocked = Boolean(need && !(current.capabilities as readonly string[]).includes(need));
+              const need = allowanceNeed(a.tier), blocked = Boolean(need && !(current.fieldGroups as readonly string[]).includes(need));
               const on = type.allowances.includes(a.code), err = fe(`allowances.${a.code}.label`);
               return (
                 <Row key={a.code} testId={tid.mts.allowRow(a.code)}>
@@ -255,7 +255,7 @@ function SetupDraftView({ setup, types, env, picked, onPick }: {
     </>);
 }
 
-function EmployeeTypeChip({ type, testId, selected, onClick }: { type: EmployeeTypeRow; testId: string; selected: boolean; onClick(): void }) {
+function WorkPatternChip({ type, testId, selected, onClick }: { type: WorkPatternRow; testId: string; selected: boolean; onClick(): void }) {
   return <Chip testId={testId} on={selected} onClick={onClick}>
     {type.name}<span className="text-xs opacity-70">{MODE[type.mode] ?? 'Day form'} · paid per {type.uom || 'hour'}</span></Chip>;
 }
@@ -277,7 +277,7 @@ function CaptureFields({ fields, env, labels, type, onChange }: {
       </TableRow></TableHeader>
       <TableBody>
         {groups.length === 0 && <Row testId={tid.mts.fieldsEmpty}><TableCell colSpan={4}>
-          <Empty>No fields available. Give this type a capability under Employee types, or turn a feature on under Modules & features.</Empty></TableCell></Row>}
+          <Empty>No fields available. Give this type a capability under Work patterns, or turn a feature on under Modules & features.</Empty></TableCell></Row>}
         {groups.map(g => [
           <Row key={`cat-${g.cat}`} testId={tid.mts.fieldCat(g.cat)} data-row-kind="category" className="!bg-surface-tint"><TableCell colSpan={4} className="text-xs font-[650] text-text-secondary">{g.cat}</TableCell></Row>,
           ...g.rows.map(({ field: f, label, max }) => {
@@ -372,7 +372,7 @@ function PayCodesPointer() {
 }
 
 /* What crosses the boundary, and what never does. Static. */
-const POSTED = ['Employee ID', 'Date and hours', 'Pay code and element', 'Cost centre and project', 'Location / site', 'Approval record'];
+const POSTED = ['Employee ID', 'Date and hours', 'Pay code and element', 'Cost centre and project', 'Site', 'Approval record'];
 const NEVER = ['Pay rates', 'Tax treatment', 'Gross to net', 'Payslips, P45, P60', 'RTI filing'];
 function Boundary() {
   const line = (label: string, pill: ReactNode) => (

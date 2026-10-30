@@ -2,7 +2,7 @@ import { useMemo, useState, type ReactNode } from 'react';
 import { useSearchParams } from 'react-router';
 import { tid } from '@/testids';
 import type { Employee } from '@/contract/employees';
-import { joinPeople, type PortalUserRow } from '@/domain/people-access';
+import { joinPeople, type PortalUserForm, type PortalUserRow } from '@/domain/people-access';
 import { Button, GuideButton, Page, PageHead } from '@/ui';
 import { useEmployees } from '@/api/employees';
 import { useCaps } from '@/shell/useCaps';
@@ -14,20 +14,24 @@ import { EmployeesList, type PortalSide } from './EmployeesList';
 import { EmployeeRecord } from './EmployeeRecord';
 import { EmployeeForm } from './EmployeeForm';
 import { LifecycleDialog } from './LifecycleDialog';
+import type { PortalLogins } from './PortalLoginPanel';
 
-/* People & access's portal side, for a portal admin (N18): the portal
-   logins (undefined until read), and the add form a record without one
-   opens. */
-export interface PortalSideInput { users: readonly PortalUserRow[] | undefined; onInvite(p: Employee): void }
+/* Setup · Employees' portal side, for a portal admin (N18): the portal
+   logins and what can be done to them. A record without one invites them,
+   which opens the add form filled in from the record. */
+const toInvite = (p: Employee): PortalUserForm => ({ name: p.name, email: p.email, role: 'User', isAdmin: false });
 
 /* The list, the record, the form and the lifecycle dialog together, shared
-   by Setup · People & access and My team · Employees. Add and Edit show only
+   by Setup · Employees and My team · Employees. Add and Edit show only
    to a holder of emp_crud; the server refuses anything shown by mistake.
-   With `portal`, each record shows its portal login, joined by employee
-   number in the browser only (N19). */
-export function EmployeesWorkspace({ variant, view, title = 'Employees', crumb, tip, above, listHead, below, portal }: {
-  variant: 'admin' | 'team'; view: string; title?: string; crumb: string; tip: string; above?: ReactNode;
-  listHead?: ReactNode; below?: ReactNode; portal?: PortalSideInput;
+   With `portal`, each record carries its portal login, joined by employee
+   number in the browser only (N19). A login no record matches is not listed
+   (user ruling 2026-10-27); an admin who cannot see records keeps the
+   logins-only list. A row's one action is View; Edit, Change status and the
+   login's actions are on the record. */
+export function EmployeesWorkspace({ variant, view, title = 'Employees', tip, above, listHead, below, portal }: {
+  variant: 'admin' | 'team'; view: string; title?: string; tip: string; above?: ReactNode;
+  listHead?: ReactNode; below?: ReactNode; portal?: PortalLogins;
 }) {
   const caps = useCaps(), crud = caps.has('emp_crud');
   const self = useCurrentSession()?.account.employeeCode, modules = useTenant().data?.modules;
@@ -53,32 +57,33 @@ export function EmployeesWorkspace({ variant, view, title = 'Employees', crumb, 
   /* the dialogs work on the record as last read, and start again when it changes */
   const editing = form?.employee && latest(form.employee, everyone.data);
   const move = moving && latest(moving, everyone.data);
-  const users = portal?.users;
+  const users = portal?.users, openCreate = portal?.openCreate, menu = portal?.menu;
   const side = useMemo((): PortalSide | undefined => {
-    if (!portal) return undefined;
+    if (!openCreate) return undefined;
     const byCode = new Map<string, PortalUserRow>();
     for (const r of joinPeople(everyone.data ?? [], users ?? [])) if (r.employee && r.portal) byCode.set(r.employee.code, r.portal);
-    return { byCode, loaded: users !== undefined, onInvite: portal.onInvite };
-  }, [portal, users, everyone.data]);
+    return { byCode, loaded: users !== undefined, onInvite: p => openCreate(toInvite(p)), menu };
+  }, [openCreate, menu, users, everyone.data]);
   const add = crud && (variant === 'admin'
-    ? <Button testId={tid.employees.add} kind="ghost" small onClick={() => setForm({})}>Add employee</Button>
+    ? <Button testId={tid.employees.add} kind="primary" small onClick={() => setForm({})}>Add employee</Button>
     : <Button testId={tid.employees.add} kind="primary" small onClick={() => setForm({})}>Add someone</Button>);
   return (
     <Page testId={tid.page(view)}>
       {above}
-      <PageHead title={title} crumb={crumb} tip={tip} tipTestId={tid.head.tip(view)} actions={<>{add}<GuideButton view={view} /></>} />
+      <PageHead title={title} tip={tip} tipTestId={tid.head.tip(view)} actions={<>{add}<GuideButton view={view} /></>} />
       {listHead}
-      <EmployeesList variant={variant} total={everyone.data?.length} onOpen={p => setOpen(p.id)} portal={side}
-        actions={crud ? p => <Button testId={tid.employees.edit(p.code)} kind="ghost" small onClick={() => setForm({ employee: p })}>Edit</Button> : undefined} />
+      {!shown && portal?.banner}
+      <EmployeesList variant={variant} total={everyone.data?.length} onOpen={p => setOpen(p.id)} portal={side} />
       {below}
-      {shown && <EmployeeRecord employeeId={shown} onClose={close} portal={side && { ...side, onInvite: p => { close(); side.onInvite(p); } }} actions={crud || proxyOk ? p => <>
-        {crud && <Button testId={tid.employee.changeState} kind="ghost" onClick={() => { close(); setMoving(p); }}>Change state</Button>}
+      {shown && <EmployeeRecord employeeId={shown} onClose={close} portal={side && { ...side, onInvite: p => { close(); side.onInvite(p); }, menu: u => menu?.(u, close), banner: portal?.banner }} actions={crud || proxyOk ? p => <>
+        {crud && <Button testId={tid.employee.changeState} kind="ghost" onClick={() => { close(); setMoving(p); }}>Change status</Button>}
         {proxyOk && p.code !== self && <Button testId={tid.proxy.open} kind={crud ? 'secondary' : 'primary'}
           onClick={() => { close(); setProxy({ code: p.code, name: p.name }); }}>Enter time on their behalf</Button>}
         {crud && <Button testId={tid.employee.edit} kind="primary" onClick={() => { close(); setForm({ employee: p }); }}>Edit</Button>}</> : undefined} />}
       {proxy && <ProxyEntry employee={proxy} onClose={() => setProxy(null)} />}
       {form && <EmployeeForm key={editing ? versionKey(editing) : 'new'} employee={editing} defaultLocation={defaultLocation} onClose={() => setForm(null)}
         onChangeState={p => { setForm(null); setMoving(p); }} />}
+      {portal?.dialog}
       {move && <LifecycleDialog key={versionKey(move)} employee={move} onClose={() => setMoving(null)} />}
     </Page>);
 }

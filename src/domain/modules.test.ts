@@ -24,7 +24,7 @@ describe('the catalogue', () => {
     expect(flagsFor(mod('ON')).every(f => f.mod === 'ON')).toBe(true);
     expect(parentOf('A')?.code).toBe('TS');
     expect(parentOf('CORE')?.code).toBe('CORE');
-    expect([subName('C'), subName('ON'), subName('X')]).toEqual(['Sites & locations', 'Onboarding', 'X']);
+    expect([subName('C'), subName('ON'), subName('X')]).toEqual(['Sites', 'Onboarding', 'X']);
   });
 });
 
@@ -149,8 +149,8 @@ describe('switching a feature and its extras', () => {
 
 describe('module switch text', () => {
   test('the toast names the capture methods brought back and the types a capability was taken off', () => {
-    expect(moduleSwitchText('TS', true, { brought: ['A', 'C'] })).toBe('Timesheet turned on with Manual time entry, Sites & locations. It is live for everyone now.');
-    expect(moduleSwitchText('C', false, { sitesRemovedFrom: 2 })).toBe('Sites & locations turned off. It is live for everyone now. Site & location was taken off 2 employee types.');
+    expect(moduleSwitchText('TS', true, { brought: ['A', 'C'] })).toBe('Timesheet turned on with Manual time entry, Sites. It is live for everyone now.');
+    expect(moduleSwitchText('C', false, { sitesRemovedFrom: 2 })).toBe('Sites turned off. It is live for everyone now. The site field group was taken off 2 work patterns.');
   });
 });
 

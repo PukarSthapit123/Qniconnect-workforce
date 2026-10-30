@@ -31,10 +31,11 @@ import {
   allocationProblem, type AllowanceDef, type CheckContext, type FieldEnv, type PayCode, type TsState, type WeekDayInput,
 } from '@/domain/timesheet';
 import { isWeekStart } from '@/domain/time';
+import { flagOn, modOn } from '@/domain/modules';
 
 type StoredDay = Omit<TimesheetDay, 'minutes' | 'enteredByName' | 'waitingOn'>;
 interface Tenant { modules: Record<string, boolean>; flags: Record<string, unknown>; weekStart: string }
-interface StoredType { code: string; name: string; capabilities: string[]; mode?: 'form' | 'grid' | 'clock' }
+interface StoredType { code: string; name: string; fieldGroups: string[]; mode?: 'form' | 'grid' | 'clock' }
 
 export const FIELDS: TimesheetField[] = meta.timesheetFields;
 const days = () => store.coll<StoredDay>('timesheetDays');
@@ -51,20 +52,20 @@ function tenant(): Tenant {
 }
 const payCodes = (): PayCode[] => Object.values(store.coll<PayCode>('payCodes'))
   .map(p => ({ code: p.code, basis: p.basis, value: p.value, element: p.element, label: p.label, workType: p.workType }));
-const employeeType = (code: string) => Object.values(store.coll<StoredType>('employeeTypes')).find(t => t.code === code);
-const typeOf = (p: StoredEmployee) => recordAt(config().types, p.employeeType);
+const workPattern = (code: string) => Object.values(store.coll<StoredType>('workPatterns')).find(t => t.code === code);
+const typeOf = (p: StoredEmployee) => recordAt(config().types, p.workPattern);
 const envFor = (p: StoredEmployee): FieldEnv => {
   const t = tenant();
-  return { modules: t.modules, flagOn: c => Boolean(t.flags[c]), capabilities: employeeType(p.employeeType)?.capabilities ?? [], defaults: config().fieldDefaults };
+  return { modules: t.modules, flagOn: c => Boolean(t.flags[c]), capabilities: workPattern(p.workPattern)?.fieldGroups ?? [], defaults: config().fieldDefaults };
 };
 const now = () => clockFromIso(store.now());
 /* The tenant's open projects (1b's projects) with their own tasks (the seed's projectTasks), in seed order. */
-interface StoredProject { code: string; name: string; status: string }
+interface StoredProject { code: string; name: string; status: string; costCentre?: string }
 interface StoredTask { projectCode: string; name: string }
 function openProjects() {
   const tasks = Object.values(store.coll<StoredTask>('projectTasks'));
   return Object.values(store.coll<StoredProject>('projects')).filter(p => p.status !== 'Closed')
-    .map(p => ({ code: p.code, name: p.name, tasks: tasks.filter(t => t.projectCode === p.code).map(t => t.name) }));
+    .map(p => ({ code: p.code, name: p.name, tasks: tasks.filter(t => t.projectCode === p.code).map(t => t.name), costCentre: p.costCentre ?? '' }));
 }
 const managerNameOf = (p: StoredEmployee) => managerName(p.manager, p.code, Object.values(employees()));
 const managerOf = (p: StoredEmployee) => managerNameOf(p) || 'your manager';
@@ -105,12 +106,35 @@ function access(s: Signed, p: StoredEmployee, write: boolean): Mode {
   return 'proxy';
 }
 
+/* ------------------------------------------------------------ the switches */
+/* The server enforces the timesheet switches, not only the screens: no
+   capture method on refuses every day and week write; the weekly grid and
+   multi-week submit are their own features; with break tracking off a day
+   may keep the breaks it already holds but takes no new ones. The clock
+   writes its day through writeDraft, behind its own gates. */
+type Gate = 'day' | 'week' | 'multiweek';
+const flag = (t: Tenant, code: string) => flagOn(t.modules, t.flags, code);
+function requireSwitches(gate: Gate, stored?: DayInput['entries'], input?: DayInput) {
+  const t = tenant();
+  if (!modOn(t.modules, 'TS') || !(modOn(t.modules, 'A') || modOn(t.modules, 'B')))
+    refuse(403, { code: 'module-off', message: 'Timesheet capture is switched off for this organisation.', next: 'An administrator can switch a capture method on in Setup.' });
+  if (gate === 'week' && !flag(t, 'WEEKLY'))
+    refuse(403, { code: 'feature-off', message: 'The weekly grid is switched off for this organisation.', next: 'Enter each day on its own, or ask an administrator.' });
+  if (gate === 'multiweek' && !flag(t, 'MULTIWEEK'))
+    refuse(403, { code: 'feature-off', message: 'Multi-week submit is switched off for this organisation.', next: 'Submit each week on its own.' });
+  if (gate !== 'day' || !input || flag(t, 'BREAKS')) return;
+  const key = (b: { start: string; end: string }) => `${b.start.trim()}-${b.end.trim()}`;
+  input.entries.forEach((e, i) => {
+    const kept = new Set((stored?.[i]?.breaks ?? []).map(key));
+    if (e.breaks.some(b => (b.start.trim() || b.end.trim()) && !kept.has(key(b))))
+      refuse(403, { code: 'feature-off', field: `entries.${i}.breaks`, message: 'Break tracking is switched off for this organisation.', next: 'Remove the break, then save.' });
+  });
+}
+
 /* -------------------------------------------------------------- the checks */
 interface DayCheck { errors: Problem[]; warnings: string[]; minutes: number }
 const firstStart = (entries: DayInput['entries']) => toMin(entries.find(e => toMin(e.start) != null)?.start);
-function valuesFor(input: DayInput): Record<string, string | boolean | undefined> {
-  const e = input.entries[0];
-  if (!e) return {};
+function valuesFor(e: DayInput['entries'][number]): Record<string, string | boolean | undefined> {
   const hoursOnly = !e.start.trim() && !e.finish.trim() && e.hours != null && e.hours > 0;
   const out: Record<string, string | boolean | undefined> = { start: hoursOnly ? String(e.hours) : e.start, finish: hoursOnly ? String(e.hours) : e.finish };
   e.breaks.forEach((b, i) => { const n = i ? String(i + 1) : ''; out[`break_s${n}`] = b.start; out[`break_e${n}`] = b.end; });
@@ -146,10 +170,11 @@ function checkDay(p: StoredEmployee, date: string, input: DayInput): DayCheck {
   }
   const allowed = type?.allowances ?? [];
   const extra = (input.allowances ?? []).find(a => !allowed.includes(a));
-  if (extra) errors.push({ field: 'allowances', message: `${extra} is not an allowance ${employeeType(p.employeeType)?.name ?? 'this employee type'} can claim.` });
-  if (input.entries.length) {
-    const missing = missingMandatory(FIELDS, type, envFor(p), valuesFor(input));
-    if (missing) errors.push({ field: `entries.0.${missing.field}`, message: missing.message });
+  if (extra) errors.push({ field: 'allowances', message: `${extra} is not an allowance ${workPattern(p.workPattern)?.name ?? 'this work pattern'} can claim.` });
+  /* Every entry carries the mandatory fields; the first one short of any is named. */
+  for (const [i, e] of input.entries.entries()) {
+    const missing = missingMandatory(FIELDS, type, envFor(p), valuesFor(e));
+    if (missing) { errors.push({ field: `entries.${i}.${missing.field}`, message: missing.message }); break; }
   }
   return { errors, warnings, minutes };
 }
@@ -238,14 +263,14 @@ const waitingOn = (w: ChainWalk) => roleWaiting(w.current?.step.role ?? 'Line ma
 const upper = (t: string) => t.charAt(0).toUpperCase() + t.slice(1);
 /* Why the reader may not decide the day at its current layer, as a refusal and as a held row's reason. */
 function blocked(block: DecisionBlock, w: ChainWalk): { status: number; code: string; message: string; next: string } {
-  if (block === 'self') return { status: 403, code: 'SELF_APPROVAL', message: 'You cannot approve or return your own timesheet.', next: 'Ask another approver at your location.' };
+  if (block === 'self') return { status: 403, code: 'SELF_APPROVAL', message: 'You cannot approve or return your own timesheet.', next: 'Ask another approver at your site.' };
   if (block === 'signed') return { status: 403, code: 'ALREADY_SIGNED', message: SIGNED_EARLIER, next: `${upper(waitingOn(w))} decides it now.` };
   if (block === 'scope') return { status: 403, code: 'scope', message: 'This timesheet belongs to someone outside the employees you look after.', next: 'Their own manager decides it.' };
   if (block === 'layer') return { status: 403, code: 'WRONG_LAYER', message: `This timesheet is waiting on ${waitingOn(w)}, not on a layer you sign off.`, next: `${upper(waitingOn(w))} decides it now.` };
   const cap = roleRule('Timesheet', w.current?.step.role ?? 'Line manager')?.capability ?? 'team_ts';
   return { status: 403, code: 'capability', message: `This needs "${capLabel(cap)}", which your access does not include.`, next: 'Ask an administrator to grant it on Setup → Permissions.' };
 }
-const HELD_REASON: Partial<Record<DecisionBlock, string>> = { self: 'This is your own timesheet. Ask another approver at your location.' };
+const HELD_REASON: Partial<Record<DecisionBlock, string>> = { self: 'This is your own timesheet. Ask another approver at your site.' };
 /* Reading or deciding the queue needs a capability that decides some layer of the chain, or a delegation in force from someone who has one. */
 function requireApprover(s: Signed) {
   if (!approvesIn('Timesheet', effectiveCode(s), s.caps)) requireCapability(s, 'team_ts');
@@ -295,8 +320,8 @@ function captureFor(p: StoredEmployee) {
   return {
     rules: c.rules, cutoff: c.cutoff, timeFormat: c.timeFormat, returnReasonRequired: c.returnReasonRequired, weekGrid: c.weekGrid,
     weekLayout: c.weekLayout, fields: FIELDS, type, modules: t.modules, flags: Object.keys(t.flags).filter(k => Boolean(t.flags[k])),
-    capabilities: employeeType(p.employeeType)?.capabilities ?? [], fieldDefaults: c.fieldDefaults, allowances, payCodes: codes,
-    mode: employeeType(p.employeeType)?.mode ?? 'form', projects: openProjects(),
+    capabilities: workPattern(p.workPattern)?.fieldGroups ?? [], fieldDefaults: c.fieldDefaults, allowances, payCodes: codes,
+    mode: workPattern(p.workPattern)?.mode ?? 'form', projects: openProjects(),
   };
 }
 export const daysOf = (code: string) => Object.values(days()).filter(d => d.employeeCode === code);
@@ -401,7 +426,7 @@ export const timesheetHandlers = [
     const alloc = weekModel(FIELDS, typeOf(p), envFor(p), c.weekGrid).ctx.map(f => f.c);
     const totals = weekTotals(ws, list.flatMap(x => (x.record ? [{ date: x.date, entries: x.record.entries }] : [])), alloc);
     return {
-      employee: { code: p.code, name: p.name, employeeType: p.employeeType, typeName: employeeType(p.employeeType)?.name ?? p.employeeType,
+      employee: { code: p.code, name: p.name, workPattern: p.workPattern, typeName: workPattern(p.workPattern)?.name ?? p.workPattern,
         location: p.location, manager: managerNameOf(p), contractedHours: Math.max(0, p.contractedHours) },
       weekStart: ws, label: weekLabel(ws), now: today, days: list, weekMinutes: totals.weekMinutes, byAllocation: totals.byAllocation,
       capture: captureFor(p), earlierWeeks: earlierWeeks(p),
@@ -411,6 +436,7 @@ export const timesheetHandlers = [
   serve(saveTimesheetDay, ({ session, params, body, checkVersion }) => {
     const p = employeeFor(params.employeeId), mode = access(session, p, true);
     const { existing, base } = draftBase(p, params.date);
+    requireSwitches('day', existing?.entries, body);
     /* review I1 (2b): the clock writes this day when it stops */
     if (clockRunsOn(p.code, params.date)) refuse(409, clockRunning(params.date, mode === 'proxy'));
     checkVersion(base);
@@ -424,6 +450,7 @@ export const timesheetHandlers = [
   serve(submitTimesheetDay, ({ session, params, body, checkVersion }) => {
     const p = employeeFor(params.employeeId), mode = access(session, p, true);
     const existing = recordAt(days(), dayId(p.code, params.date));
+    requireSwitches('day', existing?.entries, body);
     /* D8: a retried submit finds the first one and is refused before the version is read */
     if (existing && (tsOpen(existing.state) || existing.state === 'ok')) alreadySubmitted(existing);
     if (clockRunsOn(p.code, params.date)) refuse(409, clockRunning(params.date, mode === 'proxy'));
@@ -443,6 +470,7 @@ export const timesheetHandlers = [
 
   serve(submitTimesheetWeek, ({ session, params, body }) => {
     const p = employeeFor(params.employeeId), mode = access(session, p, true);
+    requireSwitches('week');
     requireWeekStart(params.weekStart);
     /* only the days sent are acted on, each checked against the version it was read at (D8) */
     const dates = weekDates(params.weekStart), sent = new Map<string, DayInput | null>();
@@ -489,6 +517,7 @@ export const timesheetHandlers = [
 
   serve(submitMultiweek, ({ session, params, body }) => {
     const p = employeeFor(params.employeeId), mode = access(session, p, true);
+    requireSwitches('multiweek');
     const current = periodStart(now().date), c = config();
     const weeks = [...new Set(body.weeks)];
     weeks.forEach((ws, i) => {
@@ -641,7 +670,7 @@ export const timesheetHandlers = [
     checkVersion(c);
     const { rules, types, ...rest } = body;
     const next: TimesheetConfig = { ...c, ...rest, rules: { ...c.rules, ...rules }, types: { ...c.types, ...types } };
-    const problem = timesheetConfigProblem(next, { employeeTypes: Object.values(store.coll<StoredType>('employeeTypes')).map(t => t.code), payCodes: payCodes().map(x => x.code) });
+    const problem = timesheetConfigProblem(next, { workPatterns: Object.values(store.coll<StoredType>('workPatterns')).map(t => t.code), payCodes: payCodes().map(x => x.code) });
     if (problem) invalid(problem);
     const before: Record<string, unknown> = {}, after: Record<string, unknown> = {};
     const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);

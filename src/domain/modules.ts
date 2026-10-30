@@ -26,7 +26,7 @@ export interface SubDef { code: SubCode; name: string; kind: 'method' | 'capabil
 export interface FlagDef { code: string; label: string; mod: string; description: string; notBuilt?: true }
 
 export const MODULES: readonly ModuleDef[] = [
-  { code: 'CORE', name: 'QniConnect', icon: 'users', description: 'Employees, employee types, approvals and notifications.', locked: true },
+  { code: 'CORE', name: 'QniConnect', icon: 'users', description: 'Employees, work patterns, approvals and notifications.', locked: true },
   { code: 'TS', name: 'Timesheet', icon: 'clock', description: 'How time is captured, checked and sent for approval.',
     subs: ['A', 'B', 'C'], liveBy: ['A', 'B'], master: true, setup: 'mts', setupLabel: 'Timesheet setup' },
   { code: 'ON', name: 'Onboarding', icon: 'clipboard', description: 'What a new starter completes before their first day, and what the business checks before they can work.', setup: 'monb', setupLabel: 'Onboarding setup' },
@@ -34,7 +34,7 @@ export const MODULES: readonly ModuleDef[] = [
 export const MOD_SUBS: Readonly<Record<SubCode, SubDef>> = {
   A: { code: 'A', name: 'Manual time entry', kind: 'method', description: 'Day form, weekly grid and multi-week catch-up.' },
   B: { code: 'B', name: 'Clock in / out', kind: 'method', description: 'Live timer with breaks, for types set to clock entry.' },
-  C: { code: 'C', name: 'Sites & locations', kind: 'capability', description: 'Location field, per-site rules and the location check on clock-in.' },
+  C: { code: 'C', name: 'Sites', kind: 'capability', description: 'Site field, per-site rules and the location check on clock-in.' },
 };
 export const FLAGS: readonly FlagDef[] = [
   { code: 'AUTO_OT', label: 'Weekly overtime split (future enhancement)', mod: 'TS', description: 'Future enhancement. The timesheet rules do not yet split hours past a weekly threshold.' },
@@ -42,7 +42,7 @@ export const FLAGS: readonly FlagDef[] = [
   { code: 'UNSOCIAL', label: 'Unsocial hours detection', mod: 'TS', description: 'Flag hours worked inside the unsocial window.' },
   { code: 'EMAIL_APPROVAL', label: 'Email approval', mod: 'TS', description: 'Managers can approve a week from an email link.' },
   { code: 'SHOW_PAY', label: 'Show indicative pay to employees', mod: 'CORE', description: 'Off by default. Rates stay in Business Central.' },
-  { code: 'VEHICLE', label: 'Vehicle & movement fields', mod: 'TS', description: 'Offered to employee types with the vehicle capability.' },
+  { code: 'VEHICLE', label: 'Vehicle & movement fields', mod: 'TS', description: 'Offered to work patterns with the vehicle capability.' },
   { code: 'PROJECT', label: 'Project & costing fields', mod: 'TS', description: 'Project, task, cost centre and billable flag.' },
   { code: 'BREAKS', label: 'Break tracking', mod: 'TS', description: 'Employees record unpaid breaks; deducted from net hours.' },
   { code: 'ONB_RTW', label: 'Right to work', mod: 'ON', description: 'Collect proof of the right to work, with the document type declared.' },
@@ -98,7 +98,7 @@ export const captureOn = (modules: Switches) => modOn(modules, 'A') || modOn(mod
 export const MOD_IMPACT: Readonly<Record<string, string>> = {
   A: 'Day forms, the weekly grid and multi-week catch-up disappear for everyone.',
   B: 'The clock disappears; types set to clock entry fall back to the day form.',
-  C: 'The location field, per-site rules and location checks are removed from capture.',
+  C: 'The site field, per-site rules and location checks are removed from capture.',
   TS: 'All time capture stops: day forms, the weekly grid, the clock and multi-week catch-up disappear for everyone, and every capture method is switched off. Approvals keep any timesheets already submitted.',
 };
 export const OFF_TAIL = 'This applies to everyone immediately.';
@@ -226,7 +226,7 @@ export function switchFlag(modules: Switches, flags: Readonly<Record<string, unk
 }
 
 /* ------------------------------------------------------------- outcomes */
-const types = (n: number) => `${n} employee ${n === 1 ? 'type' : 'types'}`;
+const types = (n: number) => `${n} work ${n === 1 ? 'pattern' : 'patterns'}`;
 export interface SwitchOutcome { sitesRemovedFrom?: number; brought?: readonly string[] }
 /* The toast after a module switch, as the prototype words it. */
 export function moduleSwitchText(code: string, on: boolean, o: SwitchOutcome = {}): string {
@@ -236,7 +236,7 @@ export function moduleSwitchText(code: string, on: boolean, o: SwitchOutcome = {
     return [head, live].join(' ');
   }
   return [`${name} turned off.`, live,
-    o.sitesRemovedFrom ? `Site & location was taken off ${types(o.sitesRemovedFrom)}.` : ''].filter(Boolean).join(' ');
+    o.sitesRemovedFrom ? `The site field group was taken off ${types(o.sitesRemovedFrom)}.` : ''].filter(Boolean).join(' ');
 }
 export function flagChangeText(f: FlagDef, was: boolean, on: boolean, extras: Partial<FlagExtras>): string {
   const parts: string[] = [];

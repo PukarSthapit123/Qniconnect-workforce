@@ -18,7 +18,7 @@ const mount = (path = '/dev/sign-in') => render(
   <QueryClientProvider client={queryClient}><MemoryRouter initialEntries={[path]}><DevSignIn /></MemoryRouter></QueryClientProvider>);
 const seed = () => Object.values(store.coll<{ email: string; userType: string }>('accounts'));
 
-test('the dev picker lists every seed person, grouped by user type', async () => {
+test('the dev picker lists every seed person, grouped by access role', async () => {
   mount();
   for (const type of ['employee', 'manager', 'admin']) {
     const group = await screen.findByTestId(tid.devSignIn.group(type));
